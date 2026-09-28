@@ -84,8 +84,8 @@ export const DEMO_SESSIONS: Record<string, MediationSession> = {
       recipientLabel: 'Parent',
       relationship: 'parent',
       topic: 'Studies and Trust',
-      neutralSummary: "Your child asked me to help explain something that's been difficult to say directly without tension. From what they've shared, they're feeling increasingly overwhelmed by how often schoolwork and grades are brought up. Underneath that frustration, it seems they want more independence and trust, while still knowing that you care and believe in them.",
-      invitationMessage: "Someone wants to talk with you. Reconcile is helping them explain something that has been difficult to say directly.",
+      neutralSummary: "Reconcile noticed a communication gap between you and your child around how conversations about studies and schoolwork are landing. There seem to be strong feelings on both sides — understanding each perspective could help you both feel heard.",
+      invitationMessage: "Reconcile noticed a communication gap between you and your child. We'd love to hear your side before drawing any conclusions.",
       accepted: true
     },
     personB: {
@@ -95,7 +95,7 @@ export const DEMO_SESSIONS: Record<string, MediationSession> = {
           id: 'msg-b-1',
           sender: 'reconcile',
           role: 'b',
-          text: "Hey. Your child asked me to help explain something that's been difficult to say directly without tension. Before I explain anything, I'd really like to hear your perspective. How have things felt from your side regarding their studies?",
+          text: "Hey. Reconcile noticed there might be a disconnect between you and your child around studies and schoolwork. We're not here to take sides — we just want to understand how things have felt from your end. How have things been going?",
           timestamp: 1710000100000,
           privacy: 'PRIVATE_B',
           quickReplies: ["I'm just worried about their future", "I see them on their phone too much", "I love them and want them to succeed"]
@@ -232,7 +232,7 @@ export const DEMO_SESSIONS: Record<string, MediationSession> = {
           id: 'msg-fb-1',
           sender: 'reconcile',
           role: 'b',
-          text: "Hey. Jordan asked me to help connect with you about the recent silence. Before anything else, how have you been feeling since the argument?",
+          text: "Hey. Reconcile noticed there might be a disconnect between you and Jordan after the recent silence. We're not here to judge or take sides — we just want to hear how things have felt from your end. How have you been?",
           timestamp: 1710000050000,
           privacy: 'PRIVATE_B'
         },
@@ -313,8 +313,8 @@ export const DEMO_SESSIONS: Record<string, MediationSession> = {
       recipientLabel: 'Sibling',
       relationship: 'sibling',
       topic: 'Borrowing Things',
-      neutralSummary: "Riley asked Reconcile to help clear up recurring tension around borrowing clothes and tech. They don't mind sharing, but want a simple heads-up first.",
-      invitationMessage: "Someone in your family wants to clear the air calmly.",
+      neutralSummary: "Reconcile noticed some recurring tension around sharing belongings between siblings. There's a gap between how borrowing is perceived by each person — understanding both sides could clear things up.",
+      invitationMessage: "Reconcile noticed some tension around sharing things at home. We'd love to hear your perspective.",
       accepted: true
     },
     personB: {
@@ -324,7 +324,7 @@ export const DEMO_SESSIONS: Record<string, MediationSession> = {
           id: 'msg-sb-1',
           sender: 'reconcile',
           role: 'b',
-          text: "Hey. Riley wanted to talk about borrowing things around the house without starting a fight. What's your perspective?",
+          text: "Hey. Reconcile noticed there's been some tension around borrowing things at home. We're not taking sides — we just want to understand how things feel from your perspective. What's your take?",
           timestamp: 1710000050000,
           privacy: 'PRIVATE_B'
         },

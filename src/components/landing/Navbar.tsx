@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { HeartHandshake } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -21,7 +22,13 @@ export function Navbar({ onStartClick, onHomeClick }: NavbarProps) {
           <span>Reconcile</span>
         </div>
         
-        <div>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/about"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors hidden sm:inline"
+          >
+            About
+          </Link>
           <Button size="sm" onClick={onStartClick} className="rounded-full cursor-pointer">
             Start Free — No Signup
           </Button>

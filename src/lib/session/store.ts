@@ -129,19 +129,19 @@ export function createInvitationForSession(id: string): NeutralInvitation | null
   const isParent = relationship === 'parent';
 
   const neutralSummary = isParent
-    ? "Your child asked me to help explain something that has been difficult to say directly. They're feeling increasingly overwhelmed by frequent check-ins on schoolwork and grades, and underneath that frustration, they want to show they can handle responsibility while still knowing that you care about them."
-    : "Someone close to you asked me to help explain something that has been hard to bring up directly without tension. They value your connection, but felt a disconnect during your recent communication and want to understand your side before making assumptions.";
+    ? "Reconcile noticed a communication gap between you and your child about how conversations around studies and schoolwork are landing. There seem to be strong feelings on both sides — and understanding each perspective could help you both feel heard."
+    : "Reconcile noticed a communication gap between you and someone who cares about your relationship. There seem to be strong feelings on both sides — and understanding each perspective could bring clarity.";
 
   const invitation: NeutralInvitation = {
     inviteCode: session.id,
-    senderLabel: isParent ? 'Your child' : 'Your friend',
+    senderLabel: isParent ? 'Your child' : 'Someone close to you',
     recipientLabel: isParent ? 'Parent' : 'Friend',
     relationship: session.relationship,
     topic: session.topic || 'Communication Misunderstanding',
     neutralSummary,
     invitationMessage: isParent
-      ? "Someone wants to talk with you. Reconcile is helping them explain something that has been difficult to say directly."
-      : "Someone wants to talk with you. Reconcile is helping explain something that has been hard to bring up directly.",
+      ? "Reconcile noticed a communication gap between you and your child. We'd love to hear your side before drawing any conclusions."
+      : "Reconcile noticed a communication gap between you and someone close to you. We'd love to hear your side before drawing any conclusions.",
     accepted: false
   };
 
@@ -167,8 +167,8 @@ export function initializePersonB(id: string): MediationSession | null {
           sender: 'reconcile',
           role: 'b',
           text: isParent
-            ? "Hey. Your child asked me to help explain something that's been difficult to say directly without tension. Before I explain anything, I'd really like to hear your perspective. How have things felt from your side regarding their studies?"
-            : "Hey. A friend asked me to help explain something that's been awkward to say directly. Before we look at anything else, I'd really like to hear your side. What happened from your perspective?",
+            ? "Hey. Reconcile noticed there might be a disconnect between you and your child around studies and schoolwork. We're not here to take sides — we just want to understand how things have felt from your end. How have things been going?"
+            : "Hey. Reconcile noticed there might be a disconnect between you and someone you're close to. We're not here to take sides — we just want to understand your perspective. What's been on your mind?",
           timestamp: now,
           privacy: 'PRIVATE_B',
           quickReplies: isParent
