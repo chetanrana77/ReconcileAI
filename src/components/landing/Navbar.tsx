@@ -22,8 +22,8 @@ export function Navbar({ onStartClick, onHomeClick }: NavbarProps) {
         </div>
         
         <div>
-          <Button size="sm" onClick={onStartClick} className="rounded-full">
-            Let's Talk
+          <Button size="sm" onClick={onStartClick} className="rounded-full cursor-pointer">
+            Start Free — No Signup
           </Button>
         </div>
       </div>

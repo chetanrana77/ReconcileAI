@@ -52,55 +52,55 @@ const SCENARIOS: ScenarioData[] = [
   {
     id: 'parent-child',
     demoKey: 'demo-parent-child',
-    label: 'Parent ↔ Child',
-    tag: 'Flagship Event Scenario',
+    label: 'Parent & Teen',
+    tag: 'Most Popular',
     image: '/images/hero-conversation.jpg',
-    imageAlt: 'Mother and daughter having a calm, heartfelt conversation with empathy and mutual relief',
+    imageAlt: 'A mother and daughter sitting together having a calm, heartfelt conversation over coffee',
     personA: {
       name: 'Maya',
-      role: 'Child (19)',
+      role: 'Daughter, 19',
       avatarBg: 'bg-indigo-600',
-      feeling: 'Overwhelmed & Doubted',
-      quote: '“They ask about my exams and study hours every day. It feels like they have zero faith in me.”'
+      feeling: 'Feels controlled',
+      quote: '"Mom asks about my grades every single day. I know she cares, but it makes me feel like she doesn\'t believe in me at all."'
     },
     personB: {
       name: 'Elena',
-      role: 'Parent',
+      role: 'Mom',
       avatarBg: 'bg-violet-600',
-      feeling: 'Anxious Love & Protection',
-      quote: '“I sacrificed so much for her opportunities. I worry constantly and don’t want her to have regrets.”'
+      feeling: 'Scared of failing her',
+      quote: '"I gave up my career so she could have better opportunities. I just don\'t want her to struggle the way I did."'
     },
     bridge: {
-      intent: 'Deep love, protection, and worry about future security',
-      perceivedImpact: 'Feels like micromanagement and lack of trust',
-      readyMessage: '“I know you ask because you care deeply about my future, but when it’s every day, I feel overwhelmed. Can we agree on a calm Sunday check-in instead?”'
+      intent: 'Love — she asks because she\'s scared, not because she doubts',
+      perceivedImpact: 'Control — it feels like "you\'re not good enough" every day',
+      readyMessage: '"Mom, I know you ask because my future matters to you. But when it\'s every day, it starts to feel like you don\'t trust me. What if we did a Sunday check-in instead? I\'d actually look forward to it."'
     }
   },
   {
     id: 'friend-friend',
     demoKey: 'demo-friend-friend',
-    label: 'Friend ↔ Friend',
-    tag: 'Popular Scenario',
+    label: 'Two Friends',
+    tag: 'Common Situation',
     image: '/images/hero-friends.jpg',
-    imageAlt: 'Two close friends smiling and sharing an honest, comforting conversation in nature',
+    imageAlt: 'Two close friends sitting on a park bench having a real conversation during golden hour',
     personA: {
       name: 'Sarah',
-      role: 'Friend A',
+      role: 'Best friend',
       avatarBg: 'bg-rose-500',
-      feeling: 'Hurt & Wondering if it matters',
-      quote: '“She didn’t text back for three days after I shared something personal. I felt completely ignored.”'
+      feeling: 'Feels forgotten',
+      quote: '"I told her something really personal. Then nothing. Three days, zero response. It\'s like I don\'t matter."'
     },
     personB: {
       name: 'Chloe',
-      role: 'Friend B',
+      role: 'Best friend',
       avatarBg: 'bg-amber-600',
-      feeling: 'Exhausted & Paralyzed by burnout',
-      quote: '“Work completely overwhelmed me this week. I started typing a reply twice but didn’t have the energy.”'
+      feeling: 'Drowning in burnout',
+      quote: '"I saw the message. I started typing twice. But work destroyed me this week and I had nothing left to give anyone."'
     },
     bridge: {
-      intent: 'Valuing the deep friendship, but coping with acute burnout',
-      perceivedImpact: 'Silence was perceived as indifference or abandonment',
-      readyMessage: '“Hey, zero pressure to reply right away! I know life gets overwhelming. Just wanted to check in and let you know I’m thinking of you.”'
+      intent: 'She cares deeply — the silence was exhaustion, not rejection',
+      perceivedImpact: 'It felt like "you and your feelings don\'t matter to me"',
+      readyMessage: '"Hey — no pressure to reply right now. I know things have been brutal at work. Just wanted you to know I\'m here whenever you\'re ready. No rush."'
     }
   }
 ];
@@ -136,33 +136,29 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 w-full space-y-8">
-        {/* Top Badges & Tagline */}
+        {/* Social proof micro-badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-indigo-100 shadow-xs text-xs font-semibold text-indigo-700 mx-auto animate-fade-in-up">
           <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          <span>AI Communication Mediator</span>
-          <span className="w-1 h-1 rounded-full bg-indigo-300" />
-          <span className="text-gray-500 font-medium">Confidential &bull; Neutral &bull; Empathetic</span>
+          <span>Stop arguing. Start understanding.</span>
         </div>
 
-        {/* Primary Headline */}
+        {/* PRIMARY HEADLINE — Problem + Solution in 5th-grade words */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-gray-900 leading-[1.08] animate-fade-in-up">
-          Some things are easier to say
+          You know what you feel.
           <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 mt-2">
-            with someone in the middle.
+            We help you say it right.
           </span>
         </h1>
 
-        {/* Supporting Copy */}
+        {/* SUBHEAD — Specific, concrete, human. Not corporate. */}
         <p
           className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up font-normal text-balance"
           style={{ animationDelay: '100ms' }}
         >
-          Reconcile is the AI you talk to when you don&apos;t know how to talk to them. Untangle what
-          you&apos;re feeling privately, bridge the misunderstanding, and connect without starting an
-          argument.
+          When you&apos;re hurt, angry, or confused — and talking would only make it worse — talk to Reconcile first. We listen to both sides privately, find where things got crossed, and give you the exact words to fix it.
         </p>
 
-        {/* Action CTAs */}
+        {/* CTAs — Clear action, zero friction */}
         <div
           className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 animate-fade-in-up"
           style={{ animationDelay: '180ms' }}
@@ -172,7 +168,7 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
             onClick={onStart}
             className="w-full sm:w-auto rounded-full px-8 py-4 text-base font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all group cursor-pointer"
           >
-            Talk to Reconcile
+            Tell Me What Happened
             <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Button>
 
@@ -183,31 +179,31 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
             className="w-full sm:w-auto rounded-full px-7 py-4 text-base font-medium border border-gray-200/80 bg-white/60 hover:bg-white hover:border-indigo-200 transition-all cursor-pointer flex items-center gap-2"
           >
             <Play className="w-4 h-4 text-indigo-600 fill-indigo-600/20" />
-            <span>See How It Works</span>
+            <span>Watch a 60-Second Example</span>
           </Button>
         </div>
 
-        {/* Trust Guarantee */}
+        {/* Trust line — Addresses the #1 objection immediately */}
         <div
           className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-600 bg-white/80 backdrop-blur-xs px-4 py-2 rounded-full border border-gray-100 shadow-2xs animate-fade-in-up"
           style={{ animationDelay: '220ms' }}
         >
           <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Your words stay private. We help the other person understand what you mean.</span>
+          <span>Free. No signup. Nothing you say is ever shared with the other person.</span>
         </div>
 
         {/* ========================================================= */}
-        {/* HERO VISUAL SHOWCASE: Editorial Imagery + Live Mediation  */}
+        {/* HERO VISUAL: Show the product working, not just an image  */}
         {/* ========================================================= */}
         <div
           className="pt-6 sm:pt-8 w-full max-w-5xl mx-auto animate-fade-in-up"
           style={{ animationDelay: '280ms' }}
         >
-          {/* Interactive Scenario Switcher Bar */}
+          {/* Scenario tabs */}
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-2">
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Live Scenario Preview:
+                See it in action:
               </span>
               <div className="inline-flex p-1 bg-white/90 backdrop-blur-sm rounded-full border border-gray-200/80 shadow-2xs">
                 {SCENARIOS.map((s) => {
@@ -234,14 +230,13 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
               onClick={() => handleLaunchScenarioDemo(activeScenario.demoKey)}
               className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 flex items-center gap-1 transition-colors cursor-pointer group"
             >
-              <span>Explore full interactive mediation</span>
+              <span>Try the full conversation</span>
               <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </button>
           </div>
 
-          {/* Master Visual Frame */}
+          {/* Visual showcase frame */}
           <div className="relative rounded-3xl overflow-hidden border border-indigo-100/80 shadow-2xl bg-slate-900 group">
-            {/* The High-Quality Editorial Image */}
             <div className="relative w-full h-[460px] sm:h-[540px] md:h-[620px] overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -250,15 +245,15 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
                 className="w-full h-full object-cover object-center filter brightness-[0.93] contrast-[1.02] transition-transform duration-700 ease-out group-hover:scale-[1.01]"
               />
 
-              {/* Rich cinematic vignette and contrast gradient overlays */}
+              {/* Cinematic overlays */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-slate-900/10 pointer-events-none" />
               <div className="absolute inset-0 bg-indigo-950/15 mix-blend-color pointer-events-none" />
 
-              {/* Top Meta Header Inside Image */}
+              {/* Top badges */}
               <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/10 text-white text-[11px] font-medium">
                   <Lock className="w-3 h-3 text-emerald-400" />
-                  <span>Confidential Mediation Session</span>
+                  <span>Both sides are 100% private</span>
                 </div>
 
                 <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-600/85 backdrop-blur-md border border-indigo-400/30 text-white text-[11px] font-medium">
@@ -267,9 +262,9 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
                 </div>
               </div>
 
-              {/* DESKTOP / TABLET: Floating Glassmorphism Dialogue Cards */}
+              {/* DESKTOP: Floating perspective cards */}
               <div className="hidden md:block">
-                {/* Person A Floating Card (Top Left) */}
+                {/* Person A card */}
                 <div className="absolute top-16 left-6 max-w-[290px] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/60 text-left transition-all duration-300 hover:shadow-2xl">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -293,12 +288,12 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
                   <p className="text-xs text-gray-700 italic leading-relaxed">
                     {activeScenario.personA.quote}
                   </p>
-                  <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
-                    <span>Perceived: {activeScenario.personA.feeling}</span>
+                  <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center text-[10px] text-gray-400">
+                    <span>{activeScenario.personA.feeling}</span>
                   </div>
                 </div>
 
-                {/* Person B Floating Card (Top Right) */}
+                {/* Person B card */}
                 <div className="absolute top-16 right-6 max-w-[290px] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/60 text-left transition-all duration-300 hover:shadow-2xl">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -322,41 +317,41 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
                   <p className="text-xs text-gray-700 italic leading-relaxed">
                     {activeScenario.personB.quote}
                   </p>
-                  <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
-                    <span>Underlying: {activeScenario.personB.feeling}</span>
+                  <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center text-[10px] text-gray-400">
+                    <span>{activeScenario.personB.feeling}</span>
                   </div>
                 </div>
               </div>
 
-              {/* CENTER-BOTTOM: Reconcile AI Mediation Bridge Card */}
+              {/* BOTTOM: The Bridge — this is the product's magic moment */}
               <div className="absolute bottom-5 left-4 right-4 md:left-6 md:right-6 max-w-2xl mx-auto">
                 <div className="bg-white/95 backdrop-blur-lg rounded-2xl p-4 sm:p-5 shadow-2xl border border-indigo-100/90 text-left transition-all duration-300">
-                  {/* Bridge Top Bar */}
+                  {/* Bridge header */}
                   <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-xs">
                         <Sparkles className="w-3.5 h-3.5" />
                       </div>
                       <span className="text-xs font-bold text-gray-900">
-                        Reconcile Joint Mediation Bridge
+                        Here&apos;s where things got crossed
                       </span>
                     </div>
                     <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full">
-                      Intention vs. Impact
+                      What they meant vs. how it felt
                     </span>
                   </div>
 
-                  {/* Intention vs Impact Two-Column Split */}
+                  {/* The gap — simple, clear language */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs mb-3">
                     <div className="p-2.5 rounded-xl bg-violet-50/70 border border-violet-100/80">
                       <p className="text-[10px] font-bold text-violet-900 uppercase tracking-wider mb-0.5">
-                        True Intention
+                        What they actually meant
                       </p>
                       <p className="text-gray-700 leading-snug">{activeScenario.bridge.intent}</p>
                     </div>
                     <div className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100/80">
                       <p className="text-[10px] font-bold text-rose-900 uppercase tracking-wider mb-0.5">
-                        Felt Impact
+                        But how it felt
                       </p>
                       <p className="text-gray-700 leading-snug">
                         {activeScenario.bridge.perceivedImpact}
@@ -364,27 +359,27 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
                     </div>
                   </div>
 
-                  {/* Ready-to-Send Opener Callout */}
+                  {/* The words to say */}
                   <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50/90 via-purple-50/90 to-indigo-50/90 border border-indigo-200/70">
                     <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold text-indigo-900">
                       <MessageSquareQuote className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Ready-to-Send De-escalating Opener</span>
+                      <span>Copy this. Send it. Start a real conversation.</span>
                     </div>
                     <p className="text-xs sm:text-sm font-medium text-gray-800 italic leading-relaxed">
                       {activeScenario.bridge.readyMessage}
                     </p>
                   </div>
 
-                  {/* Launch Trigger Button */}
+                  {/* Action row */}
                   <div className="mt-3 flex items-center justify-between pt-1">
                     <span className="text-[11px] text-gray-500 hidden sm:inline">
-                      Neither person is blamed &bull; Both perspectives honored
+                      No blame. No sides. Just clarity.
                     </span>
                     <button
                       onClick={() => handleLaunchScenarioDemo(activeScenario.demoKey)}
                       className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
                     >
-                      <span>Try this full mediation</span>
+                      <span>Try this yourself</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -392,20 +387,20 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
               </div>
             </div>
 
-            {/* MOBILE ONLY: Quick Side-by-Side Preview drawer */}
+            {/* MOBILE: Compact preview */}
             <div className="md:hidden bg-slate-900/95 border-t border-white/10 p-4 text-left space-y-3">
               <div className="flex items-center justify-between text-xs text-slate-300">
-                <span className="font-semibold text-white">Private Intakes:</span>
+                <span className="font-semibold text-white">What they each said privately:</span>
                 <span className="text-[11px] text-emerald-400 flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> Never forwarded raw
+                  <Lock className="w-3 h-3" /> Never shared with each other
                 </span>
               </div>
               <div className="grid grid-cols-1 gap-2 text-xs">
                 <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
-                  <span className="font-bold text-indigo-300">Person A:</span> {activeScenario.personA.quote}
+                  <span className="font-bold text-indigo-300">{activeScenario.personA.name}:</span> {activeScenario.personA.quote}
                 </div>
                 <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
-                  <span className="font-bold text-violet-300">Person B:</span> {activeScenario.personB.quote}
+                  <span className="font-bold text-violet-300">{activeScenario.personB.name}:</span> {activeScenario.personB.quote}
                 </div>
               </div>
             </div>
@@ -413,17 +408,16 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
         </div>
 
         {/* ========================================================= */}
-        {/* TRUST PILLARS / HIGHLIGHTS: Why Reconcile Works            */}
+        {/* THREE VALUE PROPS — Problem → Solution in plain English   */}
         {/* ========================================================= */}
         <div className="pt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-left max-w-5xl mx-auto">
           <div className="p-6 rounded-2xl bg-white/80 backdrop-blur-xs border border-gray-100 shadow-xs hover:border-indigo-100 hover:shadow-md transition-all">
             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
               <Lock className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">100% Private Intakes</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-1.5">Say it ugly. We clean it up.</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Speak freely without defense. Reconcile untangles what you mean without ever forwarding
-              your unfiltered words.
+              Vent everything — the anger, the hurt, the messy parts. We figure out what you actually need to say. Your raw words never reach the other person.
             </p>
           </div>
 
@@ -431,10 +425,9 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
             <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center mb-4">
               <RefreshCw className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">Intention vs. Impact</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-1.5">See why they did it.</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Most conflict isn&apos;t ill-intent. We identify the exact gap between what was meant and
-              what was emotionally received.
+              Most fights aren&apos;t about bad people. They&apos;re about good people who misread each other. We show you the gap between what they meant and how it landed.
             </p>
           </div>
 
@@ -442,10 +435,9 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
               <HeartHandshake className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">Joint Mediation Bridge</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-1.5">Get the exact words to send.</h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Reveals shared values and provides ready-to-send messages that invite conversation
-              instead of reigniting the argument.
+              Not therapy-speak. Not a script. A real message that sounds like you — but opens a door instead of starting another fight.
             </p>
           </div>
         </div>

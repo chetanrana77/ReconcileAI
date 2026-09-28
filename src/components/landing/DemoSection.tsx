@@ -12,46 +12,46 @@ interface DemoSectionProps {
 const MEDIATION_DEMOS = [
   {
     key: 'demo-parent-child',
-    title: 'Parent ↔ Child',
-    subtitle: 'Studies, Independence & Trust',
+    title: 'Parent & Teen',
+    subtitle: '"They don\'t trust me" vs. "I\'m scared for their future"',
     isFlagship: true,
-    personAQuote: "My parents keep asking about my studies. I know they're worried, but it feels like they don't trust me.",
-    personBQuote: "I'm terrified they'll fall behind in a tough world. I ask because I love them, not to control them.",
-    bridgeInsight: "Anxious love colliding with emerging autonomy: The intent was care, but the impact was feeling scrutinized."
+    personAQuote: "My parents ask about my grades every day. I'm not a kid anymore. Why can't they just trust me?",
+    personBQuote: "I gave up my career for her future. I ask because I'm terrified she'll struggle the way I did.",
+    bridgeInsight: "She hears doubt. Mom means love. Same conversation — completely different meanings."
   },
   {
     key: 'demo-friend-friend',
-    title: 'Friend ↔ Friend',
-    subtitle: 'Silence After an Argument',
+    title: 'Best Friends',
+    subtitle: '"She ghosted me" vs. "I had nothing left to give"',
     isFlagship: false,
-    personAQuote: "My friend hasn't replied to my messages for two days. I feel like they don't care about our friendship.",
-    personBQuote: "I was completely swamped with exams and wanted to cool down so we wouldn't say things we'd regret.",
-    bridgeInsight: "One person interpreted silence as apathy; the other person used silence as emotional damage control."
+    personAQuote: "I opened up about something personal and she just... disappeared. Three days. Nothing.",
+    personBQuote: "I saw her message. I wanted to respond properly. But work destroyed me and I froze.",
+    bridgeInsight: "Sarah heard rejection. Chloe was drowning. The silence meant two completely different things."
   },
   {
     key: 'demo-sibling-sibling',
-    title: 'Sibling ↔ Sibling',
-    subtitle: 'Boundaries & Borrowing Possessions',
+    title: 'Siblings',
+    subtitle: '"He doesn\'t respect my stuff" vs. "We\'re family, why is this a big deal?"',
     isFlagship: false,
-    personAQuote: "My brother keeps taking my clothes and headphones without asking. It feels completely disrespectful.",
-    personBQuote: "We're close brothers living under the same roof. I didn't think borrowing was an attack on boundaries.",
-    bridgeInsight: "A standard of personal property colliding with an assumption of family informality."
+    personAQuote: "My brother takes my things without asking. My headphones, my clothes. I've told him a hundred times.",
+    personBQuote: "We live in the same house. I didn't think borrowing a hoodie was a federal crime.",
+    bridgeInsight: "One sees disrespect. The other sees family closeness. Neither is wrong — but neither feels heard."
   }
 ];
 
 export function DemoSection({ onSelectDemoSession }: DemoSectionProps) {
   return (
     <section id="demo" className="py-20 px-4 max-w-7xl mx-auto bg-slate-50/70 border border-gray-100 rounded-3xl my-8">
-      <div className="text-center mb-14 space-y-2">
+      <div className="text-center mb-14 space-y-3">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold tracking-wide uppercase">
           <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          Pre-built Interactive Scenarios
+          Real Scenarios You Can Try Right Now
         </span>
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-          Explore a Complete Mediation
+          Pick a fight. We&apos;ll fix it.
         </h2>
         <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-          Experience how Reconcile privately consults with both parties, protects confidential words, and bridges the gap.
+          These are real-world conflicts people go through every day. Click any scenario to see how Reconcile finds the gap and gives you the words to close it.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export function DemoSection({ onSelectDemoSession }: DemoSectionProps) {
           >
             {demo.isFlagship && (
               <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[11px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                ⭐ Flagship Event Demo
+                ⭐ Try This One First
               </div>
             )}
 
@@ -77,14 +77,14 @@ export function DemoSection({ onSelectDemoSession }: DemoSectionProps) {
                 <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider block">
                   {demo.title}
                 </span>
-                <h3 className="text-xl font-bold text-gray-900 mt-0.5">{demo.subtitle}</h3>
+                <h3 className="text-lg font-bold text-gray-900 mt-1 leading-snug">{demo.subtitle}</h3>
               </div>
 
-              {/* Both perspectives contrast */}
+              {/* Both perspectives */}
               <div className="space-y-3 pt-2">
                 <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 block mb-1">
-                    Person A Felt:
+                    One side:
                   </span>
                   <p className="text-xs sm:text-sm text-gray-700 italic">
                     &ldquo;{demo.personAQuote}&rdquo;
@@ -93,7 +93,7 @@ export function DemoSection({ onSelectDemoSession }: DemoSectionProps) {
 
                 <div className="bg-violet-50/50 p-3.5 rounded-xl border border-violet-100/60">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-violet-700 block mb-1">
-                    Person B Felt:
+                    Other side:
                   </span>
                   <p className="text-xs sm:text-sm text-gray-700 italic">
                     &ldquo;{demo.personBQuote}&rdquo;
@@ -101,16 +101,16 @@ export function DemoSection({ onSelectDemoSession }: DemoSectionProps) {
                 </div>
               </div>
 
-              {/* The Disconnect Summary */}
+              {/* The insight */}
               <div className="text-xs text-gray-500 pt-2 border-t border-gray-100">
-                <strong className="text-gray-700">The Gap:</strong> {demo.bridgeInsight}
+                <strong className="text-gray-700">The real problem:</strong> {demo.bridgeInsight}
               </div>
             </div>
 
             <div className="pt-6 mt-4 border-t border-gray-100 flex items-center justify-between text-xs font-semibold text-indigo-600 group-hover:text-indigo-700">
               <span className="flex items-center gap-1">
                 <HeartHandshake className="w-4 h-4 text-indigo-500" />
-                Experience Full Mediation Flow
+                Try the full mediation
               </span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
