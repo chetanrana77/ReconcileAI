@@ -264,7 +264,10 @@ export function AppShell() {
             {/* 1. Landing Page */}
             {currentStep === 'landing' && (
               <div className="space-y-24 pb-20">
-                <Hero onStart={() => handleStartTalk('parent')} />
+                <Hero
+                  onStart={() => handleStartTalk('parent')}
+                  onSelectDemo={handleLoadDemoSession}
+                />
                 <HowItWorks />
                 <DemoSection onSelectDemoSession={handleLoadDemoSession} />
                 <Footer />
