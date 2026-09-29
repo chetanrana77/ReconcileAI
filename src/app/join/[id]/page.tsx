@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Shield, ArrowRight, HeartHandshake, Lock, Sparkles } from 'lucide-react';
+import { Shield, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { SafeSessionView } from '@/lib/types';
@@ -42,7 +42,7 @@ export default function JoinSessionPage() {
       await fetch(`/api/session/${id}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'join' })
+        body: JSON.stringify({ action: 'join' }),
       });
 
       // Redirect to main session view with role=b parameter
@@ -55,9 +55,9 @@ export default function JoinSessionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="flex items-center gap-2 text-indigo-600 font-medium text-sm">
-          <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping" />
+      <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center p-4">
+        <div className="flex items-center gap-2.5 text-stone-700 font-medium text-sm">
+          <span className="w-2.5 h-2.5 rounded-full bg-stone-900 animate-pulse" />
           <span>Opening private invitation...</span>
         </div>
       </div>
@@ -66,13 +66,13 @@ export default function JoinSessionPage() {
 
   if (error || !session) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="min-h-screen bg-[#FAF9F6] flex flex-col font-sans">
         <Navbar onStartClick={() => router.push('/')} onHomeClick={() => router.push('/')} />
         <div className="flex-1 flex items-center justify-center p-4">
-          <Card className="max-w-md w-full p-8 text-center bg-white shadow-sm space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Invitation Not Found</h2>
-            <p className="text-sm text-gray-600">{error || 'This session link is invalid.'}</p>
-            <Button onClick={() => router.push('/')} className="rounded-full w-full">
+          <Card className="max-w-md w-full p-8 text-center bg-white shadow-2xs space-y-4 border border-stone-200">
+            <h2 className="text-xl font-semibold text-stone-900">Invitation Not Found</h2>
+            <p className="text-sm text-stone-600">{error || 'This session link is invalid.'}</p>
+            <Button onClick={() => router.push('/')} className="w-full">
               Go to Reconcile Home
             </Button>
           </Card>
@@ -81,46 +81,43 @@ export default function JoinSessionPage() {
     );
   }
 
-  const isParent = session.relationship === 'parent';
-
   return (
-    <div className="min-h-screen bg-[var(--color-surface)] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FAF9F6] flex flex-col font-sans">
       <Navbar onStartClick={() => router.push('/')} onHomeClick={() => router.push('/')} />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="max-w-lg w-full space-y-6 text-center animate-fade-in-up">
           {/* Header pill */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            Private Invitation
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-700 text-xs font-semibold uppercase tracking-wider">
+            <Lock className="w-3.5 h-3.5 text-stone-500" />
+            Confidential Invitation
           </span>
 
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+          <div className="space-y-2">
+            <h1 className="text-3xl sm:text-4xl font-semibold text-stone-900 tracking-tight">
               Someone wants to talk.
             </h1>
-            <p className="text-base text-gray-600 leading-relaxed max-w-md mx-auto">
-              Reconcile is helping them explain something that has been difficult to say directly without starting an argument.
+            <p className="text-sm sm:text-base text-stone-600 leading-relaxed max-w-md mx-auto">
+              Reconcile is an AI mediator helping bridge a communication disconnect without arguments or blame.
             </p>
           </div>
 
-          <Card className="p-6 sm:p-8 bg-white border border-gray-200/90 shadow-sm text-left space-y-5">
+          <Card className="p-6 sm:p-8 bg-white border border-stone-200 shadow-2xs text-left space-y-5">
             <div className="space-y-3">
-              <div className="flex items-center gap-2.5 text-xs font-bold text-indigo-700 uppercase tracking-wider">
-                <Shield className="w-4 h-4 text-indigo-600" />
-                <span>What to Expect</span>
-              </div>
-              <ul className="space-y-2.5 text-sm text-gray-700 leading-relaxed">
+              <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider block">
+                What to Expect
+              </span>
+              <ul className="space-y-2.5 text-xs sm:text-sm text-stone-700 leading-relaxed">
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-500 font-bold">•</span>
-                  <span><strong>You don&apos;t have to agree with them.</strong></span>
+                  <CheckCircle2 className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
+                  <span><strong>You don’t have to agree.</strong> We’re here to understand, not judge.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-500 font-bold">•</span>
-                  <span><strong>You don&apos;t have to defend yourself.</strong></span>
+                  <CheckCircle2 className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
+                  <span><strong>You don’t have to defend yourself.</strong> Your side matters just as much.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-indigo-500 font-bold">•</span>
+                  <CheckCircle2 className="w-4 h-4 text-stone-400 shrink-0 mt-0.5" />
                   <span>
                     Your conversation with Reconcile is <strong>completely private</strong>. Your raw words are never forwarded.
                   </span>
@@ -129,7 +126,7 @@ export default function JoinSessionPage() {
             </div>
 
             {session.invitation?.neutralSummary && (
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-xs sm:text-sm text-gray-700 italic leading-relaxed">
+              <div className="bg-[#FAF9F6] p-4 rounded-xl border border-stone-200/80 text-xs sm:text-sm text-stone-800 italic leading-relaxed">
                 &ldquo;{session.invitation.neutralSummary}&rdquo;
               </div>
             )}
@@ -138,16 +135,16 @@ export default function JoinSessionPage() {
               <Button
                 size="lg"
                 onClick={handleStartTalk}
-                className="w-full rounded-full py-4 text-base font-semibold shadow-md shadow-indigo-500/20 cursor-pointer"
+                className="w-full py-3.5 text-sm font-medium shadow-xs cursor-pointer flex items-center justify-center gap-2"
               >
-                <span>Talk to Reconcile</span>
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <span>Enter Your Private Room</span>
+                <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
           </Card>
 
-          <p className="text-xs text-gray-400">
-            Reconcile AI • &ldquo;Don&apos;t pick a side. Understand both.&rdquo;
+          <p className="text-xs text-stone-400">
+            Reconcile AI &bull; “Understanding someone doesn’t mean agreeing with them.”
           </p>
         </div>
       </main>

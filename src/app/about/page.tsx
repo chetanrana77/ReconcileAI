@@ -13,7 +13,8 @@ import {
   Globe,
   Heart,
   Scale,
-  BookOpen
+  BookOpen,
+  BarChart3
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -256,6 +257,63 @@ export default function AboutPage() {
                 <p className="text-xs text-stone-600 leading-relaxed font-normal">{principle.body}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ============================================= */}
+        {/* RESEARCH & SURVEY INSIGHTS                    */}
+        {/* ============================================= */}
+        <section className="mb-20 space-y-6">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-stone-100 border border-stone-200 text-stone-800 flex items-center justify-center shrink-0">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-semibold text-stone-900">User Research &amp; Survey Data</h2>
+              <p className="text-stone-500 text-xs uppercase tracking-wider font-semibold mt-0.5">
+                Research presented at NanoSpark 2026 &bull; Shivaji University, Kolhapur (UG 22)
+              </p>
+            </div>
+          </div>
+
+          <div className="pl-0 sm:pl-14 space-y-6">
+            <p className="text-stone-700 text-base sm:text-lg leading-relaxed font-normal">
+              Reconcile AI was developed following empirical user research analyzing the psychological
+              and communicative bottlenecks people face during emotional disagreements.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-5 rounded-2xl bg-white border border-stone-200 shadow-2xs space-y-2">
+                <span className="text-2xl font-bold text-stone-900 font-mono">82%</span>
+                <p className="text-xs font-semibold text-stone-900">Feel Misunderstood</p>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  Report that after an argument, the other person never truly understood what they were trying to say.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white border border-stone-200 shadow-2xs space-y-2">
+                <span className="text-2xl font-bold text-stone-900 font-mono">78%</span>
+                <p className="text-xs font-semibold text-stone-900">Want a Neutral Bridge</p>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  Agree that an impartial, neutral third party helps break defensive stalemates between two people.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white border border-stone-200 shadow-2xs space-y-2">
+                <span className="text-2xl font-bold text-stone-900 font-mono">Top #1</span>
+                <p className="text-xs font-semibold text-stone-900">Fear of Judgment</p>
+                <p className="text-xs text-stone-600 leading-relaxed">
+                  Identified fear of escalating the conflict as the primary barrier preventing honest vulnerability.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-[#FAF9F6] border border-stone-200 text-xs text-stone-600 space-y-2">
+              <span className="font-semibold text-stone-900 block">Future Roadmap from Conference Research:</span>
+              <p>
+                ❖ WhatsApp-based direct invitation &amp; mediation flow &bull; ❖ Voice-guided conversational intake &bull; ❖ Stress and emotional regulation support &bull; ❖ Full-fledged mobile companion app.
+              </p>
+            </div>
           </div>
         </section>
 
