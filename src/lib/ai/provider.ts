@@ -72,68 +72,134 @@ export async function generateMediatorReply(params: {
     }
   }
 
-  // Resilient contextual fallback (guarantees rock-solid event demo offline)
+  // Resilient contextual conversational engine
   const isRoleA = params.role === 'a';
   const historyLen = params.history.filter((m) => m.sender === 'user').length;
-  const lastUserMsg = params.history.filter((m) => m.sender === 'user').slice(-1)[0]?.text || '';
+  const lastUserMsg = (params.history.filter((m) => m.sender === 'user').slice(-1)[0]?.text || '').trim().toLowerCase();
   const isParentRel = params.relationship === 'parent';
 
+  // Greeting check
+  const isGreeting = /^(hi|hii|hiii|hello|helo|hey|heyy|hey there|good morning|good evening|yo|namaste|help)$/i.test(lastUserMsg);
+
   if (isRoleA) {
-    if (historyLen <= 1) {
+    // 1. User sent a greeting
+    if (isGreeting || lastUserMsg.length <= 3) {
       return {
-        reply: isParentRel
-          ? "It sounds like the questions themselves aren't really the whole issue. It might be that they make you feel like they don't trust you to manage your own responsibilities. Is that close to what you're feeling?"
-          : "I hear why that feels frustrating. When someone goes quiet or pulls back, it's easy to wonder if the relationship matters as much to them as it does to you. Did something happen right before this?",
-        quickReplies: ["Yes, exactly that", "There is more to it", "I just feel misunderstood"],
+        reply: "Hello, I'm here. What's been going on that's been weighing on you? Tell me in your own words — nobody else sees this.",
+        quickReplies: isParentRel
+          ? ["My parents keep checking on my studies", "It feels like they don't trust me", "We had an argument yesterday", "I'm stressed and overwhelmed"]
+          : ["A friend hasn't replied to me", "We had a disagreement", "I feel ignored and hurt", "Things feel awkward between us"],
         extractedInsight: {
-          intent: "Expressing frustration over perceived lack of trust or disconnection",
-          emotions: ["frustrated", "doubted", "anxious"],
-          underlyingNeed: "Trust, autonomy, and feeling valued",
+          intent: "Starting the conversation",
+          emotions: ["open", "seeking support"],
+          underlyingNeed: "A safe space to be heard without judgment",
           readyToInvite: false
         }
       };
-    } else {
+    }
+
+    // 2. User talking about studies / grades / parents / trust
+    if (/study|exam|grade|school|parent|mom|dad|career|marks|trust/i.test(lastUserMsg)) {
+      if (historyLen <= 2) {
+        return {
+          reply: "That sounds exhausting. When conversations at home keep turning into check-ins about school or grades, it often feels like they don't believe in you — even if their intention is just worry. How does it usually play out when they bring it up?",
+          quickReplies: ["It turns into an argument", "I just go silent and leave", "They think I'm wasting time", "I wish they would just let me breathe"],
+          extractedInsight: {
+            intent: "Wants autonomy and trust from parents regarding their responsibilities",
+            emotions: ["pressured", "doubted", "frustrated"],
+            underlyingNeed: "Trust, independence, and to feel respected as capable",
+            readyToInvite: false
+          }
+        };
+      }
+    }
+
+    // 3. User talking about silence / ghosting / friend / ignoring
+    if (/reply|text|ghost|silence|ignore|friend|message|talk|call/i.test(lastUserMsg)) {
+      if (historyLen <= 2) {
+        return {
+          reply: "I hear why that hurts. When someone you care about suddenly pulls back or doesn't reply, it's easy to wonder if the relationship still matters to them. Did something happen right before the silence, or did they just disappear?",
+          quickReplies: ["We had a disagreement before", "They just stopped replying completely", "I shared something personal first", "I don't know what happened"],
+          extractedInsight: {
+            intent: "Seeking clarity and emotional reassurance about the relationship",
+            emotions: ["hurt", "ignored", "anxious"],
+            underlyingNeed: "Emotional safety and reciprocity",
+            readyToInvite: false
+          }
+        };
+      }
+    }
+
+    // 4. User expresses feeling hurt / angry / misunderstood
+    if (historyLen <= 2) {
       return {
-        reply: isParentRel
-          ? "I think I understand your side now. There might be something useful we can try: If you want, I can help your parents understand what you're actually trying to say — without sending your raw words or starting an argument."
-          : "I think I really see what's going on from your side. If you want, I can reach out to them and help them understand what you're actually feeling, without forwarding your raw words.",
-        quickReplies: ["Help them understand", "Can I see what you'll say first?", "Keep talking with me"],
+        reply: "Thank you for explaining that. Your feelings make complete sense. When you're in the middle of it, it feels like they don't even try to see where you're coming from. What do you wish they understood about how their words land on you?",
+        quickReplies: ["That I'm trying my best", "That the way they talk makes me defensive", "That I still care, I just need space"],
         extractedInsight: {
-          intent: "Wants the other person to understand their boundary and need for trust without relationship rupture",
-          emotions: ["frustrated", "caring", "ready for clarity"],
-          underlyingNeed: "Respect, independence, and mutual peace",
-          readyToInvite: true
+          intent: "Expressing genuine hurt and desire for their perspective to be acknowledged",
+          emotions: ["frustrated", "misunderstood", "caring"],
+          underlyingNeed: "Validation, mutual respect, and calm communication",
+          readyToInvite: false
         }
       };
     }
+
+    // 5. Deeper conversation turn — ready to offer neutral invitation
+    return {
+      reply: "I think I really see what's going on from your side now. You want respect and breathing room, without having to fight for it. When you feel ready, I can help invite them with a calm, neutral message that explains your perspective without starting an argument.",
+      quickReplies: ["Yes, help me invite them", "Can I see the invitation first?", "I want to keep talking"],
+      extractedInsight: {
+        intent: "Ready to establish healthy communication and bridge the misunderstanding",
+        emotions: ["reflective", "caring", "ready for clarity"],
+        underlyingNeed: "Mutual respect, independence, and peaceful resolution",
+        readyToInvite: true
+      }
+    };
   } else {
-    // Person B fallback
-    if (historyLen <= 1) {
+    // Person B conversational fallback
+    if (isGreeting || lastUserMsg.length <= 3) {
       return {
-        reply: isParentRel
-          ? "That really helps clarify things. Your intention is guidance, protection, and deep care for their future. But for them, the impact feels like a lack of trust in their capability. Both can be true at the same time: you love them and want them to succeed, and the constant questions are creating anxiety rather than motivation."
-          : "Got it. That helps explain a lot. It sounds like your intention wasn't to ignore them or push them away, but because of life stress, the impact on their side felt like silence and neglect.",
-        quickReplies: ["I didn't realize it caused anxiety", "What can we do instead?", "I only want what's best"],
+        reply: "Hello. Thank you for taking a moment to talk with me. Reconcile is here to understand your side without judgment or blame. How have things felt from your end lately?",
+        quickReplies: isParentRel
+          ? ["I worry about their future", "I just want them to succeed", "I didn't realize it bothered them", "Things have been tense"]
+          : ["I was overwhelmed with work", "I needed time to cool down", "I didn't mean to ignore them", "I value our friendship"],
         extractedInsight: {
-          intent: "Expressing care and protection, though execution triggered defensive anxiety in the other person",
-          emotions: ["protective", "concerned", "loving"],
-          underlyingNeed: "Peace of mind and connection",
-          intentionVsImpact: "Intention was love and care; impact was perceived as mistrust and pressure",
-          readyToInvite: true
+          intent: "Opening up to share their perspective",
+          emotions: ["cautious", "protective"],
+          underlyingNeed: "To be heard and understood fairly",
+          readyToInvite: false
         }
       };
-    } else {
+    }
+
+    if (historyLen <= 2) {
       return {
-        reply: "That is a huge insight. You want connection and peace of mind, not conflict. I think both of you actually want the exact same outcome. Want to see how we can bridge this together?",
-        quickReplies: ["Show me the bridge", "How do we talk about this?"],
+        reply: isParentRel
+          ? "That really helps clarify things. Your intention comes from deep care and anxiety for their future. But because of how often it's brought up, the impact lands as a lack of trust. Both realities can exist at the same time: you love them, and the check-ins feel overwhelming to them."
+          : "That makes a lot of sense. Your silence wasn't about discarding the relationship — it was about being overwhelmed. But on their end, the impact felt like rejection. Neither of you had bad intentions.",
+        quickReplies: ["I didn't realize it landed like that", "What can we do instead?", "How do we talk about this?"],
         extractedInsight: {
-          intent: "Ready to find common ground and establish healthier communication",
-          emotions: ["open", "reflective", "caring"],
-          underlyingNeed: "Harmonious connection and mutual understanding",
+          intent: "Explaining genuine intentions of care, protection, or self-preservation",
+          emotions: ["concerned", "reflective", "caring"],
+          underlyingNeed: "Connection, mutual peace, and reassurance",
+          intentionVsImpact: isParentRel
+            ? "Intention was love and future protection; felt impact was micromanagement and doubt"
+            : "Intention was coping with burnout; felt impact was perceived as cold neglect",
           readyToInvite: true
         }
       };
     }
+
+    return {
+      reply: "Both of you genuinely care about each other, but the way things landed created tension. Ready to see the joint Mediation Bridge and look at a ready-to-send message that opens a better conversation?",
+      quickReplies: ["Show me the Mediation Bridge", "What is the recommended next step?"],
+      extractedInsight: {
+        intent: "Ready to review mutual common ground and de-escalating communication",
+        emotions: ["open", "constructive", "relieved"],
+        underlyingNeed: "A calm path forward without circular arguing",
+        readyToInvite: true
+      }
+    };
   }
 }
 

@@ -7,13 +7,11 @@ import {
   Handshake,
   Copy,
   CheckCircle2,
-  RotateCcw,
-  Sparkles,
   ArrowRight,
   Shield,
   Lightbulb,
-  CheckCircle,
-  ArrowLeft
+  ArrowLeft,
+  RotateCcw
 } from 'lucide-react';
 import { MediationBridge, ParticipantRole } from '@/lib/types';
 import { Card } from '@/components/ui/Card';
@@ -31,7 +29,7 @@ export function MediationBridgeView({
   bridge,
   currentRole,
   onBackToPrivateChat,
-  onReset
+  onReset,
 }: MediationBridgeViewProps) {
   const [copiedA, setCopiedA] = useState(false);
   const [copiedB, setCopiedB] = useState(false);
@@ -48,132 +46,135 @@ export function MediationBridgeView({
     setTimeout(() => setCopiedB(false), 2000);
   };
 
+  const isRoleA = currentRole === 'a';
+
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-8 space-y-16 animate-fade-in-up">
+    <div className="w-full max-w-4xl mx-auto px-4 py-8 space-y-14 animate-fade-in-up">
       <button
         type="button"
         onClick={onBackToPrivateChat}
-        className="flex items-center text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors group cursor-pointer"
+        className="flex items-center text-xs font-semibold text-stone-500 hover:text-stone-900 transition-colors group cursor-pointer"
       >
-        <ArrowLeft className="w-3.5 h-3.5 mr-1 group-hover:-translate-x-1 transition-transform" />
+        <ArrowLeft className="w-3.5 h-3.5 mr-1 group-hover:-translate-x-0.5 transition-transform" />
         Back to your private conversation
       </button>
 
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold tracking-wide uppercase">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          The Neutral Bridge
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-700 text-xs font-semibold tracking-wide uppercase">
+          <Shield className="w-3.5 h-3.5 text-stone-500" />
+          The Neutral Mediation Bridge
         </span>
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-semibold text-stone-900 tracking-tight">
           Don&apos;t pick a side. Understand both.
         </h1>
-        <p className="text-gray-600 text-base sm:text-lg">
-          Both participants have spoken privately with Reconcile. Here is the shared picture without the raw anger.
+        <p className="text-stone-600 text-sm sm:text-base font-normal">
+          Both participants have spoken privately with Reconcile. Here is the shared picture without
+          defensiveness or blame.
         </p>
       </div>
 
-      {/* SECTION 1: Here's What I'm Hearing (Both Perspectives) */}
-      <section className="space-y-6">
+      {/* SECTION 1: Both Perspectives Validated */}
+      <section className="space-y-4">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-indigo-900">
-            1. Here&apos;s What I&apos;m Hearing From Both Sides
+          <span className="w-2 h-2 rounded-full bg-stone-900" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-stone-900">
+            1. Perspectives From Both Sides
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-          {/* Person A side */}
-          <Card className="p-6 md:p-7 border-l-4 border-l-indigo-500 bg-white shadow-xs space-y-3 flex flex-col justify-between">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 uppercase tracking-wider bg-indigo-50 px-2.5 py-0.5 rounded-md mb-2">
-                Person A (Child / Alex)
-              </div>
-              <p className="text-base sm:text-lg text-gray-800 leading-relaxed font-normal">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+          {/* Side A */}
+          <Card className="p-6 md:p-7 border border-stone-200 bg-white shadow-2xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <span className="inline-flex items-center text-xs font-semibold text-stone-700 uppercase tracking-wider bg-stone-100 px-2.5 py-0.5 rounded-md">
+                {isRoleA ? 'Your Perspective' : 'Their Perspective'}
+              </span>
+              <p className="text-sm sm:text-base text-stone-800 leading-relaxed font-normal">
                 {bridge.personASideNeutral}
               </p>
             </div>
-            <p className="text-xs text-gray-400 pt-2 border-t border-gray-100">
+            <p className="text-xs text-stone-500 pt-2 border-t border-stone-100 font-normal">
               Underlying need: Autonomy, trust, and validation
             </p>
           </Card>
 
-          {/* Person B side */}
-          <Card className="p-6 md:p-7 border-l-4 border-l-violet-500 bg-white shadow-xs space-y-3 flex flex-col justify-between">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-violet-700 uppercase tracking-wider bg-violet-50 px-2.5 py-0.5 rounded-md mb-2">
-                Person B (Parent / Morgan)
-              </div>
-              <p className="text-base sm:text-lg text-gray-800 leading-relaxed font-normal">
+          {/* Side B */}
+          <Card className="p-6 md:p-7 border border-stone-200 bg-white shadow-2xs space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <span className="inline-flex items-center text-xs font-semibold text-stone-700 uppercase tracking-wider bg-stone-100 px-2.5 py-0.5 rounded-md">
+                {isRoleA ? 'Their Perspective' : 'Your Perspective'}
+              </span>
+              <p className="text-sm sm:text-base text-stone-800 leading-relaxed font-normal">
                 {bridge.personBSideNeutral}
               </p>
             </div>
-            <p className="text-xs text-gray-400 pt-2 border-t border-gray-100">
+            <p className="text-xs text-stone-500 pt-2 border-t border-stone-100 font-normal">
               Underlying need: Protective love, connection, and peace of mind
             </p>
           </Card>
         </div>
       </section>
 
-      {/* SECTION 2: Intention vs Impact (The Aha Moment) */}
+      {/* SECTION 2: Intention vs Impact (The Disconnect) */}
       <section className="space-y-6">
-        <div className="text-center max-w-xl mx-auto space-y-1 mb-8">
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-            The Aha Moment
+        <div className="text-center max-w-xl mx-auto space-y-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            The Core Insight
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-stone-900 tracking-tight">
             Here&apos;s where things got crossed.
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-xs sm:text-sm text-stone-500 font-normal">
             Intention and impact are often completely out of sync.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-          <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-xs border border-indigo-100 relative">
-            <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider block mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+          <div className="bg-white rounded-2xl p-6 shadow-2xs border border-stone-200 space-y-2">
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block">
               How It Was Experienced (Impact)
             </span>
-            <p className="text-lg text-gray-900 font-medium italic leading-relaxed">
+            <p className="text-base sm:text-lg text-stone-900 font-normal italic leading-relaxed">
               &ldquo;{bridge.disconnectAnalysis.personAInterpretation}&rdquo;
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-xs border border-violet-100 relative">
-            <span className="text-xs font-bold text-violet-700 uppercase tracking-wider block mb-3">
+          <div className="bg-white rounded-2xl p-6 shadow-2xs border border-stone-200 space-y-2">
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block">
               How It Was Intended (Intention)
             </span>
-            <p className="text-lg text-gray-900 font-medium italic leading-relaxed">
+            <p className="text-base sm:text-lg text-stone-900 font-normal italic leading-relaxed">
               &ldquo;{bridge.disconnectAnalysis.personBInterpretation}&rdquo;
             </p>
           </div>
         </div>
 
         {/* The Actual Gap */}
-        <div className="bg-gradient-to-r from-indigo-50 via-slate-50 to-violet-50 rounded-2xl p-6 sm:p-7 border border-indigo-100/70 text-center max-w-2xl mx-auto shadow-2xs">
-          <p className="text-xs font-bold uppercase tracking-widest text-indigo-700 mb-2">The Actual Disconnect</p>
-          <p className="text-base sm:text-lg text-gray-800 font-medium leading-relaxed">
+        <div className="bg-[#FAF9F6] rounded-2xl p-6 border border-stone-200/90 text-center max-w-2xl mx-auto shadow-2xs space-y-1.5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">The Actual Disconnect</p>
+          <p className="text-sm sm:text-base text-stone-800 font-medium leading-relaxed">
             {bridge.disconnectAnalysis.theGap}
           </p>
         </div>
       </section>
 
       {/* SECTION 3: Common Ground */}
-      <section className="space-y-6">
-        <div className="text-center max-w-xl mx-auto mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">
-            You may actually want the same thing.
+      <section className="space-y-5">
+        <div className="text-center max-w-xl mx-auto">
+          <h2 className="text-2xl font-semibold text-stone-900 mb-1">
+            You actually want the same thing.
           </h2>
-          <p className="text-sm text-gray-500">Core commonalities beneath the conflict</p>
+          <p className="text-xs sm:text-sm text-stone-500 font-normal">Core commonalities beneath the conflict</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {bridge.commonGround.map((point, idx) => (
-            <Card key={idx} className="p-5 flex flex-col items-center text-center bg-emerald-50/40 border border-emerald-100 shadow-2xs">
-              <div className="w-10 h-10 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 mb-3">
-                {idx === 0 ? <Heart className="w-5 h-5" /> : idx === 1 ? <MessageCircle className="w-5 h-5" /> : <Handshake className="w-5 h-5" />}
+            <Card key={idx} className="p-5 flex flex-col items-center text-center bg-white border border-stone-200 shadow-2xs space-y-2">
+              <div className="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700">
+                {idx === 0 ? <Heart className="w-4 h-4" /> : idx === 1 ? <MessageCircle className="w-4 h-4" /> : <Handshake className="w-4 h-4" />}
               </div>
-              <p className="text-xs sm:text-sm font-medium text-gray-800 leading-snug">
+              <p className="text-xs sm:text-sm font-medium text-stone-800 leading-snug">
                 {point}
               </p>
             </Card>
@@ -181,109 +182,108 @@ export function MediationBridgeView({
         </div>
       </section>
 
-      {/* SECTION 4: A Better Way to Say It (Ready-to-send messages) */}
+      {/* SECTION 4: Ready to Talk Directly (Practical Messages) */}
       <section className="space-y-6">
-        <div className="text-center max-w-xl mx-auto mb-6">
-          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-            Ready to Talk Directly
+        <div className="text-center max-w-xl mx-auto">
+          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">
+            Actionable Language
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-2">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-stone-900 mt-1">
             A better conversation to start with.
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-xs sm:text-sm text-stone-600 font-normal">
             Personalized starter messages designed to open dialogue without defensiveness.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Message for Person A */}
-          <Card className="overflow-hidden border border-gray-200 bg-white shadow-sm flex flex-col justify-between">
-            <div className="bg-slate-50 px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-              <span className="text-xs font-semibold text-gray-700">For Person A (Child) to say</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyA}
-                className="text-xs font-medium h-8"
-              >
-                {copiedA ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-500" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 mr-1" />
-                    Copy
-                  </>
-                )}
-              </Button>
-            </div>
-            <div className="p-6">
-              <p className="text-sm sm:text-base text-gray-800 leading-relaxed italic">
+          <Card className="overflow-hidden border border-stone-200 bg-white shadow-2xs flex flex-col justify-between p-6 space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                  {isRoleA ? 'Your Starter Message' : 'Their Starter Message'}
+                </span>
+                <span className="text-[10px] font-medium text-stone-500 bg-stone-100 px-2 py-0.5 rounded">
+                  Ready to send
+                </span>
+              </div>
+              <p className="text-sm sm:text-base text-stone-900 italic font-normal leading-relaxed">
                 &ldquo;{bridge.suggestedSharedMessage.fromAtoB}&rdquo;
               </p>
             </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleCopyA}
+              className="w-full text-xs font-medium cursor-pointer"
+            >
+              {copiedA ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                  <span>Message Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 mr-1.5 text-stone-400" />
+                  <span>Copy Message</span>
+                </>
+              )}
+            </Button>
           </Card>
 
           {/* Message for Person B */}
-          <Card className="overflow-hidden border border-gray-200 bg-white shadow-sm flex flex-col justify-between">
-            <div className="bg-slate-50 px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-              <span className="text-xs font-semibold text-gray-700">For Person B (Parent) to say</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCopyB}
-                className="text-xs font-medium h-8"
-              >
-                {copiedB ? (
-                  <>
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-500" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 mr-1" />
-                    Copy
-                  </>
-                )}
-              </Button>
-            </div>
-            <div className="p-6">
-              <p className="text-sm sm:text-base text-gray-800 leading-relaxed italic">
+          <Card className="overflow-hidden border border-stone-200 bg-white shadow-2xs flex flex-col justify-between p-6 space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-stone-700 uppercase tracking-wider">
+                  {!isRoleA ? 'Your Starter Message' : 'Their Starter Message'}
+                </span>
+                <span className="text-[10px] font-medium text-stone-500 bg-stone-100 px-2 py-0.5 rounded">
+                  Ready to send
+                </span>
+              </div>
+              <p className="text-sm sm:text-base text-stone-900 italic font-normal leading-relaxed">
                 &ldquo;{bridge.suggestedSharedMessage.fromBtoA}&rdquo;
               </p>
             </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleCopyB}
+              className="w-full text-xs font-medium cursor-pointer"
+            >
+              {copiedB ? (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
+                  <span>Message Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 mr-1.5 text-stone-400" />
+                  <span>Copy Message</span>
+                </>
+              )}
+            </Button>
           </Card>
         </div>
-
-        {/* Proposed Next Step Agreement */}
-        {bridge.proposedNextStep && (
-          <div className="bg-emerald-50/60 border border-emerald-100/90 rounded-2xl p-5 flex items-start gap-3 max-w-2xl mx-auto shadow-2xs">
-            <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs font-bold text-emerald-900 uppercase tracking-wider mb-1">
-                Suggested Shared Agreement
-              </p>
-              <p className="text-sm sm:text-base text-emerald-950 font-medium leading-relaxed">
-                {bridge.proposedNextStep}
-              </p>
-            </div>
-          </div>
-        )}
       </section>
 
-      {/* Completion Actions */}
-      <div className="pt-8 border-t border-gray-100 text-center space-y-4">
-        <p className="text-xs text-gray-400 italic">
-          &ldquo;Remember: understanding someone doesn&apos;t mean agreeing with everything they do.&rdquo;
+      {/* Completion & Next Steps */}
+      <div className="text-center pt-6 pb-12 border-t border-stone-200 space-y-4">
+        <p className="text-xs text-stone-500 font-normal">
+          “Understanding someone doesn’t mean agreeing with them.”
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Button size="lg" onClick={onReset} className="w-full sm:w-auto rounded-full px-8">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Start another conversation
-          </Button>
-        </div>
+        <Button
+          size="md"
+          onClick={onReset}
+          className="text-xs font-medium cursor-pointer"
+        >
+          <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
+          <span>Start Another Conversation</span>
+        </Button>
       </div>
     </div>
   );

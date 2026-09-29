@@ -25,7 +25,6 @@ import { Navbar } from '@/components/landing/Navbar';
 import { PrivateChat } from '@/components/mediator/PrivateChat';
 import { InvitationCard } from '@/components/mediator/InvitationCard';
 import { MediationBridgeView } from '@/components/mediator/MediationBridgeView';
-import { RoleSwitcherBar } from '@/components/mediator/RoleSwitcherBar';
 
 // UI Feedback Components
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -237,19 +236,6 @@ export function AppShell() {
     <>
       <Navbar onStartClick={() => handleStartTalk('parent')} onHomeClick={resetToLanding} />
 
-      {/* Floating Demo Role Switcher (Visible whenever a session is active) */}
-      {session && (
-        <RoleSwitcherBar
-          currentRole={currentRole}
-          currentStep={currentStep}
-          isReadyForMediation={session.isReadyForMediation}
-          hasInvitation={Boolean(session.invitation)}
-          onSwitchRole={handleSwitchRole}
-          onOpenMediation={handleOpenMediation}
-          onLoadFlagshipDemo={handleLoadDemoSession}
-        />
-      )}
-
       {currentStep === 'landing' ? (
         <div key="landing" className="w-full flex flex-col">
           <Hero
@@ -292,7 +278,7 @@ export function AppShell() {
               {currentStep === 'chat_a' && session && (
                 <PrivateChat
                   role="a"
-                  participantLabel="Person A (Child)"
+                  participantLabel="You"
                   topic={session.topic}
                   messages={session.myMessages}
                   insight={session.myInsight}
@@ -317,7 +303,7 @@ export function AppShell() {
               {currentStep === 'chat_b' && session && (
                 <PrivateChat
                   role="b"
-                  participantLabel="Person B (Parent)"
+                  participantLabel="You"
                   topic={session.topic}
                   messages={session.myMessages}
                   insight={session.myInsight}
