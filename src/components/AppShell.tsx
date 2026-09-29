@@ -11,8 +11,13 @@ import {
 
 // Landing Components
 import { Hero } from '@/components/landing/Hero';
-import { HowItWorks } from '@/components/landing/HowItWorks';
+import { ProblemStory } from '@/components/landing/ProblemStory';
 import { DemoSection } from '@/components/landing/DemoSection';
+import { HowItWorks } from '@/components/landing/HowItWorks';
+import { OutcomeFeatures } from '@/components/landing/OutcomeFeatures';
+import { PrivacySection } from '@/components/landing/PrivacySection';
+import { FAQSection } from '@/components/landing/FAQSection';
+import { ClosingCTA } from '@/components/landing/ClosingCTA';
 import { Footer } from '@/components/landing/Footer';
 import { Navbar } from '@/components/landing/Navbar';
 
@@ -245,87 +250,97 @@ export function AppShell() {
         />
       )}
 
-      <div className="flex-grow flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Safety Interception Notice */}
-        {isSafetyFlag ? (
-          <div className="w-full flex justify-center py-8">
-            <SafetyNotice message={safetyMessage} onReset={resetToLanding} />
-          </div>
-        ) : error ? (
-          <div className="w-full flex justify-center py-8">
-            <ErrorState
-              message={error}
-              onRetry={() => setError(null)}
-              onDemo={() => handleLoadDemoSession('demo-parent-child')}
-            />
-          </div>
-        ) : (
-          <div key={currentStep + currentRole} className="flex-grow flex flex-col">
-            {/* 1. Landing Page */}
-            {currentStep === 'landing' && (
-              <div className="space-y-24 pb-20">
-                <Hero
-                  onStart={() => handleStartTalk('parent')}
-                  onSelectDemo={handleLoadDemoSession}
+      {currentStep === 'landing' ? (
+        <div key="landing" className="w-full flex flex-col">
+          <Hero
+            onStart={() => handleStartTalk('parent')}
+            onSelectDemo={handleLoadDemoSession}
+          />
+          <ProblemStory />
+          <DemoSection onSelectDemoSession={handleLoadDemoSession} />
+          <HowItWorks />
+          <OutcomeFeatures />
+          <PrivacySection />
+          <FAQSection />
+          <ClosingCTA
+            onStart={() => handleStartTalk('parent')}
+            onExploreDemo={() => {
+              const el = document.getElementById('demonstration');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          />
+          <Footer />
+        </div>
+      ) : (
+        <div className="flex-grow flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Safety Interception Notice */}
+          {isSafetyFlag ? (
+            <div className="w-full flex justify-center py-8">
+              <SafetyNotice message={safetyMessage} onReset={resetToLanding} />
+            </div>
+          ) : error ? (
+            <div className="w-full flex justify-center py-8">
+              <ErrorState
+                message={error}
+                onRetry={() => setError(null)}
+                onDemo={() => handleLoadDemoSession('demo-parent-child')}
+              />
+            </div>
+          ) : (
+            <div key={currentStep + currentRole} className="flex-grow flex flex-col">
+              {/* 2. Person A Private Chat */}
+              {currentStep === 'chat_a' && session && (
+                <PrivateChat
+                  role="a"
+                  participantLabel="Person A (Child)"
+                  topic={session.topic}
+                  messages={session.myMessages}
+                  insight={session.myInsight}
+                  isSending={isSending}
+                  onSendMessage={handleSendMessage}
+                  onOpenInvite={handleOpenInvite}
+                  onOpenMediation={handleOpenMediation}
                 />
-                <HowItWorks />
-                <DemoSection onSelectDemoSession={handleLoadDemoSession} />
-                <Footer />
-              </div>
-            )}
+              )}
 
-            {/* 2. Person A Private Chat */}
-            {currentStep === 'chat_a' && session && (
-              <PrivateChat
-                role="a"
-                participantLabel="Person A (Child)"
-                topic={session.topic}
-                messages={session.myMessages}
-                insight={session.myInsight}
-                isSending={isSending}
-                onSendMessage={handleSendMessage}
-                onOpenInvite={handleOpenInvite}
-                onOpenMediation={handleOpenMediation}
-              />
-            )}
+              {/* 3. Neutral Invitation Preview & Sharing */}
+              {currentStep === 'invite' && session?.invitation && (
+                <InvitationCard
+                  invitation={session.invitation}
+                  sessionId={session.id}
+                  onSimulateJoin={handleSimulatePersonBJoin}
+                  onBackToChat={() => setCurrentStep('chat_a')}
+                />
+              )}
 
-            {/* 3. Neutral Invitation Preview & Sharing */}
-            {currentStep === 'invite' && session?.invitation && (
-              <InvitationCard
-                invitation={session.invitation}
-                sessionId={session.id}
-                onSimulateJoin={handleSimulatePersonBJoin}
-                onBackToChat={() => setCurrentStep('chat_a')}
-              />
-            )}
+              {/* 4. Person B Private Chat */}
+              {currentStep === 'chat_b' && session && (
+                <PrivateChat
+                  role="b"
+                  participantLabel="Person B (Parent)"
+                  topic={session.topic}
+                  messages={session.myMessages}
+                  insight={session.myInsight}
+                  isSending={isSending}
+                  onSendMessage={handleSendMessage}
+                  onOpenInvite={handleOpenInvite}
+                  onOpenMediation={handleOpenMediation}
+                />
+              )}
 
-            {/* 4. Person B Private Chat */}
-            {currentStep === 'chat_b' && session && (
-              <PrivateChat
-                role="b"
-                participantLabel="Person B (Parent)"
-                topic={session.topic}
-                messages={session.myMessages}
-                insight={session.myInsight}
-                isSending={isSending}
-                onSendMessage={handleSendMessage}
-                onOpenInvite={handleOpenInvite}
-                onOpenMediation={handleOpenMediation}
-              />
-            )}
-
-            {/* 5. The Mediation Bridge */}
-            {currentStep === 'mediation' && session?.bridge && (
-              <MediationBridgeView
-                bridge={session.bridge}
-                currentRole={currentRole}
-                onBackToPrivateChat={() => setCurrentStep(currentRole === 'a' ? 'chat_a' : 'chat_b')}
-                onReset={resetToLanding}
-              />
-            )}
-          </div>
-        )}
-      </div>
+              {/* 5. The Mediation Bridge */}
+              {currentStep === 'mediation' && session?.bridge && (
+                <MediationBridgeView
+                  bridge={session.bridge}
+                  currentRole={currentRole}
+                  onBackToPrivateChat={() => setCurrentStep(currentRole === 'a' ? 'chat_a' : 'chat_b')}
+                  onReset={resetToLanding}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }

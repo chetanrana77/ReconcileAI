@@ -1,18 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  ArrowRight,
-  Sparkles,
-  ShieldCheck,
-  Lock,
-  HeartHandshake,
-  MessageSquareQuote,
-  RefreshCw,
-  Play,
-  ArrowUpRight,
-  Users
-} from 'lucide-react';
+import { ArrowRight, Lock, ArrowDown, Check, ShieldCheck, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 interface HeroProps {
@@ -20,100 +9,86 @@ interface HeroProps {
   onSelectDemo?: (demoKey: string) => void;
 }
 
-interface ScenarioData {
+interface HeroScenario {
   id: string;
   demoKey: string;
   label: string;
-  tag: string;
-  image: string;
-  imageAlt: string;
-  personA: {
+  context: string;
+  sideA: {
     name: string;
     role: string;
-    avatarBg: string;
-    feeling: string;
-    quote: string;
+    rawText: string;
+    felt: string;
   };
-  personB: {
+  sideB: {
     name: string;
     role: string;
-    avatarBg: string;
-    feeling: string;
-    quote: string;
+    rawText: string;
+    intent: string;
   };
   bridge: {
-    intent: string;
-    perceivedImpact: string;
-    readyMessage: string;
+    disconnect: string;
+    suggestedMessage: string;
   };
 }
 
-const SCENARIOS: ScenarioData[] = [
+const HERO_SCENARIOS: HeroScenario[] = [
   {
-    id: 'parent-child',
+    id: 'parent-teen',
     demoKey: 'demo-parent-child',
     label: 'Parent & Teen',
-    tag: 'Most Popular',
-    image: '/images/hero-conversation.jpg',
-    imageAlt: 'A mother and daughter sitting together having a calm, heartfelt conversation over coffee',
-    personA: {
+    context: 'Daily arguments around study hours and independence',
+    sideA: {
       name: 'Maya',
       role: 'Daughter, 19',
-      avatarBg: 'bg-indigo-600',
-      feeling: 'Feels controlled',
-      quote: '"Mom asks about my grades every single day. I know she cares, but it makes me feel like she doesn\'t believe in me at all."'
+      rawText: '“Mom asks about my exams every single morning. I know she cares, but it makes me feel like she has zero faith in my ability to manage my life.”',
+      felt: 'Felt: Scrutinized & distrusted',
     },
-    personB: {
+    sideB: {
       name: 'Elena',
-      role: 'Mom',
-      avatarBg: 'bg-violet-600',
-      feeling: 'Scared of failing her',
-      quote: '"I gave up my career so she could have better opportunities. I just don\'t want her to struggle the way I did."'
+      role: 'Mother',
+      rawText: '“I gave up my career so she could have better opportunities. I ask because I worry constantly and don’t want her to struggle the way I did.”',
+      intent: 'Intent: Deep love & fear of future regret',
     },
     bridge: {
-      intent: 'Love — she asks because she\'s scared, not because she doubts',
-      perceivedImpact: 'Control — it feels like "you\'re not good enough" every day',
-      readyMessage: '"Mom, I know you ask because my future matters to you. But when it\'s every day, it starts to feel like you don\'t trust me. What if we did a Sunday check-in instead? I\'d actually look forward to it."'
-    }
+      disconnect: 'The intention was anxious protection; the emotional impact was feeling doubted.',
+      suggestedMessage: '“Mom, I know you ask because my future matters to you. But when it’s every day, I feel doubted. Can we agree on a Sunday check-in instead?”',
+    },
   },
   {
-    id: 'friend-friend',
+    id: 'friends-silence',
     demoKey: 'demo-friend-friend',
     label: 'Two Friends',
-    tag: 'Common Situation',
-    image: '/images/hero-friends.jpg',
-    imageAlt: 'Two close friends sitting on a park bench having a real conversation during golden hour',
-    personA: {
+    context: 'Three days of silence after an emotional disagreement',
+    sideA: {
       name: 'Sarah',
-      role: 'Best friend',
-      avatarBg: 'bg-rose-500',
-      feeling: 'Feels forgotten',
-      quote: '"I told her something really personal. Then nothing. Three days, zero response. It\'s like I don\'t matter."'
+      role: 'Friend A',
+      rawText: '“I opened up about something really vulnerable and she just went completely dark for three days. It feels like our friendship is one-sided.”',
+      felt: 'Felt: Abandoned & unimportant',
     },
-    personB: {
+    sideB: {
       name: 'Chloe',
-      role: 'Best friend',
-      avatarBg: 'bg-amber-600',
-      feeling: 'Drowning in burnout',
-      quote: '"I saw the message. I started typing twice. But work destroyed me this week and I had nothing left to give anyone."'
+      role: 'Friend B',
+      rawText: '“Work destroyed me this week and I broke down. I started drafting a reply twice, but I had zero emotional energy left to explain myself.”',
+      intent: 'Intent: Coping with acute personal burnout',
     },
     bridge: {
-      intent: 'She cares deeply — the silence was exhaustion, not rejection',
-      perceivedImpact: 'It felt like "you and your feelings don\'t matter to me"',
-      readyMessage: '"Hey — no pressure to reply right now. I know things have been brutal at work. Just wanted you to know I\'m here whenever you\'re ready. No rush."'
-    }
-  }
+      disconnect: 'The intention was self-preservation during burnout; the emotional impact was felt as cold neglect.',
+      suggestedMessage: '“Hey — zero pressure to reply right away. I know work has been overwhelming. Just wanted you to know I care about you whenever you’re ready.”',
+    },
+  },
 ];
 
 export function Hero({ onStart, onSelectDemo }: HeroProps) {
-  const [activeScenarioId, setActiveScenarioId] = useState<string>('parent-child');
-  const activeScenario = SCENARIOS.find((s) => s.id === activeScenarioId) || SCENARIOS[0];
+  const [activeScenarioId, setActiveScenarioId] = useState<string>('parent-teen');
+  const activeScenario =
+    HERO_SCENARIOS.find((s) => s.id === activeScenarioId) || HERO_SCENARIOS[0];
 
-  const scrollToDemo = () => {
-    document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToHowItWorks = () => {
+    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleLaunchScenarioDemo = (demoKey: string) => {
+  const handleLaunchDemo = (demoKey: string) => {
     if (onSelectDemo) {
       onSelectDemo(demoKey);
     } else {
@@ -122,323 +97,196 @@ export function Hero({ onStart, onSelectDemo }: HeroProps) {
   };
 
   return (
-    <section className="relative w-full pt-10 pb-16 md:pt-16 md:pb-24 flex flex-col items-center justify-center overflow-hidden text-center">
-      {/* Ambient background glow accents */}
-      <div className="absolute inset-0 -z-10 flex items-center justify-center opacity-40 pointer-events-none">
-        <div
-          className="w-[600px] h-[600px] bg-gradient-to-tr from-indigo-200/40 via-purple-200/40 to-pink-100/30 rounded-full blur-3xl mix-blend-multiply animate-pulse"
-          style={{ animationDuration: '8s' }}
-        />
-        <div
-          className="w-[500px] h-[500px] bg-gradient-to-br from-violet-200/40 via-indigo-100/40 to-emerald-100/20 rounded-full blur-3xl mix-blend-multiply animate-pulse"
-          style={{ animationDuration: '10s', animationDelay: '2s' }}
-        />
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 w-full space-y-8">
-        {/* Social proof micro-badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-indigo-100 shadow-xs text-xs font-semibold text-indigo-700 mx-auto animate-fade-in-up">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Stop arguing. Start understanding.</span>
+    <section className="relative w-full pt-12 pb-20 md:pt-20 md:pb-28 flex flex-col items-center">
+      {/* 1. Header & Value Proposition */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
+        {/* Understated Eyebrow Badge */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-100/90 border border-stone-200/90 text-stone-700 text-xs font-semibold uppercase tracking-wider mx-auto">
+          <span className="w-1.5 h-1.5 rounded-full bg-stone-900" />
+          <span>Private AI for Hard Conversations</span>
         </div>
 
-        {/* PRIMARY HEADLINE — Problem + Solution in 5th-grade words */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-gray-900 leading-[1.08] animate-fade-in-up">
+        {/* Primary Headline: Large, elegant, human */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-stone-900 leading-[1.08] text-balance">
           You know what you feel.
-          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 mt-2">
-            We help you say it right.
-          </span>
+          <span className="block text-stone-700 font-normal">We help you say it right.</span>
         </h1>
 
-        {/* SUBHEAD — Specific, concrete, human. Not corporate. */}
-        <p
-          className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up font-normal text-balance"
-          style={{ animationDelay: '100ms' }}
-        >
-          When you&apos;re hurt, angry, or confused — and talking would only make it worse — talk to Reconcile first. We listen to both sides privately, find where things got crossed, and give you the exact words to fix it.
+        {/* Concise Supporting Explanation */}
+        <p className="text-lg sm:text-xl text-stone-600 max-w-2xl mx-auto leading-relaxed font-normal text-balance">
+          When a conversation feels impossible, Reconcile listens to both sides privately, finds where
+          intent and impact got crossed, and gives you the exact words to fix it.
         </p>
 
-        {/* CTAs — Clear action, zero friction */}
-        <div
-          className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 animate-fade-in-up"
-          style={{ animationDelay: '180ms' }}
-        >
+        {/* Primary and Secondary Action CTAs */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
           <Button
             size="lg"
             onClick={onStart}
-            className="w-full sm:w-auto rounded-full px-8 py-4 text-base font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 transition-all group cursor-pointer"
+            className="w-full sm:w-auto px-8 py-3.5 text-sm sm:text-base font-medium rounded-xl shadow-sm hover:shadow group"
           >
-            Tell Me What Happened
-            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <span>Tell Me What Happened</span>
+            <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-0.5" />
           </Button>
 
           <Button
-            variant="ghost"
+            variant="secondary"
             size="lg"
-            onClick={scrollToDemo}
-            className="w-full sm:w-auto rounded-full px-7 py-4 text-base font-medium border border-gray-200/80 bg-white/60 hover:bg-white hover:border-indigo-200 transition-all cursor-pointer flex items-center gap-2"
+            onClick={scrollToHowItWorks}
+            className="w-full sm:w-auto px-6 py-3.5 text-sm sm:text-base font-medium rounded-xl text-stone-700"
           >
-            <Play className="w-4 h-4 text-indigo-600 fill-indigo-600/20" />
-            <span>Watch a 60-Second Example</span>
+            <span>See How It Works</span>
           </Button>
         </div>
 
-        {/* Trust line — Addresses the #1 objection immediately */}
-        <div
-          className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-600 bg-white/80 backdrop-blur-xs px-4 py-2 rounded-full border border-gray-100 shadow-2xs animate-fade-in-up"
-          style={{ animationDelay: '220ms' }}
-        >
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Free. No signup. Nothing you say is ever shared with the other person.</span>
+        {/* Trust Proof Line */}
+        <div className="flex items-center justify-center gap-2 text-xs text-stone-500 pt-1">
+          <Lock className="w-3.5 h-3.5 text-stone-400" />
+          <span>100% private. No account required. Your raw words are never forwarded.</span>
         </div>
+      </div>
 
-        {/* ========================================================= */}
-        {/* HERO VISUAL: Show the product working, not just an image  */}
-        {/* ========================================================= */}
-        <div
-          className="pt-6 sm:pt-8 w-full max-w-5xl mx-auto animate-fade-in-up"
-          style={{ animationDelay: '280ms' }}
-        >
-          {/* Scenario tabs */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 px-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                See it in action:
+      {/* 2. Interactive Product Visualization: TWO SIDES → ONE UNDERSTANDING */}
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-14 md:pt-18">
+        <div className="bg-white rounded-3xl border border-stone-200/90 shadow-sm p-6 sm:p-8 md:p-10 space-y-8">
+          {/* Top Bar: Selector & Visual Promise */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-100">
+            <div>
+              <span className="text-xs uppercase tracking-wider font-semibold text-stone-400 block mb-1">
+                Interactive Demonstration
               </span>
-              <div className="inline-flex p-1 bg-white/90 backdrop-blur-sm rounded-full border border-gray-200/80 shadow-2xs">
-                {SCENARIOS.map((s) => {
-                  const isActive = s.id === activeScenarioId;
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => setActiveScenarioId(s.id)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
-                        isActive
-                          ? 'bg-indigo-600 text-white shadow-xs'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/70'
-                      }`}
-                    >
-                      <span>{s.label}</span>
-                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
-                    </button>
-                  );
-                })}
-              </div>
+              <p className="text-sm font-medium text-stone-900">
+                How Reconcile resolves a real misunderstanding:
+              </p>
             </div>
 
-            <button
-              onClick={() => handleLaunchScenarioDemo(activeScenario.demoKey)}
-              className="text-xs font-semibold text-indigo-700 hover:text-indigo-900 flex items-center gap-1 transition-colors cursor-pointer group"
-            >
-              <span>Try the full conversation</span>
-              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-            </button>
+            {/* Scenario Switcher Tabs */}
+            <div className="inline-flex p-1 bg-stone-100 rounded-xl border border-stone-200/60 self-start sm:self-center">
+              {HERO_SCENARIOS.map((scenario) => {
+                const isActive = scenario.id === activeScenarioId;
+                return (
+                  <button
+                    key={scenario.id}
+                    onClick={() => setActiveScenarioId(scenario.id)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                      isActive
+                        ? 'bg-white text-stone-900 shadow-2xs font-semibold'
+                        : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    {scenario.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Visual showcase frame */}
-          <div className="relative rounded-3xl overflow-hidden border border-indigo-100/80 shadow-2xl bg-slate-900 group">
-            <div className="relative w-full h-[460px] sm:h-[540px] md:h-[620px] overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={activeScenario.image}
-                alt={activeScenario.imageAlt}
-                className="w-full h-full object-cover object-center filter brightness-[0.93] contrast-[1.02] transition-transform duration-700 ease-out group-hover:scale-[1.01]"
-              />
-
-              {/* Cinematic overlays */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-slate-900/10 pointer-events-none" />
-              <div className="absolute inset-0 bg-indigo-950/15 mix-blend-color pointer-events-none" />
-
-              {/* Top badges */}
-              <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/10 text-white text-[11px] font-medium">
-                  <Lock className="w-3 h-3 text-emerald-400" />
-                  <span>Both sides are 100% private</span>
+          {/* TWO SIDES GRID: Person A vs Person B Private Intakes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-8 relative">
+            {/* SIDE A: Private Perspective */}
+            <div className="rounded-2xl border border-stone-200/80 bg-[#FAFAF8] p-5 sm:p-6 space-y-3.5 relative">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-stone-800 text-white text-xs font-semibold flex items-center justify-center">
+                    A
+                  </span>
+                  <span className="text-xs font-semibold text-stone-900">
+                    {activeScenario.sideA.name} ({activeScenario.sideA.role})
+                  </span>
                 </div>
-
-                <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-600/85 backdrop-blur-md border border-indigo-400/30 text-white text-[11px] font-medium">
-                  <Sparkles className="w-3 h-3 text-indigo-200" />
-                  <span>{activeScenario.tag}</span>
-                </div>
-              </div>
-
-              {/* DESKTOP: Floating perspective cards */}
-              <div className="hidden md:block">
-                {/* Person A card */}
-                <div className="absolute top-16 left-6 max-w-[290px] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/60 text-left transition-all duration-300 hover:shadow-2xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-6 h-6 rounded-full ${activeScenario.personA.avatarBg} text-white flex items-center justify-center text-xs font-bold shadow-xs`}
-                      >
-                        A
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900 leading-tight">
-                          {activeScenario.personA.name}
-                        </p>
-                        <p className="text-[10px] text-gray-500">{activeScenario.personA.role}</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                      <Lock className="w-2.5 h-2.5 text-emerald-600" />
-                      Private
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-700 italic leading-relaxed">
-                    {activeScenario.personA.quote}
-                  </p>
-                  <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center text-[10px] text-gray-400">
-                    <span>{activeScenario.personA.feeling}</span>
-                  </div>
-                </div>
-
-                {/* Person B card */}
-                <div className="absolute top-16 right-6 max-w-[290px] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-white/60 text-left transition-all duration-300 hover:shadow-2xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-6 h-6 rounded-full ${activeScenario.personB.avatarBg} text-white flex items-center justify-center text-xs font-bold shadow-xs`}
-                      >
-                        B
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-gray-900 leading-tight">
-                          {activeScenario.personB.name}
-                        </p>
-                        <p className="text-[10px] text-gray-500">{activeScenario.personB.role}</p>
-                      </div>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                      <Lock className="w-2.5 h-2.5 text-emerald-600" />
-                      Private
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-700 italic leading-relaxed">
-                    {activeScenario.personB.quote}
-                  </p>
-                  <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center text-[10px] text-gray-400">
-                    <span>{activeScenario.personB.feeling}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* BOTTOM: The Bridge — this is the product's magic moment */}
-              <div className="absolute bottom-5 left-4 right-4 md:left-6 md:right-6 max-w-2xl mx-auto">
-                <div className="bg-white/95 backdrop-blur-lg rounded-2xl p-4 sm:p-5 shadow-2xl border border-indigo-100/90 text-left transition-all duration-300">
-                  {/* Bridge header */}
-                  <div className="flex items-center justify-between gap-2 mb-3 pb-2.5 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-xs">
-                        <Sparkles className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="text-xs font-bold text-gray-900">
-                        Here&apos;s where things got crossed
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-full">
-                      What they meant vs. how it felt
-                    </span>
-                  </div>
-
-                  {/* The gap — simple, clear language */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs mb-3">
-                    <div className="p-2.5 rounded-xl bg-violet-50/70 border border-violet-100/80">
-                      <p className="text-[10px] font-bold text-violet-900 uppercase tracking-wider mb-0.5">
-                        What they actually meant
-                      </p>
-                      <p className="text-gray-700 leading-snug">{activeScenario.bridge.intent}</p>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100/80">
-                      <p className="text-[10px] font-bold text-rose-900 uppercase tracking-wider mb-0.5">
-                        But how it felt
-                      </p>
-                      <p className="text-gray-700 leading-snug">
-                        {activeScenario.bridge.perceivedImpact}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* The words to say */}
-                  <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50/90 via-purple-50/90 to-indigo-50/90 border border-indigo-200/70">
-                    <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold text-indigo-900">
-                      <MessageSquareQuote className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Copy this. Send it. Start a real conversation.</span>
-                    </div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-800 italic leading-relaxed">
-                      {activeScenario.bridge.readyMessage}
-                    </p>
-                  </div>
-
-                  {/* Action row */}
-                  <div className="mt-3 flex items-center justify-between pt-1">
-                    <span className="text-[11px] text-gray-500 hidden sm:inline">
-                      No blame. No sides. Just clarity.
-                    </span>
-                    <button
-                      onClick={() => handleLaunchScenarioDemo(activeScenario.demoKey)}
-                      className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
-                    >
-                      <span>Try this yourself</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* MOBILE: Compact preview */}
-            <div className="md:hidden bg-slate-900/95 border-t border-white/10 p-4 text-left space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-300">
-                <span className="font-semibold text-white">What they each said privately:</span>
-                <span className="text-[11px] text-emerald-400 flex items-center gap-1">
-                  <Lock className="w-3 h-3" /> Never shared with each other
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-md">
+                  <Lock className="w-3 h-3 text-stone-400" />
+                  Private Intake
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
-                  <span className="font-bold text-indigo-300">{activeScenario.personA.name}:</span> {activeScenario.personA.quote}
+
+              <p className="text-sm text-stone-800 leading-relaxed italic">
+                {activeScenario.sideA.rawText}
+              </p>
+
+              <div className="pt-2 border-t border-stone-200/60 flex items-center justify-between text-xs text-stone-500">
+                <span className="font-medium text-stone-700">{activeScenario.sideA.felt}</span>
+                <span className="text-[11px] text-stone-400">Never seen by {activeScenario.sideB.name}</span>
+              </div>
+            </div>
+
+            {/* SIDE B: Private Perspective */}
+            <div className="rounded-2xl border border-stone-200/80 bg-[#FAFAF8] p-5 sm:p-6 space-y-3.5 relative">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-stone-700 text-white text-xs font-semibold flex items-center justify-center">
+                    B
+                  </span>
+                  <span className="text-xs font-semibold text-stone-900">
+                    {activeScenario.sideB.name} ({activeScenario.sideB.role})
+                  </span>
                 </div>
-                <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-300">
-                  <span className="font-bold text-violet-300">{activeScenario.personB.name}:</span> {activeScenario.personB.quote}
-                </div>
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-500 bg-stone-200/60 px-2 py-0.5 rounded-md">
+                  <Lock className="w-3 h-3 text-stone-400" />
+                  Private Intake
+                </span>
+              </div>
+
+              <p className="text-sm text-stone-800 leading-relaxed italic">
+                {activeScenario.sideB.rawText}
+              </p>
+
+              <div className="pt-2 border-t border-stone-200/60 flex items-center justify-between text-xs text-stone-500">
+                <span className="font-medium text-stone-700">{activeScenario.sideB.intent}</span>
+                <span className="text-[11px] text-stone-400">Never seen by {activeScenario.sideA.name}</span>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* ========================================================= */}
-        {/* THREE VALUE PROPS — Problem → Solution in plain English   */}
-        {/* ========================================================= */}
-        <div className="pt-10 grid grid-cols-1 md:grid-cols-3 gap-6 text-left max-w-5xl mx-auto">
-          <div className="p-6 rounded-2xl bg-white/80 backdrop-blur-xs border border-gray-100 shadow-xs hover:border-indigo-100 hover:shadow-md transition-all">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
-              <Lock className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">Say it ugly. We clean it up.</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Vent everything — the anger, the hurt, the messy parts. We figure out what you actually need to say. Your raw words never reach the other person.
-            </p>
-          </div>
+          {/* VISUAL TRANSITION: The Convergence Bridge */}
+          <div className="pt-2">
+            <div className="rounded-2xl border border-stone-300/80 bg-white p-6 sm:p-7 shadow-xs space-y-4">
+              {/* Bridge Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-stone-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-md bg-stone-900 text-white flex items-center justify-center">
+                    <span className="text-xs font-bold">&bull;</span>
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-stone-900">
+                    Reconcile Mediation Bridge &bull; Shared Resolution
+                  </span>
+                </div>
+                <span className="text-xs text-stone-500 font-medium">
+                  What they meant vs. How it felt
+                </span>
+              </div>
 
-          <div className="p-6 rounded-2xl bg-white/80 backdrop-blur-xs border border-gray-100 shadow-xs hover:border-indigo-100 hover:shadow-md transition-all">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center mb-4">
-              <RefreshCw className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">See why they did it.</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Most fights aren&apos;t about bad people. They&apos;re about good people who misread each other. We show you the gap between what they meant and how it landed.
-            </p>
-          </div>
+              {/* The Disconnect Identified */}
+              <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200/70 text-xs sm:text-sm text-stone-700 leading-relaxed">
+                <span className="font-semibold text-stone-900 block mb-0.5">The Actual Disconnect:</span>
+                {activeScenario.bridge.disconnect}
+              </div>
 
-          <div className="p-6 rounded-2xl bg-white/80 backdrop-blur-xs border border-gray-100 shadow-xs hover:border-indigo-100 hover:shadow-md transition-all">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
-              <HeartHandshake className="w-5 h-5" />
+              {/* Practical Language to Say */}
+              <div className="p-4 rounded-xl bg-stone-100/70 border border-stone-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-stone-900">
+                    A Better Conversation to Start With:
+                  </span>
+                  <span className="text-[11px] font-medium text-stone-500">Ready to send</span>
+                </div>
+                <p className="text-sm sm:text-base font-normal text-stone-900 italic leading-relaxed">
+                  {activeScenario.bridge.suggestedMessage}
+                </p>
+              </div>
+
+              {/* Action Link to try the demo in mediator */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
+                <span>Both perspectives honored &bull; Zero defensive escalation</span>
+                <button
+                  onClick={() => handleLaunchDemo(activeScenario.demoKey)}
+                  className="font-medium text-stone-900 hover:text-stone-700 inline-flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>Experience this complete interactive flow</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1.5">Get the exact words to send.</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Not therapy-speak. Not a script. A real message that sounds like you — but opens a door instead of starting another fight.
-            </p>
           </div>
         </div>
       </div>

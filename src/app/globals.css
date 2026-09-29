@@ -1,38 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #f0f0ff;
-  --color-primary-100: #e0e0ff;
-  --color-primary-200: #c4c0ff;
-  --color-primary-300: #a89fff;
-  --color-primary-400: #8b7aff;
-  --color-primary-500: #6d55ff;
-  --color-primary-600: #5a3de8;
-  --color-primary-700: #4a2dc0;
-  --color-primary-800: #3d249a;
-  --color-primary-900: #31207a;
-  --color-primary-950: #1e1350;
+  --color-primary-50: #fbfbf9;
+  --color-primary-100: #f4f3ef;
+  --color-primary-200: #e7e5e0;
+  --color-primary-300: #d6d3cd;
+  --color-primary-400: #a8a29e;
+  --color-primary-500: #78716c;
+  --color-primary-600: #44403c;
+  --color-primary-700: #292524;
+  --color-primary-800: #1c1917;
+  --color-primary-900: #141210;
+  --color-primary-950: #0c0a09;
 
-  --color-accent-coral: #f08080;
-  --color-accent-pink: #f5a0c0;
-  --color-resolution: #6bcb77;
+  /* Restrained Warm Accent System */
+  --color-accent-warm: #9a3412;
+  --color-accent-warm-soft: #ffedd5;
+  --color-accent-amber: #b45309;
+  --color-accent-amber-soft: #fef3c7;
+  --color-resolution: #15803d;
+  --color-resolution-soft: #dcfce7;
 
-  --color-surface: #faf9f7;
+  /* Neutral Surface System */
+  --color-surface: #faf9f6;
+  --color-surface-subtle: #f5f4f0;
   --color-surface-elevated: #ffffff;
 
-  --color-text-primary: #1a1a2e;
-  --color-text-secondary: #4a4a6a;
-  --color-text-muted: #8a8aa0;
+  /* Typography Colors */
+  --color-text-primary: #1c1917;
+  --color-text-secondary: #57534e;
+  --color-text-muted: #8c877f;
 
-  --color-border: #e8e8f0;
+  /* Borders */
+  --color-border: #e7e5e0;
+  --color-border-subtle: #f0eee9;
 
-  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
+    color-scheme: light;
   }
   
   body {
@@ -61,7 +71,7 @@
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -79,11 +89,11 @@
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  animation: fadeIn 0.35s ease-out forwards;
 }
 
 @layer utilities {
