@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession, setSession, getSafeSession } from '@/lib/session/store';
 import { checkSafety, getSafetyResponse } from '@/lib/safety';
 import { generateMediatorReply } from '@/lib/ai/provider';
-import { ChatMessage, ParticipantRole, SupportedLanguage } from '@/lib/types';
+import { ChatMessage, ParticipantRole, SupportedLanguage, RelationshipType } from '@/lib/types';
 import { detectLanguage, I18N_STRINGS } from '@/lib/i18n/translations';
 
 export async function POST(
@@ -12,11 +12,15 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { text, role = 'a', language: requestedLang } = body as {
+    const { text, role = 'a', language: requestedLang, apiKey: bodyApiKey, relationship: reqRelationship } = body as {
       text: string;
       role: ParticipantRole;
       language?: SupportedLanguage;
+      apiKey?: string;
+      relationship?: RelationshipType;
     };
+    const headerApiKey = req.headers.get('x-gemini-key') || undefined;
+    const apiKey = (bodyApiKey && bodyApiKey.trim()) || (headerApiKey && headerApiKey.trim()) || undefined;
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
       return NextResponse.json({ error: 'Message text is required' }, { status: 400 });
@@ -25,6 +29,10 @@ export async function POST(
     const session = getSession(id);
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+    }
+
+    if (reqRelationship) {
+      session.relationship = reqRelationship;
     }
 
     // Determine active language: explicit parameter > dynamic detection from text > current session language > default 'en'
@@ -75,7 +83,8 @@ export async function POST(
       participantLabel: participant.label,
       history: participant.messages,
       counterpartInsight: isRoleA ? session.personB?.insight : session.personA.insight,
-      language: activeLang
+      language: activeLang,
+      apiKey
     });
 
     const reassuranceNote =
@@ -89,7 +98,8 @@ export async function POST(
       timestamp: now + 1,
       privacy: isRoleA ? 'PRIVATE_A' : 'PRIVATE_B',
       quickReplies: aiResult.quickReplies,
-      reassuranceNote
+      reassuranceNote,
+      aiProvider: aiResult.aiProvider
     };
 
     participant.messages.push(aiMsg);

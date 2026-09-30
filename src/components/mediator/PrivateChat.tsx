@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Lock, Send, UserPlus, Users, ArrowRight, Globe } from 'lucide-react';
+import { Lock, Send, UserPlus, Users, ArrowRight, Globe, Sparkles } from 'lucide-react';
 import { ChatMessage, ExtractedInsight, ParticipantRole, SupportedLanguage } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { SUPPORTED_LANGUAGES, I18N_STRINGS } from '@/lib/i18n/translations';
+import { AIKeyModal } from './AIKeyModal';
 
 interface PrivateChatProps {
   role: ParticipantRole;
@@ -36,7 +37,37 @@ export function PrivateChat({
 }: PrivateChatProps) {
   const [inputText, setInputText] = useState('');
   const [activeLang, setActiveLang] = useState<SupportedLanguage>(language);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [aiStatus, setAiStatus] = useState<{
+    status: 'connected' | 'fallback';
+    activeProvider: string;
+    modelName: string;
+    message: string;
+    latencyMs?: number;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const fetchStatus = () => {
+    const key = typeof window !== 'undefined' ? localStorage.getItem('reconcile_gemini_key') || '' : '';
+    const headers: Record<string, string> = {};
+    if (key) headers['x-gemini-key'] = key;
+
+    fetch('/api/ai-status', { headers })
+      .then((res) => res.json())
+      .then((data) => setAiStatus(data))
+      .catch(() =>
+        setAiStatus({
+          status: 'fallback',
+          activeProvider: 'local',
+          modelName: 'Local Engine',
+          message: 'Reconcile Local Engine'
+        })
+      );
+  };
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
 
   useEffect(() => {
     if (language && language !== activeLang) {
@@ -62,10 +93,12 @@ export function PrivateChat({
 
   const isRoleA = role === 'a';
   const t = I18N_STRINGS[activeLang] || I18N_STRINGS.en;
+  const userMsgCount = messages.filter((m) => m.sender === 'user').length;
   const lastMsg = messages[messages.length - 1];
-  const quickReplies = lastMsg?.quickReplies && lastMsg.quickReplies.length > 0
-    ? lastMsg.quickReplies
-    : t.defaultQuickReplies;
+  const quickReplies =
+    lastMsg?.quickReplies && lastMsg.quickReplies.length > 0
+      ? lastMsg.quickReplies
+      : t.defaultQuickReplies;
 
   return (
     <div className="w-full max-w-3xl mx-auto flex flex-col h-[calc(100vh-140px)] min-h-[580px] bg-white rounded-3xl border border-stone-200 shadow-xs overflow-hidden animate-fade-in-up">
@@ -87,7 +120,7 @@ export function PrivateChat({
             </svg>
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-sm font-semibold text-stone-900 tracking-tight">
                 {isRoleA ? t.titleA : t.titleB}
               </h2>
@@ -95,6 +128,38 @@ export function PrivateChat({
                 <Lock className="w-3 h-3 text-stone-400" />
                 {t.confidential}
               </span>
+
+              {/* Live AI Status Badge - Clickable to Configure or Verify */}
+              <button
+                type="button"
+                onClick={() => setShowKeyModal(true)}
+                className={cn(
+                  'inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-0.5 rounded-full border transition-all cursor-pointer hover:shadow-2xs active:scale-95',
+                  aiStatus?.status === 'connected'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100/80'
+                    : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200/60'
+                )}
+                title="Click to check AI Status or connect Gemini API Key"
+              >
+                <span
+                  className={cn(
+                    'w-1.5 h-1.5 rounded-full',
+                    aiStatus?.status === 'connected'
+                      ? 'bg-emerald-500 animate-pulse'
+                      : 'bg-stone-400'
+                  )}
+                />
+                <span>
+                  {aiStatus?.activeProvider === 'gemini'
+                    ? '⚡ Gemini 1.5 Flash'
+                    : aiStatus?.activeProvider === 'claude'
+                    ? '⚡ Claude 3.5'
+                    : aiStatus?.activeProvider === 'openai'
+                    ? '⚡ GPT-4o'
+                    : '🌱 Local Engine'}
+                </span>
+                <span className="text-[9px] opacity-60 underline decoration-dotted ml-0.5">Manage</span>
+              </button>
             </div>
             <p className="text-xs text-stone-500 font-normal">
               {topic ? topic : 'Untangling what matters before talking directly'}
@@ -102,17 +167,30 @@ export function PrivateChat({
           </div>
         </div>
 
-        {/* Right side: Action Button */}
+        {/* Right side: Action Button (Only after user has shared at least 3 messages) */}
         <div className="flex items-center gap-2.5 ml-auto sm:ml-0">
           {isRoleA ? (
-            <Button
-              size="sm"
-              onClick={onOpenInvite}
-              className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>{t.inviteButton}</span>
-            </Button>
+            userMsgCount >= 3 || insight?.readyToInvite ? (
+              <Button
+                size="sm"
+                onClick={onOpenInvite}
+                className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0 animate-fade-in"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>{t.inviteButton}</span>
+              </Button>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-stone-100/90 border border-stone-200 text-stone-600 text-[11px] font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                <span>
+                  {activeLang === 'hi'
+                    ? `बात समझ रहे हैं (${userMsgCount}/3)`
+                    : activeLang === 'mr'
+                    ? `समजून घेत आहोत (${userMsgCount}/3)`
+                    : `Understanding your side (${userMsgCount}/3)`}
+                </span>
+              </div>
+            )
           ) : (
             <Button
               size="sm"
@@ -147,9 +225,33 @@ export function PrivateChat({
             >
               {isReconcile ? (
                 <div className="bg-white border border-stone-200/90 rounded-2xl rounded-tl-sm p-4 sm:p-5 shadow-2xs text-stone-800 text-sm sm:text-base leading-relaxed space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-stone-900 mb-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-stone-900" />
-                    <span>Reconcile</span>
+                  <div className="flex items-center justify-between gap-2 text-xs font-semibold text-stone-900 mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-stone-900" />
+                      <span>Reconcile</span>
+                    </div>
+                    {msg.aiProvider && (
+                      <span
+                        className={cn(
+                          'text-[10px] font-normal px-2 py-0.5 rounded-full border',
+                          msg.aiProvider === 'gemini'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : msg.aiProvider === 'claude'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200'
+                            : msg.aiProvider === 'openai'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-stone-50 text-stone-500 border-stone-200'
+                        )}
+                      >
+                        {msg.aiProvider === 'gemini'
+                          ? '⚡ Gemini 1.5 Flash'
+                          : msg.aiProvider === 'claude'
+                          ? '⚡ Claude 3.5'
+                          : msg.aiProvider === 'openai'
+                          ? '⚡ GPT-4o'
+                          : '🌱 Local Engine'}
+                      </span>
+                    )}
                   </div>
                   <p className="whitespace-pre-wrap font-normal">{msg.text}</p>
                 </div>
@@ -170,8 +272,8 @@ export function PrivateChat({
           </div>
         )}
 
-        {/* Clean, Non-Intrusive Invitation Suggestion (Only when ready) */}
-        {insight?.readyToInvite && (
+        {/* Clean, Non-Intrusive Invitation Suggestion (Only when userMsgCount >= 3) */}
+        {insight?.readyToInvite && (userMsgCount >= 3 || !isRoleA) && (
           <div className="p-4 rounded-2xl bg-white border border-stone-300 shadow-2xs text-xs sm:text-sm text-stone-800 animate-fade-in space-y-3">
             <p className="font-medium text-stone-900">
               {isRoleA ? t.readyToInviteA : t.readyToBridgeB}
@@ -240,6 +342,14 @@ export function PrivateChat({
           <span className="hidden sm:inline">{t.send}</span>
         </Button>
       </form>
+
+      {/* AI Key & Connection Management Modal */}
+      <AIKeyModal
+        isOpen={showKeyModal}
+        onClose={() => setShowKeyModal(false)}
+        aiStatus={aiStatus}
+        onKeyUpdated={fetchStatus}
+      />
     </div>
   );
 }

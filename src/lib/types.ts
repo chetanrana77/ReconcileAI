@@ -31,6 +31,7 @@ export interface ChatMessage {
   privacy: ContextPrivacy;
   quickReplies?: string[];
   reassuranceNote?: string;
+  aiProvider?: 'gemini' | 'claude' | 'openai' | 'local';
 }
 
 export interface ExtractedInsight {

@@ -21,6 +21,7 @@ export interface MediatorTurnResult {
   reply: string;
   quickReplies: string[];
   extractedInsight: ExtractedInsight;
+  aiProvider?: 'gemini' | 'claude' | 'openai' | 'local';
 }
 
 export async function generateMediatorReply(params: {
@@ -31,12 +32,65 @@ export async function generateMediatorReply(params: {
   history: ChatMessage[];
   counterpartInsight?: ExtractedInsight;
   language?: SupportedLanguage;
+  apiKey?: string;
 }): Promise<MediatorTurnResult> {
-  const geminiKey = process.env.GEMINI_API_KEY;
+  const geminiKey = params.apiKey || process.env.GEMINI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
+  const userMsgCount = params.history.filter((m) => m.sender === 'user').length;
 
-  // 1. Try Anthropic Claude API if configured
+  // 1. Prioritize Google Gemini API (Primary Provider)
+  if (geminiKey) {
+    try {
+      const userPrompt = buildConversationPrompt(params);
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: {
+              parts: [{ text: MEDIATOR_SYSTEM_PROMPT }]
+            },
+            contents: [{ parts: [{ text: userPrompt }] }],
+            generationConfig: {
+              response_mime_type: 'application/json',
+              temperature: 0.7,
+              maxOutputTokens: 1000
+            }
+          })
+        }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (rawText) {
+          const cleanText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsed = JSON.parse(cleanText);
+          if (parsed.reply && parsed.extractedInsight) {
+            // Enforce minimum 3 turns before invitation is suggested
+            if (userMsgCount < 3) {
+              parsed.extractedInsight.readyToInvite = false;
+            }
+            return {
+              reply: parsed.reply,
+              quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
+              extractedInsight: parsed.extractedInsight,
+              aiProvider: 'gemini'
+            };
+          }
+        }
+      } else {
+        const errBody = await res.text().catch(() => '');
+        console.warn('Gemini API call returned error status:', res.status, errBody);
+      }
+    } catch (err) {
+      console.warn('Gemini live call error, trying fallback:', err);
+    }
+  }
+
+  // 2. Try Anthropic Claude API if configured
   if (anthropicKey) {
     try {
       const userPrompt = buildConversationPrompt(params);
@@ -62,58 +116,20 @@ export async function generateMediatorReply(params: {
           const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
           const parsed = JSON.parse(cleanText);
           if (parsed.reply && parsed.extractedInsight) {
+            if (userMsgCount < 3) {
+              parsed.extractedInsight.readyToInvite = false;
+            }
             return {
               reply: parsed.reply,
               quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
-              extractedInsight: parsed.extractedInsight
+              extractedInsight: parsed.extractedInsight,
+              aiProvider: 'claude'
             };
           }
         }
       }
     } catch (err) {
       console.warn('Anthropic live call error, trying fallback:', err);
-    }
-  }
-
-  // 2. Try Google Gemini API if configured
-  if (geminiKey) {
-    try {
-      const userPrompt = buildConversationPrompt(params);
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: MEDIATOR_SYSTEM_PROMPT }]
-            },
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: {
-              response_mime_type: 'application/json',
-              temperature: 0.7,
-              maxOutputTokens: 1000
-            }
-          })
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          const parsed = JSON.parse(text);
-          if (parsed.reply && parsed.extractedInsight) {
-            return {
-              reply: parsed.reply,
-              quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
-              extractedInsight: parsed.extractedInsight
-            };
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('Gemini live call error, trying fallback:', err);
     }
   }
 
@@ -167,6 +183,8 @@ export async function generateMediatorReply(params: {
   const rel = params.relationship || 'parent';
   const isParentRel = rel === 'parent';
   const isFriendRel = rel === 'friend';
+  const isSiblingRel = rel === 'sibling';
+  const isPartnerRel = rel === 'partner';
 
   // Determine active language
   let lang: SupportedLanguage = params.language || 'en';
@@ -176,7 +194,9 @@ export async function generateMediatorReply(params: {
   }
 
   // 1. Semantic & Emotional Classifiers
-  const isGreeting = /^(hi|hii|hiii|hello|helo|hey|heyy|hey there|good morning|good evening|yo|namaste|namaskar|help|नमस्ते|नमस्कार|हॅलो|हाय|प्रणाम|सलाम|kasa ahes|kaise ho)$/i.test(lastUserMsg);
+  const isGreeting = /^(hi|hii|hiii|hello|helo|hey|heyy|hey there|good morning|good evening|yo|namaste|namaskar|help|नमस्ते|नमस्कार|हॅलो|हाय|प्रणाम|सलाम)$/i.test(lastUserMsg);
+  const isPleasantry = /(kaise ho|kese ho|how are you|how r u|kasa ahes|kashi ahes|kase ahat|aur batao|kya haal|kya chal raha|thik ho|theek ho)/i.test(lastUserMsg);
+  const isIntentToShare = /(something to share|kuch batana hai|kuch share karna|ek baat kehni|kahi sangaycha|kahi bolaycha|share something|want to talk|kuch baat karni|kuch kahna hai|baat karni hai)/i.test(lastUserMsg);
 
   // Emotional distress / feeling low / stressed (e.g. "are yrr presaan hu", "bahut pareshan hu", "tension ho rahi hai")
   const isGeneralDistress = /(presaan|pareshan|pareshaan|paresan|tension|tanaav|udas|udaas|chinta|traas|tras|stressed|stress|anxious|troubled|upset|exhausted|sad|depressed|thak gaya|bura lag raha|kuch samajh nahi|dard|takleef|help me|radayla|ghutan|ro raha|heavy)/i.test(lastUserMsg);
@@ -188,60 +208,207 @@ export async function generateMediatorReply(params: {
   const isTrustControl = /(trust|faith|doubt|suspicious|control|micromanage|surveillance|check|phone|bharosa|viswas|shak|azadi|freedom|space|nazar|rok tok|rok-tok|moklik)/i.test(allUserText);
   const isReadyIntent = /(invitation|invite|message|bhejo|sandesh|tayyar|ready|batana|samjhana|agreed|agree|bridge|khatam|solution|aage kya)/i.test(lastUserMsg);
 
+  // Substantive messages filter: messages that describe a situation beyond greetings and pleasantries
+  const substantiveUserMsgs = userMessages.filter((m) => {
+    const t = m.text.trim().toLowerCase();
+    const g = /^(hi|hii|hiii|hello|helo|hey|heyy|hey there|good morning|good evening|yo|namaste|namaskar|help|नमस्ते|नमस्कार|हॅलो|हाय|प्रणाम|सलाम)$/i.test(t);
+    const p = /(kaise ho|kese ho|how are you|how r u|kasa ahes|kashi ahes|kase ahat|aur batao|kya haal|thik ho)/i.test(t);
+    const s = /(something to share|kuch batana hai|kuch share karna|ek baat kehni|kahi sangaycha|kahi bolaycha|share something|want to talk|kuch baat karni)/i.test(t);
+    return !g && !p && !s && t.length > 5;
+  });
+  const substantiveCount = substantiveUserMsgs.length;
+
   if (isRoleA) {
     // ========================================================
     // PERSON A (INITIATOR / SEEKING MEDIATION OR REFLECTION)
     // ========================================================
 
-    // Case 1: Pure Greeting
-    if (isGreeting || (lastUserMsg.length <= 4 && !isGeneralDistress)) {
+    // Case 1A: Pleasantry ("Kaise ho", "How are you", "Kasa ahes")
+    if (isPleasantry) {
       if (lang === 'hi') {
         return {
-          reply: 'नमस्ते। गहरी साँस लीजिए — मैं यहाँ आपके साथ हूँ। कोई जल्दबाज़ी नहीं है और यह बातचीत केवल आपके और मेरे बीच है। क्या बात हुई है जिसे आप साझा करना चाहेंगे?',
-          quickReplies: isParentRel
-            ? ['मम्मी-पापा रोज़ मेरी पढ़ाई को लेकर सवाल पूछते हैं', 'मुझे लगता है उन्हें मुझ पर ज़रा भी भरोसा नहीं है', 'कल हमारी बहुत बहस हो गई थी', 'मुझे थोड़ा सुकून और आज़ादी चाहिए']
-            : isFriendRel
-            ? ['मेरे दोस्त ने अचानक बात करना बंद कर दिया', 'हम दोनों के बीच ग़लतफ़हमी हो गई है', 'मुझे लग रहा है कि वह मुझे नज़रअंदाज़ कर रहा है', 'समझ नहीं आ रहा उससे कैसे बात करूँ']
-            : ['घर में किसी बात को लेकर बहुत तनाव चल रहा है', 'किसी करीबी के साथ ग़लतफ़हमी हो गई है', 'मैं बहुत परेशान महसूस कर रहा हूँ', 'कोई मेरी बात सुनने को तैयार नहीं है'],
+          reply: 'मैं बिल्कुल ठीक हूँ, पूछने के लिए बहुत धन्यवाद! मैं यहीं आपके साथ हूँ और पूरी तरह आपकी बात सुनने के लिए तैयार हूँ। आपके मन में क्या बात चल रही है, थोड़ा बताइए?',
+          quickReplies: [
+            'घर में किसी बात पर तनाव चल रहा है',
+            'मुझे किसी अपने के साथ ग़लतफ़हमी सुलझानी है',
+            'मुझे एक बात साझा करनी है',
+            'मुझे अपनी बात बिना झगड़े के रखनी है'
+          ],
           extractedInsight: {
-            intent: 'Opening up in a safe container',
-            emotions: ['cautious', 'open'],
-            underlyingNeed: 'A private place to be heard without judgment',
+            intent: 'Exchanging pleasantry before opening up',
+            emotions: ['open', 'calm'],
+            underlyingNeed: 'A respectful, comfortable listening space',
             readyToInvite: false
-          }
+          },
+          aiProvider: 'local'
         };
       }
 
       if (lang === 'mr') {
         return {
-          reply: 'नमस्कार. दीर्घ श्वास घ्या — मी तुमच्यासोबत आहे. कसलीही घाई नाही आणि हे संभाषण पूर्णपणे गोपनीय आहे. नक्की काय घडलंय, कशाबद्दल बोलायला आवडेल?',
-          quickReplies: isParentRel
-            ? ['आई-बाबा रोज माझ्या अभ्यासाबद्दल विचारत राहतात', 'मला वाटतं त्यांचा माझ्या क्षमतेवर अजिबात विश्वास नाही', 'काल आमच्यात खूप मोठा वाद झाला', 'मला स्वतःसाठी थोडी मोकळीक हवी आहे']
-            : isFriendRel
-            ? ['माझ्या मित्राने दोन दिवसांपासून उत्तर दिलेले नाही', 'आमच्यात गैरसमज झाला आहे', 'मला वाटतं तो मला टाळत आहे', 'त्याच्याशी पुन्हा कसं बोलायचं हे समजत नाही']
-            : ['घरात एखाद्या गोष्टीवरून खूप वाद सुरू आहे', 'जवळच्या व्यक्तीसोबत गैरसमज झाला आहे', 'मला खूप तणाव जाणवतोय', 'माझं कोणी ऐकून घेत नाहीये'],
+          reply: 'मी अगदी मजेत आहे, विचारल्याबद्दल मनापासून धन्यवाद! मी इथे तुमच्या सोबत आहे आणि तुमचं म्हणणं ऐकायला तयार आहे. तुमच्या मनात काय चाललंय, नक्की काय घडलंय?',
+          quickReplies: [
+            'घरात एखाद्या गोष्टीवरून तणाव सुरू आहे',
+            'मला कोणासोबत झालेला गैरसमज सोडवायचा आहे',
+            'मला एक गोष्ट सांगायची आहे',
+            'भांडण न करता मला माझी बाजू मांडायची आहे'
+          ],
+          extractedInsight: {
+            intent: 'Exchanging pleasantry before opening up',
+            emotions: ['open', 'calm'],
+            underlyingNeed: 'A respectful, comfortable listening space',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      return {
+        reply: "I'm doing well, thank you for asking! I'm right here with you and completely ready to listen. What's been on your mind that you would like to talk through?",
+        quickReplies: [
+          'There is tension with someone close',
+          'I have something I want to talk through',
+          'We had a misunderstanding recently',
+          'I want to explain my feelings without fighting'
+        ],
+        extractedInsight: {
+          intent: 'Exchanging pleasantry before opening up',
+          emotions: ['open', 'calm'],
+          underlyingNeed: 'A respectful, comfortable listening space',
+          readyToInvite: false
+        },
+        aiProvider: 'local'
+      };
+    }
+
+    // Case 1B: Explicit Intent to Share ("I have something to share", "kuch batana hai")
+    if (isIntentToShare) {
+      if (lang === 'hi') {
+        return {
+          reply: 'बिल्कुल, पूरा समय लीजिए — मैं बड़े ध्यान से और बिना किसी पूर्वाग्रह के आपकी बात सुन रहा हूँ। कोई जल्दी नहीं है और यह बात पूरी तरह निजी रहेगी। जब भी आप सहज महसूस करें, बताइए क्या बात हुई?',
+          quickReplies: [
+            'हाल ही में हमारे बीच बहुत तीखी बहस हो गई थी',
+            'वे मेरी बात को समझने की कोशिश ही नहीं करते',
+            'मुझे लग रहा है कि मुझे पूरी तरह गलत समझा जा रहा है',
+            'मैं बिना झगड़ा किए अपनी बात रखना चाहता हूँ'
+          ],
+          extractedInsight: {
+            intent: 'Preparing to open up in a safe container',
+            emotions: ['open', 'cautious'],
+            underlyingNeed: 'A non-judgmental space to share without rush',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      if (lang === 'mr') {
+        return {
+          reply: 'नक्कीच, अजिबात घाई करू नका — मी इथे पूर्ण लक्ष देऊन तुमचं ऐकण्यासाठी बसलोय. हे बोलणे पूर्णपणे खाजगी आहे. जेव्हा तुम्हाला सोयीचं वाटेल, तेव्हा सांगा नक्की काय घडलंय.',
+          quickReplies: [
+            'अलीकडेच आमच्यात खूप मोठा वाद झाला होता',
+            'माझी बाजू ऐकूनच घेतली जात नाहीये',
+            'मला वाटतं मला गैरसमजून घेतलं जातंय',
+            'भांडण न करता मला शांतपणे संवाद साधायचा आहे'
+          ],
+          extractedInsight: {
+            intent: 'Preparing to open up in a safe container',
+            emotions: ['open', 'cautious'],
+            underlyingNeed: 'A non-judgmental space to share without rush',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      return {
+        reply: "Take all the time you need — I am right here, listening with an open mind and no judgment. There is no rush at all. Whenever you feel ready, tell me what happened.",
+        quickReplies: [
+          'We had an emotional argument recently',
+          'I feel completely misunderstood and overwhelmed',
+          'They refuse to see things from my perspective',
+          'I want to resolve this without starting another fight'
+        ],
+        extractedInsight: {
+          intent: 'Preparing to open up in a safe container',
+          emotions: ['open', 'cautious'],
+          underlyingNeed: 'A non-judgmental space to share without rush',
+          readyToInvite: false
+        },
+        aiProvider: 'local'
+      };
+    }
+
+    // Case 1C: Pure Greeting ("Hii", "Hello", "Namaste")
+    if (isGreeting || (lastUserMsg.length <= 4 && !isGeneralDistress)) {
+      if (lang === 'hi') {
+        const qr = isSiblingRel
+          ? ['मेरे भाई/बहन मेरी चीज़ें बिना पूछे ले लेते हैं', 'वे मेरी सीमाओं और प्राइवेसी की कद्र नहीं करते', 'छोटी-छोटी बातों पर हमारे बीच बहुत तीखी बहस हो जाती है', 'हमेशा मुझसे ही समझौते की उम्मीद की जाती है']
+          : isPartnerRel
+          ? ['मुझे लगता है मेरा पार्टनर मेरी बात ध्यान से नहीं सुनता', 'एक ही बात पर बार-बार वही पुरानी बहस शुरू हो जाती है', 'तनाव होते ही बातचीत पूरी तरह बंद हो जाती है', 'मैं बिना इल्ज़ाम लगाए शांति से अपनी बात कहना चाहता हूँ']
+          : isParentRel
+          ? ['मम्मी-पापा रोज़ मेरी पढ़ाई को लेकर सवाल पूछते हैं', 'मुझे लगता है उन्हें मुझ पर ज़रा भी भरोसा नहीं है', 'कल हमारी बहुत बहस हो गई थी', 'मुझे थोड़ा सुकून और आज़ादी चाहिए']
+          : isFriendRel
+          ? ['मेरे दोस्त ने अचानक बात करना बंद कर दिया', 'हम दोनों के बीच ग़लतफ़हमी हो गई है', 'मुझे लग रहा है कि वह मुझे नज़रअंदाज़ कर रहा है', 'समझ नहीं आ रहा उससे कैसे बात करूँ']
+          : ['एक पेचीदा स्थिति है जिसे सुलझाना चाहता हूँ', 'हाल ही में हमारे बीच बहुत बहस हो गई थी', 'मुझे लगता है कि मुझे गलत समझा जा रहा है', 'मैं बिना झगड़ा किए अपनी बात रखना चाहता हूँ'];
+
+        return {
+          reply: 'नमस्ते। एक गहरी साँस लीजिए — मैं यहीं आपके साथ हूँ। कोई जल्दी नहीं है और यह बात पूरी तरह निजी रहेगी। ऐसी क्या बात हुई है जिसे आप आज साझा करना चाहते हैं?',
+          quickReplies: qr,
           extractedInsight: {
             intent: 'Opening up in a safe container',
             emotions: ['cautious', 'open'],
             underlyingNeed: 'A private place to be heard without judgment',
             readyToInvite: false
-          }
+          },
+          aiProvider: 'local'
         };
       }
 
+      if (lang === 'mr') {
+        const qr = isSiblingRel
+          ? ['माझा भाऊ/बहीण विचारल्याशिवाय माझ्या वस्तू वापरतात', 'ते माझ्या खाजगी जागेचा आणि मर्यादांचा आदर करत नाहीत', 'छोट्या गोष्टींवरून रोज आमच्यात मोठे वाद होतात', 'नेहमी मीच माघार घ्यावी अशी त्यांची अपेक्षा असते']
+          : isPartnerRel
+          ? ['मला वाटतं माझा जोडीदार माझं बोलणं नीट समजून घेत नाही', 'एकाच मुद्द्यावरून पुन्हा पुन्हा तेच जुने वाद होतात', 'वाद सुरू होताच आमच्यातील संवाद पूर्णपणे थांबतो', 'आरोप न करता शांतपणे संवाद व्हावा हीच माझी इच्छा आहे']
+          : isParentRel
+          ? ['आई-बाबा रोज माझ्या अभ्यासाबद्दल विचारत राहतात', 'मला वाटतं त्यांचा माझ्या क्षमतेवर अजिबात विश्वास नाही', 'काल आमच्यात खूप मोठा वाद झाला', 'मला स्वतःसाठी थोडी मोकळीक हवी आहे']
+          : isFriendRel
+          ? ['माझ्या मित्राने दोन दिवसांपासून उत्तर दिलेले नाही', 'आमच्यात गैरसमज झाला आहे', 'मला वाटतं तो मला टाळत आहे', 'त्याच्याशी पुन्हा कसं बोलायचं हे समजत नाही']
+          : ['एक गुंतागुंतीचा विषय आहे जो मला सोडवायचा आहे', 'अलीकडेच आमच्यात मोठा वाद झाला होता', 'मला वाटतं मला गैरसमजून घेतलं जातंय', 'भांडण न करता मला माझी बाजू मांडायची आहे'];
+
+        return {
+          reply: 'नमस्कार। एक दीर्घ श्वास घ्या — मी अगदी तुमच्या सोबत आहे. कोणतीही घाई नाही आणि हे बोलणे पूर्णपणे खाजगी राहील. अशी कोणती गोष्ट घडली आहे ज्यावर तुम्हाला शांतपणे बोलायचे आहे?',
+          quickReplies: qr,
+          extractedInsight: {
+            intent: 'Opening up in a safe container',
+            emotions: ['cautious', 'open'],
+            underlyingNeed: 'A private place to be heard without judgment',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      const qr = isSiblingRel
+        ? ["My sibling keeps using my things without asking", "They do not respect my personal space or boundaries", "We keep having loud arguments over little things", "It feels like I am always expected to compromise"]
+        : isPartnerRel
+        ? ["I feel like my partner does not really hear me", "The same argument keeps repeating over and over", "One of us shuts down whenever tension starts", "I want to explain my feelings without starting a fight"]
+        : isParentRel
+        ? ["Mom keeps asking about my exams every day", "It feels like they have zero faith in me", "We had a huge argument yesterday", "I am stressed and need breathing room"]
+        : isFriendRel
+        ? ["My friend stopped replying to me", "We had an emotional argument", "I feel completely ignored and hurt", "Things have become really awkward"]
+        : ["There is a complicated situation I need help with", "We had an emotional argument recently", "I feel misunderstood and do not know how to bring it up", "I want to explain my side without starting a fight"];
+
       return {
         reply: "Hello. Take a breath — I am right here with you. There is no hurry and nobody else sees this. What has been going on that you would like to talk through?",
-        quickReplies: isParentRel
-          ? ["Mom keeps asking about my exams every day", "It feels like they have zero faith in me", "We had a huge argument yesterday", "I am stressed and need breathing room"]
-          : isFriendRel
-          ? ["My friend stopped replying to me", "We had an emotional argument", "I feel completely ignored and hurt", "Things have become really awkward"]
-          : ["There is heavy tension in my life right now", "Had a misunderstanding with someone close", "I feel completely overwhelmed", "Nobody is listening to my side"],
+        quickReplies: qr,
         extractedInsight: {
           intent: 'Opening up in a safe container',
           emotions: ['cautious', 'open'],
           underlyingNeed: 'A private place to be heard without judgment',
           readyToInvite: false
-        }
+        },
+        aiProvider: 'local'
       };
     }
 
@@ -300,8 +467,66 @@ export async function generateMediatorReply(params: {
       };
     }
 
-    // Case 3: Initial Problem Explanation (Turn 1 or 2 with specific topic)
-    if (historyLen <= 2) {
+    // Case 2B: User has not shared substantive details yet
+    if (substantiveCount === 0) {
+      if (lang === 'hi') {
+        return {
+          reply: 'मैं बड़े ध्यान से सुन रहा हूँ। क्या आप थोड़ा और बता सकते हैं कि यह बात किसके बारे में है और आप दोनों के बीच असल में क्या हुआ था?',
+          quickReplies: [
+            'घर में परिवार के साथ किसी बात पर तनाव है',
+            'मेरे दोस्त या पार्टनर के साथ ग़लतफ़हमी हो गई है',
+            'छोटी सी बात पर बहुत बड़ी बहस हो गई थी',
+            'मुझे अपनी बात बिना झगड़े के रखनी है'
+          ],
+          extractedInsight: {
+            intent: 'Inviting user to share substantive context',
+            emotions: ['open', 'reflective'],
+            underlyingNeed: 'A patient space to unpack what happened',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      if (lang === 'mr') {
+        return {
+          reply: 'मी अगदी लक्षपूर्वक ऐकतोय. हे नेमके कोणाबद्दल आहे आणि तुम्हा दोघांमध्ये नक्की काय घडले, याबद्दल थोडे सांगू शकाल का?',
+          quickReplies: [
+            'घरात एखाद्या गोष्टीवरून वाद झाला आहे',
+            'जवळच्या व्यक्तीसोबत गैरसमज झाला आहे',
+            'एका छोट्या विषयावरून खूप मोठे भांडण झाले',
+            'भांडण न करता मला माझी बाजू मांडायची आहे'
+          ],
+          extractedInsight: {
+            intent: 'Inviting user to share substantive context',
+            emotions: ['open', 'reflective'],
+            underlyingNeed: 'A patient space to unpack what happened',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      return {
+        reply: "I am right here listening closely. Could you tell me a little more about who this involves and what specifically happened between you two?",
+        quickReplies: [
+          'There is heavy tension at home with family',
+          'Had a misunderstanding with someone close',
+          'A minor argument escalated out of hand',
+          'I want to explain my side without fighting'
+        ],
+        extractedInsight: {
+          intent: 'Inviting user to share substantive context',
+          emotions: ['open', 'reflective'],
+          underlyingNeed: 'A patient space to unpack what happened',
+          readyToInvite: false
+        },
+        aiProvider: 'local'
+      };
+    }
+
+    // Turn 1 Substantive: Initial Problem Explanation
+    if (substantiveCount === 1) {
       // 3A. Academic / Studies pressure
       if (isAcademic) {
         if (lang === 'hi') {
@@ -521,11 +746,11 @@ export async function generateMediatorReply(params: {
       };
     }
 
-    // Turn 3: Going Beneath the Surface (Intention vs Impact)
-    if (historyLen === 3) {
+    // Turn 2 Substantive: Going Beneath the Surface (Intention vs Impact, strictly NEUTRAL)
+    if (substantiveCount === 2) {
       if (lang === 'hi') {
         return {
-          reply: 'यह बहुत गहरी बात है। जब आपकी पूरी मेहनत या भावना को अनदेखा कर दिया जाता है, तो बहुत ठेस पहुँचती है। क्या आपको सच में लगता है कि वे जानबूझकर आपको दुख पहुँचाना चाहते हैं, या उनकी अपनी चिंता, डर या असुरक्षा उन पर हावी हो रही है?',
+          reply: 'यह बहुत गहरी बात है। जब आपकी पूरी मेहनत या भावना को अनदेखा कर दिया जाता है, तो बहुत ठेस पहुँचती है। लेकिन सामने वाले के नज़रिए से देखें तो अक्सर उनका डर, असुरक्षा या फिक्र उन पर हावी हो जाती है। वे इसे सुरक्षा या प्यार मानते हैं, जबकि आपके लिए यह अविश्वास बन जाता है। क्या आपको लगता है कि वे जानबूझकर चोट पहुँचाना चाहते हैं, या उनकी अपनी चिंता उनसे यह करवा रही है?',
           quickReplies: [
             'उनकी अपनी चिंता और डर बहुत ज़्यादा बढ़ गया है',
             'उन्हें सच में लगता है मैं कुछ ठीक नहीं कर पाऊँगा',
@@ -543,7 +768,7 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: 'आपण मनापासून प्रयत्न करत असताना समोरच्याला त्याचा अंदाज न येणं हे खूप दुःख देणारं असतं. तुम्हाला काय वाटतं, त्यांना खरोखरच तुम्हाला त्रास द्यायचा आहे, की त्यांच्या मनातील भीती आणि चिंता त्यांच्या वागण्यातून बाहेर पडतेय?',
+          reply: 'आपण मनापासून प्रयत्न करत असताना समोरच्याला त्याचा अंदाज न येणं हे खूप दुःख देणारं असतं. पण समोरच्या व्यक्तीच्या बाजूने पाहिलं तर अनेकदा त्यांची स्वतःची भीती आणि चिंता त्यांच्यावर हावी झालेली असते. त्यांच्या दृष्टीने ती काळजी असते, पण तुमच्यासाठी तो अविश्वास ठरतो. तुम्हाला काय वाटतं, त्यांना खरोखर त्रास द्यायचा आहे की त्यांची चिंता कारणीभूत आहे?',
           quickReplies: [
             'त्यांची स्वतःची भीती आणि चिंता खूप जास्त आहे',
             'त्यांना खरंच वाटतं की मी काही करू शकत नाही',
@@ -560,7 +785,7 @@ export async function generateMediatorReply(params: {
       }
 
       return {
-        reply: 'I really hear that. It hurts the most because you are already carrying pressure, and having someone constantly doubt you makes you feel small. Do you think they are acting out of bad intentions, or is their own fear and anxiety taking over?',
+        reply: 'I really hear that. When you are putting in effort and someone keeps questioning you, it hurts because it feels like they have zero faith in you. But looking at it from their side, people often get overwhelmed by their own anxiety or fear. To them it feels like protective care; to you it feels like micromanagement and distrust. Do you think their actions come from bad intentions, or is their own fear taking over?',
         quickReplies: [
           'Their own anxiety is out of control',
           'They honestly do not trust my judgment',
@@ -576,11 +801,11 @@ export async function generateMediatorReply(params: {
       };
     }
 
-    // Turn 4: Finding the Concrete Healthy Boundary
-    if (historyLen === 4 && !isReadyIntent) {
+    // Turn 3 Substantive: Finding the Concrete Healthy Boundary
+    if (substantiveCount === 3 && !isReadyIntent) {
       if (lang === 'hi') {
         return {
-          reply: 'यह बहुत परिपक्व समझ है। उनकी मंशा शायद आपके प्रति फिक्र या सुरक्षा की हो, लेकिन उनका कहने का तरीका आपके लिए घुटन और अविश्वास बन जाता है। अगर बिना लड़े एक स्वस्थ सीमा तय करनी हो, तो आप उनसे क्या बदलाव चाहेंगे?',
+          reply: 'यह बहुत परिपक्व समझ है। उनकी मंशा शायद आपके प्रति फिक्र या सुरक्षा की हो, लेकिन उनका कहने का तरीका आपके लिए घुटन और अविश्वास बन जाता है। अगर बिना लड़े एक स्वस्थ सीमा तय करनी हो — जैसे रोज़ टोकने के बजाय हफ़्ते में एक बार आराम से बात करना — तो आप उनसे क्या बदलाव चाहेंगे?',
           quickReplies: [
             'रोज़ टोकने के बजाय हफ़्ते में एक बार आराम से बात करें',
             'मुझ पर थोड़ा भरोसा रखें और मुझे आज़ादी दें',
@@ -598,7 +823,7 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: 'ही खूप परिपक्व समज आहे. त्यांच्या मनात काळजी असू शकते, पण बोलण्याच्या पद्धतीमुळे तुम्हाला घुसमट जाणवते. जर वाद न घालता एक योग्य तोडगा काढायचा असेल, तर तुम्हाला त्यांच्याकडून काय अपेक्षा आहे?',
+          reply: 'ही खूप परिपक्व समज आहे. त्यांच्या मनात काळजी असू शकते, पण बोलण्याच्या पद्धतीमुळे तुम्हाला घुसमट जाणवते. जर वाद न घालता एक योग्य तोडगा काढायचा असेल — जसे की रोज विचारण्याऐवजी आठवड्यातून एकदा शांतपणे चर्चा करणे — तर तुम्हाला त्यांच्याकडून काय अपेक्षा आहे?',
           quickReplies: [
             'रोज विचारण्याऐवजी आठवड्यातून एकदा शांतपणे चर्चा करावी',
             'माझ्यावर विश्वास ठेवून मला थोडी मोकळीक द्यावी',
@@ -615,7 +840,7 @@ export async function generateMediatorReply(params: {
       }
 
       return {
-        reply: 'That is so honest and clear. You do not want to fight or shut them out — you just want breathing room and to know that they believe in you. If you could set a healthy boundary without an argument, what would that look like?',
+        reply: 'That is so honest and clear. You do not want to fight or shut them out — you just want breathing room and to know that they believe in you. If you could agree on a healthy boundary without an argument — like a scheduled calm check-in instead of daily interrogation — what would that look like?',
         quickReplies: [
           'Check in once a week calmly instead of daily grilling',
           'Give me space to handle things on my own',
@@ -631,7 +856,7 @@ export async function generateMediatorReply(params: {
       };
     }
 
-    // Turn 5+: Preparing the Neutral Invitation
+    // Turn 4+ Substantive (or explicit ready intent): Preparing the Neutral Invitation
     if (lang === 'hi') {
       return {
         reply: 'आपने अपनी भावना और स्थिति को बहुत अच्छी तरह समझ लिया है। आप यह रिश्ता चाहते हैं, लेकिन सम्मान और सुकून के साथ। जब भी आप तैयार हों, मैं बिना किसी आरोप के एक शांत और सम्मानजनक निमंत्रण तैयार कर सकता हूँ, ताकि वे अपनी बात रख सकें और आप दोनों एक स्वस्थ समाधान निकाल सकें।',

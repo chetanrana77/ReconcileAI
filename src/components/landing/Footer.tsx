@@ -2,8 +2,17 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { SupportedLanguage } from '@/lib/types';
+import { getLandingTranslations } from '@/lib/i18n/landingTranslations';
 
-export function Footer() {
+interface FooterProps {
+  language?: SupportedLanguage;
+}
+
+export function Footer({ language = 'en' }: FooterProps) {
+  const lt = getLandingTranslations(language);
+  const ft = lt.footer;
+
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -32,11 +41,10 @@ export function Footer() {
               <span>Reconcile</span>
             </div>
             <p className="text-sm text-stone-600 leading-relaxed font-normal">
-              “Understanding someone doesn’t mean agreeing with them.”
+              {ft.philosophy}
             </p>
             <p className="text-xs text-stone-500 leading-relaxed font-normal">
-              An empathetic AI communication mediator built to help people navigate misunderstandings
-              privately without taking sides.
+              {ft.mission}
             </p>
           </div>
 
@@ -44,7 +52,7 @@ export function Footer() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 text-xs">
             <div className="space-y-3">
               <span className="font-semibold text-stone-900 uppercase tracking-wider block">
-                Product
+                {ft.productTitle}
               </span>
               <ul className="space-y-2 text-stone-600">
                 <li>
@@ -52,7 +60,7 @@ export function Footer() {
                     onClick={() => scrollTo('how-it-works')}
                     className="hover:text-stone-900 cursor-pointer"
                   >
-                    How It Works
+                    {lt.navbar.howItWorks}
                   </button>
                 </li>
                 <li>
@@ -60,7 +68,7 @@ export function Footer() {
                     onClick={() => scrollTo('demonstration')}
                     className="hover:text-stone-900 cursor-pointer"
                   >
-                    Demonstration
+                    {lt.navbar.demonstration}
                   </button>
                 </li>
                 <li>
@@ -68,7 +76,7 @@ export function Footer() {
                     onClick={() => scrollTo('outcomes')}
                     className="hover:text-stone-900 cursor-pointer"
                   >
-                    Outcomes
+                    {lt.navbar.outcomes}
                   </button>
                 </li>
               </ul>
@@ -76,7 +84,7 @@ export function Footer() {
 
             <div className="space-y-3">
               <span className="font-semibold text-stone-900 uppercase tracking-wider block">
-                Trust &amp; Safety
+                {ft.privacyTitle}
               </span>
               <ul className="space-y-2 text-stone-600">
                 <li>
@@ -84,7 +92,7 @@ export function Footer() {
                     onClick={() => scrollTo('privacy')}
                     className="hover:text-stone-900 cursor-pointer"
                   >
-                    Privacy Architecture
+                    {lt.navbar.privacy}
                   </button>
                 </li>
                 <li>
@@ -92,12 +100,12 @@ export function Footer() {
                     onClick={() => scrollTo('faq')}
                     className="hover:text-stone-900 cursor-pointer"
                   >
-                    Frequently Asked Questions
+                    {lt.navbar.faq}
                   </button>
                 </li>
                 <li>
                   <Link href="/about" className="hover:text-stone-900">
-                    Mission &amp; Vision
+                    {lt.navbar.about}
                   </Link>
                 </li>
               </ul>
@@ -105,22 +113,25 @@ export function Footer() {
 
             <div className="space-y-3 col-span-2 sm:col-span-1">
               <span className="font-semibold text-stone-900 uppercase tracking-wider block">
-                Safety Note
+                {ft.resourcesTitle}
               </span>
-              <p className="text-stone-500 leading-relaxed text-[11px]">
-                Not a crisis service or therapy provider. If you are in acute distress or immediate
-                danger, please reach out directly to India emergency services (112) or Tele-MANAS (14416).
+              <p className="text-[11px] text-stone-500 leading-relaxed">
+                {ft.crisisDesc}
               </p>
+              <div className="space-y-1.5 pt-1 text-[11px] text-stone-700">
+                <p className="font-medium text-stone-900">{ft.teleManas}</p>
+                <p>{ft.aasra}</p>
+                <p>{ft.vandrevala}</p>
+                <p className="text-amber-800 font-semibold">{ft.emergency112}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-stone-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
-          <p>&copy; {new Date().getFullYear()} Reconcile AI. All rights reserved.</p>
+        <div className="pt-8 border-t border-stone-200/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
+          <p>{ft.copyright}</p>
           <div className="flex items-center gap-6">
-            <span>Confidential Two-Sided Mediation</span>
-            <span>Zero Data Monetization</span>
+            <span>{ft.builtWithEmpathy}</span>
           </div>
         </div>
       </div>

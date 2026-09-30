@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Menu, X, Globe } from 'lucide-react';
 import { SupportedLanguage } from '@/lib/types';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n/translations';
+import { getLandingTranslations } from '@/lib/i18n/landingTranslations';
 import { cn } from '@/lib/utils';
 
 interface NavbarProps {
@@ -17,14 +18,15 @@ interface NavbarProps {
 
 export function Navbar({ onStartClick, onHomeClick, language = 'en', onLanguageChange }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const lt = getLandingTranslations(language);
 
   const navLinks = [
-    { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Demonstration', href: '#demonstration' },
-    { label: 'Outcomes', href: '#outcomes' },
-    { label: 'Privacy', href: '#privacy' },
-    { label: 'FAQ', href: '#faq' },
-    { label: 'About', href: '/about' },
+    { label: lt.navbar.howItWorks, href: '#how-it-works' },
+    { label: lt.navbar.demonstration, href: '#demonstration' },
+    { label: lt.navbar.outcomes, href: '#outcomes' },
+    { label: lt.navbar.privacy, href: '#privacy' },
+    { label: lt.navbar.faq, href: '#faq' },
+    { label: lt.navbar.about, href: '/about' },
   ];
 
   const handleLinkClick = (href: string) => {
@@ -111,7 +113,7 @@ export function Navbar({ onStartClick, onHomeClick, language = 'en', onLanguageC
             onClick={onStartClick}
             className="rounded-xl px-4 py-2 text-xs font-semibold tracking-tight shadow-xs"
           >
-            Try Reconcile
+            {lt.navbar.tryReconcile}
           </Button>
         </div>
 
@@ -140,7 +142,7 @@ export function Navbar({ onStartClick, onHomeClick, language = 'en', onLanguageC
             onClick={onStartClick}
             className="rounded-lg px-2.5 py-1 text-xs font-semibold"
           >
-            Start
+            {lt.navbar.start}
           </Button>
           <button
             type="button"
@@ -182,7 +184,7 @@ export function Navbar({ onStartClick, onHomeClick, language = 'en', onLanguageC
               }}
               className="w-full text-center font-semibold"
             >
-              Tell Me What Happened
+              {lt.navbar.tellMeWhatHappened}
             </Button>
           </div>
         </div>

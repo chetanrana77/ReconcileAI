@@ -161,10 +161,22 @@ export function AppShell() {
     }
 
     try {
+      const storedKey = typeof window !== 'undefined' ? localStorage.getItem('reconcile_gemini_key') || '' : '';
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (storedKey) {
+        headers['x-gemini-key'] = storedKey;
+      }
+
       const res = await fetch(`/api/session/${session.id}/message`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, role: currentRole, language: activeLanguage })
+        headers,
+        body: JSON.stringify({
+          text,
+          role: currentRole,
+          language: activeLanguage,
+          relationship: session.relationship,
+          apiKey: storedKey || undefined
+        })
       });
 
       const data = await res.json();
@@ -291,21 +303,23 @@ export function AppShell() {
           <Hero
             onStart={handleOpenHub}
             onSelectDemo={handleLoadDemoSession}
+            language={language}
           />
-          <ProblemStory />
-          <DemoSection onSelectDemoSession={handleLoadDemoSession} />
-          <HowItWorks />
-          <OutcomeFeatures />
-          <PrivacySection />
-          <FAQSection />
+          <ProblemStory language={language} />
+          <DemoSection onSelectDemoSession={handleLoadDemoSession} language={language} />
+          <HowItWorks language={language} />
+          <OutcomeFeatures language={language} />
+          <PrivacySection language={language} />
+          <FAQSection language={language} />
           <ClosingCTA
             onStart={handleOpenHub}
             onExploreDemo={() => {
               const el = document.getElementById('demonstration');
               el?.scrollIntoView({ behavior: 'smooth' });
             }}
+            language={language}
           />
-          <Footer />
+          <Footer language={language} />
         </div>
       ) : currentStep === 'hub' ? (
         <ConversationHub
