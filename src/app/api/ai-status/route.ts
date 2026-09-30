@@ -54,11 +54,25 @@ async function testGemini(apiKey: string) {
   return { ok: false, error: 'Gemini 3.8 Flash model unavailable or unreachable' };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   // Read key strictly from server environment
   const geminiKey = process.env.GEMINI_API_KEY?.trim();
   const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
   const openAiKey = process.env.OPENAI_API_KEY?.trim();
+
+  const url = new URL(req.url);
+  if (url.searchParams.get('list') === '1' && geminiKey) {
+    try {
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
+        headers: { 'x-goog-api-key': geminiKey }
+      });
+      const data = await res.json();
+      const models = (data.models || []).map((m: any) => m.name?.replace('models/', ''));
+      return NextResponse.json({ models });
+    } catch (e: any) {
+      return NextResponse.json({ error: e.message });
+    }
+  }
 
   // 1. Check Gemini (Primary Engine)
   if (geminiKey) {
