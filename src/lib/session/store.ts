@@ -152,27 +152,56 @@ export function updateSessionInsight(
   return session;
 }
 
+function getRelationshipLabels(relationship: RelationshipType) {
+  switch (relationship) {
+    case 'parent':
+      return { senderLabel: 'Your child', recipientLabel: 'Parent' };
+    case 'sibling':
+      return { senderLabel: 'Your sibling', recipientLabel: 'Sibling' };
+    case 'partner':
+      return { senderLabel: 'Your partner', recipientLabel: 'Partner' };
+    case 'classmate':
+      return { senderLabel: 'Your classmate', recipientLabel: 'Classmate' };
+    case 'friend':
+      return { senderLabel: 'Your friend', recipientLabel: 'Friend' };
+    default:
+      return { senderLabel: 'Someone close to you', recipientLabel: 'Someone close' };
+  }
+}
+
 export function createInvitationForSession(id: string): NeutralInvitation | null {
   const session = sessionsMap.get(id);
   if (!session) return null;
 
   const relationship = session.relationship;
-  const isParent = relationship === 'parent';
+  const labels = getRelationshipLabels(relationship);
 
-  const neutralSummary = isParent
-    ? "Reconcile noticed a communication gap between you and your child about how conversations around studies and schoolwork are landing. There seem to be strong feelings on both sides — and understanding each perspective could help you both feel heard."
-    : "Reconcile noticed a communication gap between you and someone who cares about your relationship. There seem to be strong feelings on both sides — and understanding each perspective could bring clarity.";
+  let neutralSummary = '';
+  if (relationship === 'parent') {
+    neutralSummary =
+      'Reconcile noticed a communication disconnect between you and your child about studies and daily expectations. There seem to be strong feelings on both sides — and understanding each perspective could help you both feel heard.';
+  } else if (relationship === 'sibling') {
+    neutralSummary =
+      'Reconcile noticed a communication disconnect between you and your sibling. Understanding each perspective could help clear the air peacefully.';
+  } else if (relationship === 'partner') {
+    neutralSummary =
+      "Reconcile noticed a communication disconnect between you and your partner. Understanding each other's point of view could bring clarity and closeness.";
+  } else if (relationship === 'friend') {
+    neutralSummary =
+      'Reconcile noticed a communication disconnect between you and your friend. Understanding each perspective could help you make up peacefully.';
+  } else {
+    neutralSummary =
+      'Reconcile noticed a communication disconnect between you and someone close to you. Understanding each perspective could bring clarity and mutual peace.';
+  }
 
   const invitation: NeutralInvitation = {
     inviteCode: session.id,
-    senderLabel: isParent ? 'Your child' : 'Someone close to you',
-    recipientLabel: isParent ? 'Parent' : 'Friend',
+    senderLabel: labels.senderLabel,
+    recipientLabel: labels.recipientLabel,
     relationship: session.relationship,
     topic: session.topic || 'Communication Misunderstanding',
     neutralSummary,
-    invitationMessage: isParent
-      ? "Reconcile noticed a communication gap between you and your child. We'd love to hear your side before drawing any conclusions."
-      : "Reconcile noticed a communication gap between you and someone close to you. We'd love to hear your side before drawing any conclusions.",
+    invitationMessage: `Reconcile noticed a communication gap between you and ${labels.senderLabel.toLowerCase()}. We'd love to hear your side with total privacy before drawing any conclusions.`,
     accepted: false
   };
 
@@ -183,39 +212,98 @@ export function createInvitationForSession(id: string): NeutralInvitation | null
   return invitation;
 }
 
-export function initializePersonB(id: string): MediationSession | null {
+export function initializePersonB(id: string, language?: SupportedLanguage): MediationSession | null {
   const session = sessionsMap.get(id);
   if (!session) return null;
 
   if (!session.personB) {
-    const isParent = session.relationship === 'parent';
+    const relationship = session.relationship;
+    const isParent = relationship === 'parent';
+    const labels = getRelationshipLabels(relationship);
     const now = Date.now();
+    const lang = language || session.language || 'en';
+
+    let introText = '';
+    let quickReplies: string[] = [];
+    let reassuranceNote = '';
+
+    if (lang === 'hi') {
+      reassuranceNote = 'आपकी बातें Reconcile के पास पूरी तरह 100% गोपनीय रहेंगी।';
+      if (isParent) {
+        introText =
+          'नमस्ते। आपके बच्चे ने आपसे शांति से बात करने के लिए Reconcile के माध्यम से आमंत्रित किया है। हम किसी का पक्ष नहीं लेते — हम केवल आपकी बात और फिक्र को निष्पक्ष रूप से समझना चाहते हैं। आपके नज़रिए से हाल के दिनों में क्या चल रहा है?';
+        quickReplies = [
+          'मुझे हर समय उनके भविष्य की चिंता रहती है',
+          'मैं केवल उनके भले के लिए समझाता/समझाती हूँ',
+          'मुझे नहीं पता था कि उन्हें यह दबाव लगता है',
+          'हम बिना लड़े प्यार से बात कैसे कर सकते हैं?'
+        ];
+      } else {
+        introText =
+          'नमस्ते। आपके किसी करीबी ने आपसे शांति से बात सुलझाने के लिए Reconcile के ज़रिए आमंत्रित किया है। हम पूरी तरह निष्पक्ष हैं और किसी का पक्ष नहीं लेते। आपकी बातें यहाँ 100% गोपनीय रहेंगी। आपके नज़रिए से हाल में क्या स्थिति रही है?';
+        quickReplies = [
+          'मुझे यहाँ क्यों बुलाया गया है?',
+          'उन्होंने क्या कहा?',
+          'हाल ही में हमारे बीच थोड़ी दूरी या तनाव था',
+          'मैं बिना लड़े शांति से बात करना चाहता हूँ'
+        ];
+      }
+    } else if (lang === 'mr') {
+      reassuranceNote = 'तुमचे बोलणे Reconcile कडे १००% खाजगी आणि सुरक्षित राहील.';
+      if (isParent) {
+        introText =
+          'नमस्कार. तुमच्या मुलाने/मुलीने शांततेने संवाद साधण्यासाठी Reconcile द्वारे तुम्हाला आमंत्रित केले आहे. आम्ही कोणाचीही बाजू घेत नाही — आम्हाला फक्त तुमची बाजू आणि काळजी समजून घ्यायची आहे. तुमच्या दृष्टीने अलीकडे काय चालले आहे?';
+        quickReplies = [
+          'मला सतत त्यांच्या भविष्याची काळजी वाटते',
+          'मी फक्त त्यांच्या चांगल्यासाठीच बोलतो/बोलते',
+          'त्यांना याचा एवढा त्रास होतोय हे मला ठाऊक नव्हते',
+          'आम्ही वाद न घालता एकत्र कसे बोलू शकतो?'
+        ];
+      } else {
+        introText =
+          'नमस्कार. तुमच्या एका जवळच्या व्यक्तीने वाद न घालता संवाद साधण्यासाठी तुम्हाला येथे आमंत्रित केले आहे. Reconcile पूर्णपणे निष्पक्ष आहे आणि तुमचे बोलणे १००% खाजगी राहील. तुमच्या दृष्टीने अलीकडे काय घडले आहे?';
+        quickReplies = [
+          'मला येथे का आमंत्रित केले आहे?',
+          'ते नक्की काय म्हणाले?',
+          'अलीकडे आमच्यात थोडा तणाव नक्कीच जाणवत होता',
+          'मला फक्त वाद न घालता शांततेने मार्ग काढायचा आहे'
+        ];
+      }
+    } else {
+      reassuranceNote = "You don't have to defend yourself. Your words stay 100% private with Reconcile.";
+      if (isParent) {
+        introText =
+          "Hello. Your child invited you to connect here so you two can understand each other peacefully. We don't take sides — we genuinely want to understand your perspective and care. How have things felt from your end lately?";
+        quickReplies = [
+          'I worry about their future constantly',
+          'I only want what is best for them',
+          'I did not realize it felt like suffocating pressure',
+          'How can we talk calmly without arguing?'
+        ];
+      } else {
+        introText =
+          "Hello. Someone who cares about you invited you to talk here so you two can clear the air peacefully. We don't take sides, and everything you say stays 100% private. How have things felt from your perspective lately?";
+        quickReplies = [
+          'Why was I invited here?',
+          'What did they say?',
+          'Things have felt a bit tense lately',
+          'I want us to talk through this peacefully'
+        ];
+      }
+    }
+
     session.personB = {
-      label: isParent ? 'Parent' : 'Friend',
+      label: labels.recipientLabel,
       messages: [
         {
           id: `msg-b-intro-${now}`,
           sender: 'reconcile',
           role: 'b',
-          text: isParent
-            ? "Hey. Reconcile noticed there might be a disconnect between you and your child around studies and schoolwork. We're not here to take sides — we just want to understand how things have felt from your end. How have things been going?"
-            : "Hey. Reconcile noticed there might be a disconnect between you and someone you're close to. We're not here to take sides — we just want to understand your perspective. What's been on your mind?",
+          text: introText,
           timestamp: now,
           privacy: 'PRIVATE_B',
-          quickReplies: isParent
-            ? [
-                "I ask because I'm worried about their future",
-                "I just see them on their phone instead of studying",
-                "I love them and want them to succeed",
-                "I didn't realize it bothered them so much"
-              ]
-            : [
-                "I was swamped with exams and personal stuff",
-                "I didn't mean to ignore them at all",
-                "I thought they knew I was busy",
-                "I've been feeling overwhelmed lately"
-              ],
-          reassuranceNote: "You don't have to defend yourself. Your words stay private with Reconcile."
+          quickReplies,
+          reassuranceNote
         }
       ]
     };

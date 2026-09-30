@@ -332,11 +332,11 @@ export const LANDING_TRANSLATIONS: Record<SupportedLanguage, LandingTranslations
         },
         {
           number: '04',
-          title: 'Get kind words to say',
+          title: 'Kind words for both of you',
           description:
-            'We give you calm, kind words you can send to fix things and make up peacefully.',
+            'We suggest kind, peaceful words to both people so you can make up, without ever showing your private messages to each other.',
           tag: 'Step 4',
-          microExample: '“Hey, can we talk about what happened? I miss being friends.”'
+          microExample: '“Suggested to both people • Zero private text shared”'
         }
       ]
     },
@@ -665,11 +665,11 @@ export const LANDING_TRANSLATIONS: Record<SupportedLanguage, LandingTranslations
         },
         {
           number: '04',
-          title: 'मीठे शब्द मिलते हैं',
+          title: 'दोनों पक्षों के लिए शांतिपूर्ण शब्द',
           description:
-            'हम आपको ऐसे शांत और सीधे शब्द देते हैं, जिन्हें भेजकर आप बिना लड़े बात सुलझा सकते हैं।',
+            'हम दोनों को आपस में बात सुलझाने के लिए शांत और समझदारी भरे शब्द सुझाते हैं, और आपकी निजी बातें कभी एक-दूसरे को नहीं दिखाई जातीं।',
           tag: 'चौथा कदम',
-          microExample: '“चलो पुरानी बात भूलकर फिर से बात करते हैं!”'
+          microExample: '“दोनों को सुलह के शब्दों का सुझाव • निजी बातें 100% सुरक्षित”'
         }
       ]
     },
@@ -981,11 +981,11 @@ export const LANDING_TRANSLATIONS: Record<SupportedLanguage, LandingTranslations
         },
         {
           number: '04',
-          title: 'गोड शब्द मिळतात',
+          title: 'दोघांसाठीही समजूतदार शब्द',
           description:
-            'भांडण न होता समजूतदारपणे बोलण्यासाठी आम्ही तुम्हाला शांत आणि योग्य शब्द देतो.',
+            'आम्ही दोघांनाही वाद मिटवून पुन्हा संवाद साधण्यासाठी गोड आणि शांत शब्द सुचवतो, आणि तुमचे खाजगी बोलणे एकमेकांना कधीही दाखवले जात नाही.',
           tag: 'चौथी पायरी',
-          microExample: '“चला जुने विसरून पुन्हा छान बोलूया!”'
+          microExample: '“दोन्ही बाजूंना समजूतदार शब्दांचा सल्ला • खाजगी संवाद १००% सुरक्षित”'
         }
       ]
     },

@@ -46,7 +46,7 @@ export default function JoinSessionPage() {
       await fetch(`/api/session/${id}/invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'join' }),
+        body: JSON.stringify({ action: 'join', language }),
       });
 
       // Redirect to main session view with role=b and selected language

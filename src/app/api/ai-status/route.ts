@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
  */
 async function testGemini(apiKey: string) {
   const startTime = Date.now();
-  const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
+  const models = ['gemini-3.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'];
 
   for (const model of models) {
     try {
@@ -33,11 +33,12 @@ async function testGemini(apiKey: string) {
       const latencyMs = Date.now() - startTime;
 
       if (res.ok) {
-        return { ok: true, latencyMs, model: 'Google Gemini 3.8 Flash' };
+        const friendlyName = model === 'gemini-3.8-flash' ? 'Google Gemini 3.8 Flash' : 'Google Gemini 3.5 Flash';
+        return { ok: true, latencyMs, model: friendlyName };
       }
 
       if (res.status === 404 || res.status === 503 || res.status === 429) {
-        // Model busy or not in revision, try next candidate
+        // Model busy, rate-limited, or not in revision, try next active candidate
         continue;
       }
 
@@ -51,7 +52,7 @@ async function testGemini(apiKey: string) {
     }
   }
 
-  return { ok: false, error: 'Gemini 3.8 Flash model unavailable or unreachable' };
+  return { ok: false, error: 'Gemini model unavailable or rate limit reached' };
 }
 
 export async function GET(req: Request) {

@@ -17,7 +17,7 @@ export async function POST(
     }
 
     if (action === 'join') {
-      initializePersonB(id);
+      initializePersonB(id, body.language);
       const safe = getSafeSession(id, 'b');
       return NextResponse.json(safe);
     }
