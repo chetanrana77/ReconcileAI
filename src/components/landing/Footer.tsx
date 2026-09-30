@@ -108,8 +108,8 @@ export function Footer() {
                 Safety Note
               </span>
               <p className="text-stone-500 leading-relaxed text-[11px]">
-                Not a crisis service or therapy provider. If you are experiencing domestic violence or
-                self-harm danger, please reach out directly to emergency services or call 988.
+                Not a crisis service or therapy provider. If you are in acute distress or immediate
+                danger, please reach out directly to India emergency services (112) or Tele-MANAS (14416).
               </p>
             </div>
           </div>

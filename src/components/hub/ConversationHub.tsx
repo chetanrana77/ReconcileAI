@@ -367,23 +367,52 @@ export function ConversationHub({
             </div>
 
             <p className="text-xs text-stone-600 leading-relaxed">
-              If you or someone you know is in immediate danger, experiencing acute distress, domestic violence, or self-harm thoughts, please reach out to trusted free support immediately:
+              {language === 'hi'
+                ? 'यदि आप या आपका कोई परिचित अत्यधिक मानसिक तनाव, संकट, घरेलू हिंसा या असुरक्षा महसूस कर रहा है, तो कृपया भारत की इन निःशुल्क एवं 24/7 हेल्पलाइन पर तुरंत संपर्क करें:'
+                : language === 'mr'
+                ? 'जर तुम्ही किंवा तुमच्या ओळखीची व्यक्ती तीव्र मानसिक तणाव, संकट किंवा असुरक्षिततेचा सामना करत असेल, तर कृपया भारतातील या मोफत व 24/7 हेल्पलाइनशी संपर्क साधा:'
+                : 'If you or someone you know is in immediate danger, acute distress, domestic violence, or crisis, please reach out to trusted free 24/7 helplines in India immediately:'}
             </p>
 
             <div className="space-y-2 text-xs">
               <div className="p-3 rounded-xl bg-stone-50 border border-stone-200">
-                <p className="font-semibold text-stone-900">India: Tele-MANAS (24/7 Free Helpline)</p>
-                <p className="text-stone-600">Dial <a href="tel:14416" className="text-stone-900 font-bold underline">14416</a> or <a href="tel:18008914416" className="text-stone-900 font-bold underline">1800 891 4416</a></p>
+                <p className="font-semibold text-stone-900">
+                  {language === 'hi' ? 'Tele-MANAS (भारत सरकार की 24/7 राष्ट्रीय मानसिक स्वास्थ्य सेवा)' : language === 'mr' ? 'Tele-MANAS (भारत सरकारची 24/7 राष्ट्रीय मानसिक आरोग्य हेल्पलाइन)' : 'Tele-MANAS (Govt. of India 24/7 Free Helpline)'}
+                </p>
+                <p className="text-stone-600">
+                  {language === 'hi' ? 'सभी भारतीय भाषाओं में निःशुल्क सहायता। कॉल करें: ' : language === 'mr' ? 'सर्व भारतीय भाषांमध्ये मोफत समुपदेशन. डायल करा: ' : 'Free support in all Indian languages. Dial '}
+                  <a href="tel:14416" className="text-stone-900 font-bold underline">14416</a> or <a href="tel:18008914416" className="text-stone-900 font-bold underline">1800 891 4416</a>
+                </p>
               </div>
 
               <div className="p-3 rounded-xl bg-stone-50 border border-stone-200">
-                <p className="font-semibold text-stone-900">India: AASRA Suicide Prevention</p>
-                <p className="text-stone-600">Call <a href="tel:919820466726" className="text-stone-900 font-bold underline">+91 9820466726</a> (24 Hours)</p>
+                <p className="font-semibold text-stone-900">
+                  {language === 'hi' ? 'वांद्रेवाला फाउंडेशन (24/7 मानसिक स्वास्थ्य परामर्श)' : language === 'mr' ? 'वांद्रेवाला फाउंडेशन (24/7 मोफत मानसिक आरोग्य समुपदेशन)' : 'Vandrevala Foundation (24/7 Mental Health Helpline)'}
+                </p>
+                <p className="text-stone-600">
+                  {language === 'hi' ? 'हिंदी, मराठी और अंग्रेजी में बात करें: ' : language === 'mr' ? 'हिंदी, मराठी आणि इंग्रजीत बोला: ' : 'Free counselling in Hindi, Marathi & English: '}
+                  <a href="tel:+919999666555" className="text-stone-900 font-bold underline">+91 9999 666 555</a>
+                </p>
               </div>
 
               <div className="p-3 rounded-xl bg-stone-50 border border-stone-200">
-                <p className="font-semibold text-stone-900">US & International: 988 Lifeline</p>
-                <p className="text-stone-600">Call or Text <a href="tel:988" className="text-stone-900 font-bold underline">988</a></p>
+                <p className="font-semibold text-stone-900">
+                  {language === 'hi' ? 'AASRA (24 घंटे संकट हेल्पलाइन)' : language === 'mr' ? 'AASRA (24 तास मदत हेल्पलाइन)' : 'AASRA Suicide Prevention & Crisis Helpline'}
+                </p>
+                <p className="text-stone-600">
+                  {language === 'hi' ? 'गोपनीय सहायता: ' : language === 'mr' ? 'गोपनीय मदत: ' : '24 Hours Helpline: '}
+                  <a href="tel:+919820466726" className="text-stone-900 font-bold underline">+91 9820466726</a>
+                </p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200">
+                <p className="font-semibold text-stone-900">
+                  {language === 'hi' ? 'राष्ट्रीय आपातकालीन सेवा (भारत)' : language === 'mr' ? 'राष्ट्रीय आणीबाणी सेवा (भारत)' : 'National Emergency Services (India)'}
+                </p>
+                <p className="text-stone-600">
+                  {language === 'hi' ? 'पुलिस / चिकित्सा / आपातकालीन सहायता: ' : language === 'mr' ? 'पोलीस / वैद्यकीय / तात्काळ मदत: ' : 'Police, medical, or safety emergency: '}
+                  <a href="tel:112" className="text-stone-900 font-bold underline">Dial 112</a>
+                </p>
               </div>
             </div>
 

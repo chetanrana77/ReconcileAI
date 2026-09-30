@@ -36,7 +36,7 @@ export function checkSafety(text: string): SafetyFlag {
 export function getSafetyResponse(flag: SafetyFlag): string {
   switch (flag.severity) {
     case 'critical':
-      return "This sounds more serious than a normal misunderstanding. Your safety matters more than resolving the conversation right now. Please reach out to emergency services (like 911), a trusted adult, or a crisis helpline like the National Suicide Prevention Lifeline (dial 988) immediately.";
+      return "This sounds more serious than a normal misunderstanding. Your safety matters more than resolving the conversation right now. Please reach out to emergency services (dial 112 in India), a trusted person, or India's 24/7 mental health helpline Tele-MANAS (dial 14416 / 1800 891 4416) or AASRA (+91 9820466726) immediately.";
     case 'high':
       return "It sounds like you might be dealing with a situation involving violence or abuse. Please prioritize your safety and reach out to a trusted adult, school counselor, or professional helpline to get the support you need.";
     case 'medium':

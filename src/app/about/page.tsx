@@ -245,8 +245,8 @@ export default function AboutPage() {
               },
               {
                 icon: Globe,
-                title: 'Accessible to everyone',
-                body: 'A teenager fighting with parents or long-time partners — both deserve calm, dignified resolution.',
+                title: 'Built for India & Multilingual by Design',
+                body: 'Deeply attuned to Indian family dynamics, academic pressure, and cultural nuances — with native English, Hindi (हिन्दी), and Marathi (मराठी) support.',
               }
             ].map((principle, i) => (
               <div key={i} className="p-5 rounded-2xl bg-white border border-stone-200 shadow-2xs space-y-2">
