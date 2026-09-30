@@ -22,10 +22,7 @@ export function Navbar({ onStartClick, onHomeClick, language = 'en', onLanguageC
 
   const navLinks = [
     { label: lt.navbar.howItWorks, href: '#how-it-works' },
-    { label: lt.navbar.demonstration, href: '#demonstration' },
-    { label: lt.navbar.outcomes, href: '#outcomes' },
     { label: lt.navbar.privacy, href: '#privacy' },
-    { label: lt.navbar.faq, href: '#faq' },
     { label: lt.navbar.about, href: '/about' },
   ];
 

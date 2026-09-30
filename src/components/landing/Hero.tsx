@@ -187,7 +187,7 @@ export function Hero({ onStart, onSelectDemo, language = 'en' }: HeroProps) {
                     <span className="text-xs font-bold">&bull;</span>
                   </div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-stone-900">
-                    Reconcile Mediation Bridge &bull; Shared Resolution
+                    Peaceful Solution &bull; Shared Understanding
                   </span>
                 </div>
                 <span className="text-xs text-stone-500 font-medium">
@@ -218,7 +218,7 @@ export function Hero({ onStart, onSelectDemo, language = 'en' }: HeroProps) {
 
               {/* Action Link to try the demo in mediator */}
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
-                <span>Both perspectives honored &bull; Zero defensive escalation</span>
+                <span>Both sides heard &bull; No more fighting</span>
                 <button
                   onClick={() => handleLaunchDemo(activeScenario.demoKey)}
                   className="font-medium text-stone-900 hover:text-stone-700 inline-flex items-center gap-1 cursor-pointer transition-colors"

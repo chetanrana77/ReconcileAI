@@ -10,15 +10,10 @@ import {
   SupportedLanguage
 } from '@/lib/types';
 
-// Landing Components
+// Landing Components (Clean & Minimal)
 import { Hero } from '@/components/landing/Hero';
-import { ProblemStory } from '@/components/landing/ProblemStory';
-import { DemoSection } from '@/components/landing/DemoSection';
 import { HowItWorks } from '@/components/landing/HowItWorks';
-import { OutcomeFeatures } from '@/components/landing/OutcomeFeatures';
 import { PrivacySection } from '@/components/landing/PrivacySection';
-import { FAQSection } from '@/components/landing/FAQSection';
-import { ClosingCTA } from '@/components/landing/ClosingCTA';
 import { Footer } from '@/components/landing/Footer';
 import { Navbar } from '@/components/landing/Navbar';
 
@@ -42,7 +37,18 @@ export function AppShell() {
   const [isSafetyFlag, setIsSafetyFlag] = useState<boolean>(false);
   const [safetyMessage, setSafetyMessage] = useState<string>('');
 
-  // Check URL query on mount for direct join links (?session=...&role=b&lang=...)
+  const updateLanguage = (newLang: SupportedLanguage) => {
+    setLanguage(newLang);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('reconcile_lang', newLang);
+      } catch (e) {
+        // ignore
+      }
+    }
+  };
+
+  // Check URL query on mount for direct join links (?session=...&role=b&lang=...) or saved preference
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
@@ -50,8 +56,17 @@ export function AppShell() {
       const urlRole = (searchParams.get('role') as ParticipantRole) || 'a';
       const urlLang = searchParams.get('lang') as SupportedLanguage;
 
-      if (urlLang) {
-        setLanguage(urlLang);
+      if (urlLang && (urlLang === 'en' || urlLang === 'hi' || urlLang === 'mr')) {
+        updateLanguage(urlLang);
+      } else {
+        try {
+          const savedLang = localStorage.getItem('reconcile_lang') as SupportedLanguage;
+          if (savedLang && (savedLang === 'en' || savedLang === 'hi' || savedLang === 'mr')) {
+            setLanguage(savedLang);
+          }
+        } catch (e) {
+          // ignore
+        }
       }
 
       if (urlSessionId) {
@@ -288,7 +303,7 @@ export function AppShell() {
         onStartClick={handleOpenHub}
         onHomeClick={resetToLanding}
         language={language}
-        onLanguageChange={setLanguage}
+        onLanguageChange={updateLanguage}
       />
 
       {currentStep === 'landing' ? (
@@ -298,26 +313,14 @@ export function AppShell() {
             onSelectDemo={handleLoadDemoSession}
             language={language}
           />
-          <ProblemStory language={language} />
-          <DemoSection onSelectDemoSession={handleLoadDemoSession} language={language} />
           <HowItWorks language={language} />
-          <OutcomeFeatures language={language} />
           <PrivacySection language={language} />
-          <FAQSection language={language} />
-          <ClosingCTA
-            onStart={handleOpenHub}
-            onExploreDemo={() => {
-              const el = document.getElementById('demonstration');
-              el?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            language={language}
-          />
           <Footer language={language} />
         </div>
       ) : currentStep === 'hub' ? (
         <ConversationHub
           language={language}
-          onLanguageChange={setLanguage}
+          onLanguageChange={updateLanguage}
           onStartSolo={() => handleStartTalk('other', 'Solo Reflection & Clarity')}
           onStartRelationship={(rel, topic) => handleStartTalk(rel, topic)}
           onJoinWithCode={handleJoinWithCode}
@@ -350,7 +353,7 @@ export function AppShell() {
                   insight={session.myInsight}
                   isSending={isSending}
                   language={language}
-                  onLanguageChange={setLanguage}
+                  onLanguageChange={updateLanguage}
                   onSendMessage={handleSendMessage}
                   onOpenInvite={handleOpenInvite}
                   onOpenMediation={handleOpenMediation}
@@ -377,7 +380,7 @@ export function AppShell() {
                   insight={session.myInsight}
                   isSending={isSending}
                   language={language}
-                  onLanguageChange={setLanguage}
+                  onLanguageChange={updateLanguage}
                   onSendMessage={handleSendMessage}
                   onOpenInvite={handleOpenInvite}
                   onOpenMediation={handleOpenMediation}

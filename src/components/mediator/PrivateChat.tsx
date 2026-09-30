@@ -163,30 +163,18 @@ export function PrivateChat({
           </div>
         </div>
 
-        {/* Right side: Action Button (Only after user has shared at least 3 messages) */}
+        {/* Right side: Action Button (No chat restriction - chat freely as long as you want) */}
         <div className="flex items-center gap-2.5 ml-auto sm:ml-0">
           {isRoleA ? (
-            userMsgCount >= 3 || insight?.readyToInvite ? (
-              <Button
-                size="sm"
-                onClick={onOpenInvite}
-                className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0 animate-fade-in"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>{t.inviteButton}</span>
-              </Button>
-            ) : (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-stone-100/90 border border-stone-200 text-stone-600 text-[11px] font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                <span>
-                  {activeLang === 'hi'
-                    ? `बात समझ रहे हैं (${userMsgCount}/3)`
-                    : activeLang === 'mr'
-                    ? `समजून घेत आहोत (${userMsgCount}/3)`
-                    : `Understanding your side (${userMsgCount}/3)`}
-                </span>
-              </div>
-            )
+            <Button
+              size="sm"
+              onClick={onOpenInvite}
+              className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0 bg-stone-900 text-white hover:bg-stone-800"
+              title="Click when you are ready to invite them"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>{t.inviteButton}</span>
+            </Button>
           ) : (
             <Button
               size="sm"

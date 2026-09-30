@@ -186,1269 +186,966 @@ export interface LandingTranslations {
 }
 
 export const LANDING_TRANSLATIONS: Record<SupportedLanguage, LandingTranslations> = {
+  // =========================================================================
+  // ENGLISH (4th to 5th Grade Reading Level)
+  // Simple words, no complicated jargon, easy for a 9-10 year old to understand
+  // =========================================================================
   en: {
     navbar: {
       howItWorks: 'How It Works',
-      demonstration: 'Demonstration',
-      outcomes: 'Outcomes',
-      privacy: 'Privacy',
-      faq: 'FAQ',
+      demonstration: 'Examples',
+      outcomes: 'Benefits',
+      privacy: 'Privacy & Safety',
+      faq: 'Questions',
       about: 'About',
-      tryReconcile: 'Try Reconcile',
+      tryReconcile: 'Start Talking',
       start: 'Start',
       tellMeWhatHappened: 'Tell Me What Happened'
     },
     hero: {
-      eyebrow: 'Private AI for Hard Conversations',
-      titleLine1: 'You know what you feel.',
-      titleLine2: 'We help you say it right.',
+      eyebrow: 'A safe place to fix arguments',
+      titleLine1: 'Had a fight with someone?',
+      titleLine2: "Let's fix it peacefully.",
       description:
-        'When a conversation feels impossible, Reconcile listens to both sides privately, finds where intent and impact got crossed, and gives you the exact words to fix it.',
-      ctaPrimary: 'Tell Me What Happened',
+        "When you are angry or hurt, it's hard to talk nicely. Tell Reconcile what happened. Your words stay 100% private. We listen to you, help you calm down, and give you kind words to solve things without fighting.",
+      ctaPrimary: 'Start Talking',
       ctaSecondary: 'See How It Works',
-      trustProof: '100% private. No account required. Your raw words are never forwarded.',
-      demoEyebrow: 'Interactive Demonstration',
-      demoTitle: 'How Reconcile resolves a real misunderstanding:',
-      feltLabel: 'Felt',
-      intentLabel: 'Intent',
+      trustProof: '100% private. No sign up needed. We never show your private words to anyone.',
+      demoEyebrow: 'Real Examples',
+      demoTitle: 'See how simple it is to fix an argument:',
+      feltLabel: 'What was felt',
+      intentLabel: 'What was really meant',
       neverSeenBy: 'Never seen by',
-      privateIntake: 'Private Intake',
-      theActualDisconnect: 'The Actual Disconnect',
-      suggestedStarter: 'A better conversation to start with',
-      tryThisLive: 'Try this live scenario',
+      privateIntake: 'Private Chat',
+      theActualDisconnect: 'Where things got mixed up',
+      suggestedStarter: 'A nice way to start talking',
+      tryThisLive: 'Try this example',
       scenarios: [
         {
           id: 'parent-teen',
           demoKey: 'demo-parent-child',
-          label: 'Parent & Teen',
-          context: 'Daily arguments around study hours and independence',
+          label: 'Parent & Kid',
+          context: 'Mom asking about homework and studies every day',
           sideA: {
             name: 'Maya',
-            role: 'Daughter, 19',
+            role: 'Kid',
             rawText:
-              '“Mom asks about my exams every single morning. I know she cares, but it makes me feel like she has zero faith in my ability to manage my life.”',
-            felt: 'Scrutinized & distrusted'
+              '“Mom asks about my school and homework every single hour. It makes me feel like she thinks I am lazy or cannot do anything right.”',
+            felt: 'Felt doubted & stressed'
           },
           sideB: {
-            name: 'Elena',
-            role: 'Mother',
+            name: 'Mom',
+            role: 'Parent',
             rawText:
-              '“I gave up my career so she could have better opportunities. I ask because I worry constantly and don’t want her to struggle the way I did.”',
-            intent: 'Deep love & fear of future regret'
+              '“I ask because I worry about her future. I love her so much and want her to do well in school.”',
+            intent: 'Deep love & worry'
           },
           bridge: {
             disconnect:
-              'The intention was anxious protection; the emotional impact was feeling doubted.',
+              'Mom was asking out of love and worry, but Maya felt like her mom did not trust her.',
             suggestedMessage:
-              '“Mom, I know you ask because my future matters to you. But when it’s every day, I feel doubted. Can we agree on a Sunday check-in instead?”'
+              '“Mom, I know you love me and want me to do well. But when you ask every hour, it makes me feel stressed. Can we talk about my school once every Sunday evening instead?”'
           }
         },
         {
           id: 'friends-silence',
           demoKey: 'demo-friend-friend',
           label: 'Two Friends',
-          context: 'Three days of silence after an emotional disagreement',
+          context: 'A friend did not reply to messages for two days',
           sideA: {
-            name: 'Sarah',
+            name: 'Rahul',
             role: 'Friend A',
             rawText:
-              '“I opened up about something really vulnerable and she just went completely dark for three days. It feels like our friendship is one-sided.”',
-            felt: 'Abandoned & unimportant'
+              '“My best friend hasn’t replied to my messages for two days. I feel like he doesn’t care about our friendship anymore.”',
+            felt: 'Felt ignored & sad'
           },
           sideB: {
-            name: 'Chloe',
+            name: 'Aman',
             role: 'Friend B',
             rawText:
-              '“Work destroyed me this week and I broke down. I started drafting a reply twice, but I had zero emotional energy left to explain myself.”',
-            intent: 'Coping with acute personal burnout'
+              '“I had so much homework and family work this week. I was completely tired and didn’t check my phone.”',
+            intent: 'Tired & busy with family'
           },
           bridge: {
             disconnect:
-              'The intention was self-preservation during burnout; the emotional impact was felt as cold neglect.',
+              'Aman was just very tired and busy, but Rahul thought Aman was ignoring him on purpose.',
             suggestedMessage:
-              '“Hey — zero pressure to reply right away. I know work has been overwhelming. Just wanted you to know I care about you whenever you’re ready.”'
+              '“Hey! No rush to reply. I know you’ve been super busy. Just checking in because I miss our chats!”'
+          }
+        },
+        {
+          id: 'sibling-sharing',
+          demoKey: 'demo-sibling-sibling',
+          label: 'Brother & Sister',
+          context: 'Taking each other’s things without asking',
+          sideA: {
+            name: 'Rohan',
+            role: 'Brother',
+            rawText:
+              '“My sister keeps taking my things without asking me first. It makes me really angry!”',
+            felt: 'Felt angry & not respected'
+          },
+          sideB: {
+            name: 'Priya',
+            role: 'Sister',
+            rawText:
+              '“I just needed his notebook for five minutes. I didn’t know it would make him so upset.”',
+            intent: 'Just needed quick help'
+          },
+          bridge: {
+            disconnect:
+              'Priya thought it was not a big deal, but Rohan felt his things were taken without respect.',
+            suggestedMessage:
+              '“Hey Priya, I don’t mind sharing my things with you, but please ask me first so I know where they are!”'
           }
         }
       ]
     },
+    howItWorks: {
+      badge: 'Simple 4 Steps',
+      title: 'How Reconcile helps you',
+      subtitle: 'We help two people understand each other so they can stop fighting and be friends again.',
+      steps: [
+        {
+          number: '01',
+          title: 'Tell us what happened',
+          description:
+            'Type what happened like you’re talking to a good friend. No pressure, take your time.',
+          tag: 'Step 1',
+          microExample: '“My friend didn’t invite me to play today...”'
+        },
+        {
+          number: '02',
+          title: 'We listen and understand',
+          description:
+            'We listen to your feelings, help you calm down, and help you see what the other person might be thinking.',
+          tag: 'Step 2',
+          microExample: '“It hurts to feel left out. Let’s see why they did that.”'
+        },
+        {
+          number: '03',
+          title: 'Find what went wrong',
+          description:
+            'We find the simple misunderstanding so nobody has to feel blamed or guilty.',
+          tag: 'Step 3',
+          microExample: '“They didn’t mean to hurt you — it was just a mix-up.”'
+        },
+        {
+          number: '04',
+          title: 'Get kind words to say',
+          description:
+            'We give you calm, kind words you can send to fix things and make up peacefully.',
+          tag: 'Step 4',
+          microExample: '“Hey, can we talk about what happened? I miss being friends.”'
+        }
+      ]
+    },
+    privacy: {
+      badge: 'Safe & Private',
+      title: 'Your words are completely private.',
+      subtitle: 'Nobody can read what you tell Reconcile. You can be 100% honest without worrying.',
+      pillars: [
+        {
+          title: 'Nobody reads your private chat',
+          description:
+            'What you type to Reconcile stays only with you. The other person can never see your private thoughts.'
+        },
+        {
+          title: 'We never take sides',
+          description:
+            'We don’t blame anyone or decide who is right or wrong. We just help both people understand each other.'
+        },
+        {
+          title: 'Angry messages are never sent',
+          description:
+            'We never send your angry words across. We only help you find polite and calm words when you are ready.'
+        },
+        {
+          title: 'No sign up or password',
+          description:
+            'You don’t need an account or email to use this. Just open the page and start talking.'
+        }
+      ]
+    },
     problemStory: {
-      badge: 'The Psychology of Conflict',
-      headline: '“When you\'re hurt, every explanation sounds like an excuse.”',
+      badge: 'Why We Fight',
+      headline: '“When you are hurt, everything feels like an insult.”',
       subtitle:
-        'Most arguments between people who care about each other aren\'t caused by a lack of love. They are caused by a translation failure: what was intended is almost never what was received.',
-      sectionTitle: 'Why conversations get stuck:',
+        'Most fights happen because what you said is not what the other person heard. Reconcile helps you clear the air.',
+      sectionTitle: 'How simple words get mixed up:',
       whatWasSaid: 'What was said:',
       whatWasHeard: 'What was heard:',
       whatWasMeant: 'What was actually meant:',
       disconnects: [
         {
-          spoken: '“Can we talk about this tomorrow?”',
-          perceived: '“You don’t care about what I’m feeling and want to brush this under the rug.”',
-          intended: '“I’m overwhelmed right now and afraid of saying something I’ll regret.”'
+          spoken: '“Can we talk tomorrow?”',
+          perceived: '“You don’t care about me at all.”',
+          intended: '“I’m too tired right now and don’t want to say something mean.”'
         },
         {
-          spoken: '“I just don’t want you to fall behind.”',
-          perceived: '“I don’t believe in your intelligence or trust your judgment.”',
-          intended: '“I love you and I’m terrified of seeing you struggle the way I did.”'
-        },
-        {
-          spoken: '“Fine. Do whatever you want.”',
-          perceived: '“You’ve given up on this relationship.”',
-          intended: '“I feel completely powerless and hurt, and don’t know what else to say.”'
+          spoken: '“Did you finish your work?”',
+          perceived: '“You think I am careless and lazy.”',
+          intended: '“I want to make sure you are not struggling.”'
         }
       ],
-      loopTitle: 'How Reconcile breaks the defensive loop',
-      loopSubtitle:
-        'When two people try to talk while defensive, their nervous systems are in fight-or-flight. Reconcile introduces a confidential mediator in the middle to restore emotional safety.',
+      loopTitle: 'Breaking the fighting cycle',
+      loopSubtitle: 'How Reconcile makes it easy to speak kindly again',
       pillars: [
-        {
-          num: '01',
-          title: 'Unfiltered Venting',
-          desc: 'You can be angry, messy, and blunt. Your raw words remain strictly private with Reconcile.'
-        },
-        {
-          num: '02',
-          title: 'Neutral Translation',
-          desc: 'Reconcile extracts the underlying vulnerability and core need, discarding the hostile accusations.'
-        },
-        {
-          num: '03',
-          title: 'Two-Sided Perspective',
-          desc: 'The other person shares their side without fear of blame. Both sides are validated neutrally.'
-        },
-        {
-          num: '04',
-          title: 'Practical Next Words',
-          desc: 'You receive de-escalating openers that invite connection without sacrificing your boundaries.'
-        }
+        { num: '01', title: 'Calm Down', desc: 'Take a breath and share your feelings safely.' },
+        { num: '02', title: 'See Both Sides', desc: 'Understand why the other person did what they did.' },
+        { num: '03', title: 'Fix It', desc: 'Get simple, peaceful words to make things right.' }
       ]
     },
     demoSection: {
-      eyebrow: 'Interactive Product Demonstration',
-      title: 'How two private perspectives become one understanding.',
-      subtitle:
-        'Explore real conflict scenarios below. Switch between archetypes to see how Reconcile identifies the disconnect and generates actionable resolution.',
+      eyebrow: 'Real Stories',
+      title: 'Common arguments solved simply.',
+      subtitle: 'See how people like you used Reconcile to fix misunderstandings.',
       copyButton: 'Copy Message',
       copiedText: 'Copied!',
-      tryLiveSession: 'Try this live session',
-      privateThoughtsA: 'Private Intake',
-      privateThoughtsB: 'Private Intake',
+      tryLiveSession: 'Try this scenario',
+      privateThoughtsA: 'Person A’s feelings',
+      privateThoughtsB: 'Person B’s feelings',
       feltBadge: 'Felt',
-      intentBadge: 'Intent',
-      coreNeedLabel: 'Core Need',
-      theActualGap: 'The Actual Disconnect',
-      commonGroundLabel: 'Common Ground',
-      readyToSendMessage: 'Ready-to-send reconciliation message',
+      intentBadge: 'True Intent',
+      coreNeedLabel: 'What they needed',
+      theActualGap: 'Where things got crossed',
+      commonGroundLabel: 'What they agree on',
+      readyToSendMessage: 'Kind words to send',
       tabs: [
         {
-          key: 'demo-parent-child',
-          tag: 'Flagship Scenario',
-          title: 'Parent & Teen',
-          subtitle: 'Studies, Independence & Fear of Failure',
+          key: 'parent-kid',
+          tag: 'Family',
+          title: 'Parent & Kid',
+          subtitle: 'Daily arguments over schoolwork and independence',
           personA: {
             name: 'Maya',
-            role: 'Daughter (19)',
-            quote:
-              '“They ask about my grades and exam prep every single day. I know they care, but it makes me feel like they have zero faith in my ability to handle my life.”',
-            coreNeed: 'Needs autonomy, trust, and to feel respected as an adult.'
+            role: 'Kid',
+            quote: '“Mom asks about my school every hour. It feels like she thinks I am lazy.”',
+            coreNeed: 'Needs trust and breathing room'
           },
           personB: {
-            name: 'Elena',
-            role: 'Mother',
-            quote:
-              '“I sacrificed so much for her opportunities. When I ask, it is because I worry constantly about her future. I don’t want her to struggle or face regret.”',
-            coreNeed: 'Needs emotional reassurance that her child will be secure and happy.'
+            name: 'Mom',
+            role: 'Parent',
+            quote: '“I worry about her future and want her to do well.”',
+            coreNeed: 'Wants reassurance and safety'
           },
           reconcileAnalysis: {
-            intent: 'Love, protection, and anxiety for her child’s future well-being.',
-            impact: 'Experienced as suffocating surveillance and a perceived lack of trust.',
-            commonGround: 'Both deeply value Maya’s long-term success and emotional peace.',
+            intent: 'Mom cares deeply about Maya’s success.',
+            impact: 'Maya felt micro-managed and doubted.',
+            commonGround: 'Both want Maya to succeed without daily fights.',
             readyOpener:
-              '“Mom, I know you ask because you care deeply about my future, but when it’s every day, I feel doubted. Can we agree on a Sunday check-in instead? That way I can update you with less stress.”'
+              '“Mom, I know you care. But when you ask constantly, I feel stressed. Can we do a Sunday check-in instead?”'
           }
-        },
-        {
-          key: 'demo-friend-friend',
-          tag: 'Popular Scenario',
-          title: 'Best Friends',
-          subtitle: 'Unanswered Text & Disappearing After Vulnerability',
-          personA: {
-            name: 'Sarah',
-            role: 'Friend A',
-            quote:
-              '“I opened up about something really heavy that happened, and she just disappeared for three days. It feels like our friendship is completely one-sided.”',
-            coreNeed: 'Needs reciprocity, validation, and emotional reliability.'
-          },
-          personB: {
-            name: 'Chloe',
-            role: 'Friend B',
-            quote:
-              '“Work destroyed me this week and I had an emotional breakdown. I started typing a reply twice, but I didn’t have the mental capacity to give her the care she deserved.”',
-            coreNeed: 'Needs space to recover from acute exhaustion without guilt.'
-          },
-          reconcileAnalysis: {
-            intent: 'Protecting the friendship by waiting until she had the capacity to respond properly.',
-            impact: 'The silence was experienced as emotional abandonment and cold neglect.',
-            commonGround: 'Both cherish the intimacy of the friendship and want to support each other.',
-            readyOpener:
-              '“Hey — zero pressure to reply right away! I know life can be overwhelming. I just wanted to make sure you’re okay whenever you have the energy to talk.”'
-          }
-        },
-        {
-          key: 'demo-sibling-sibling',
-          tag: 'Family Scenario',
-          title: 'Siblings',
-          subtitle: 'Borrowing Belongings & Disrespected Boundaries',
-          personA: {
-            name: 'Riley',
-            role: 'Older Sibling',
-            quote:
-              '“My brother keeps taking my headphones and jackets without asking. I don’t mind sharing, but it feels like my personal boundaries don’t exist in this house.”',
-            coreNeed: 'Needs basic courtesy, respect for personal space, and consent.'
-          },
-          personB: {
-            name: 'Casey',
-            role: 'Younger Sibling',
-            quote:
-              '“We live in the same house and we’re close. I always put it back. When they get furious over a borrowed hoodie, it feels like they treat me like an enemy.”',
-            coreNeed: 'Needs familial warmth, informality, and to feel close rather than judged.'
-          },
-          reconcileAnalysis: {
-            intent: 'Comfortable family informality and casual closeness.',
-            impact: 'Experienced as entitled intrusion and disregard for personal space.',
-            commonGround: 'Both value their closeness and living peacefully under the same roof.',
-            readyOpener:
-              '“I’m happy to share my stuff with you, but when it’s taken without asking, I feel disrespected. Just shoot me a quick text before grabbing it and it’s all good.”'
-          }
-        }
-      ]
-    },
-    howItWorks: {
-      badge: 'How Reconcile Mediates',
-      title: 'From defensive silence to a conversation that works.',
-      subtitle:
-        'Four thoughtful steps designed to protect your emotional safety and restore genuine connection.',
-      steps: [
-        {
-          number: '01',
-          title: 'You talk. We listen.',
-          description:
-            'Tell Reconcile what happened in your own words. Be as messy, angry, or blunt as you need to be. This intake is strictly confidential — nobody else will ever read this raw text.',
-          tag: '100% Confidential',
-          microExample: '“I felt like they didn’t care at all and completely ignored me.”'
-        },
-        {
-          number: '02',
-          title: 'We find what you actually mean.',
-          description:
-            'Underneath reactive anger is almost always an unspoken vulnerability: the need to be trusted, respected, or heard. Reconcile untangles your true intent from the frustration.',
-          tag: 'Emotional Intelligence',
-          microExample: 'Identified Core Need: Desires recognition and emotional safety.'
-        },
-        {
-          number: '03',
-          title: 'We invite the other side.',
-          description:
-            'We send a neutral, respectful invitation to the other person. No accusations, no guilt trips, and zero forwarded messages. They are invited to share their side in confidence too.',
-          tag: 'Zero Hostility Forwarding',
-          microExample: 'Neutral Invitation: “Reconcile noticed a communication gap. We’d love to hear your perspective.”'
-        },
-        {
-          number: '04',
-          title: 'Both sides finally make sense.',
-          description:
-            'Once both perspectives are heard, Reconcile reveals the Mediation Bridge: the exact gap between what was intended and what was felt, and gives both of you language to heal the rift.',
-          tag: 'The Resolution Bridge',
-          microExample: 'Ready to Send: De-escalating conversation starter crafted for connection.'
         }
       ]
     },
     outcomes: {
-      badge: 'Measurable Outcomes',
-      title: 'Communication clarity without emotional risk.',
-      subtitle:
-        'How Reconcile converts destructive defensive loops into constructive dialogue.',
+      badge: 'Good Results',
+      title: 'Feel heard without starting another argument.',
+      subtitle: 'How Reconcile turns anger into calm understanding.',
       cards: [
         {
           number: '01',
-          title: 'Say it ugly. We clean it up.',
-          eyebrow: 'Unfiltered Emotional Intake',
+          title: 'Tell the whole truth safely.',
+          eyebrow: 'Private venting',
           description:
-            'When you’re angry or heartbroken, holding your tongue is impossible. Reconcile gives you a confidential container to vent everything without regret. We extract what you really mean and ensure your raw words never reach the other person.',
-          rawLabel: 'Your raw intake (Private):',
-          rawText: '“I’m sick of them ignoring my texts. It proves they don’t give a damn about me.”',
-          insightLabel: 'What Reconcile identifies:',
-          insightText: 'Core Need: Desires emotional reliability and to feel valued in the relationship.'
+            'Say whatever you are feeling. Nobody else sees your words. We help you find your calm.',
+          rawLabel: 'What you felt:',
+          rawText: '“I am so angry they ignored me!”',
+          insightLabel: 'What you really want:',
+          insightText: 'You want to feel cared for and respected.'
         },
         {
           number: '02',
-          title: 'See what they may have meant.',
-          eyebrow: 'Perspective Without Excuses',
+          title: 'Understand the other person.',
+          eyebrow: 'See their side',
           description:
-            'Step out of defensive tunnel vision. Reconcile helps you understand the other person’s pressures, fears, or awkwardness — without excusing neglect or invalidating your genuine pain.',
-          rawLabel: 'Their likely situation:',
-          rawText: 'They care deeply, but felt paralyzed by stress or fear of escalation.',
-          insightLabel: 'Perspective Shift:',
-          insightText: 'Their silence was a symptom of overwhelm, not malice or apathy.'
-        },
-        {
-          number: '03',
-          title: 'A message that opens doors, not walls.',
-          eyebrow: 'De-escalating Dialogue',
-          description:
-            'Most texts sent in anger trigger instant defensiveness. Reconcile crafts a ready-to-send opener that names your hurt clearly without attacking the other person’s character.',
-          rawLabel: 'Reactive impulse:',
-          rawText: '“Fine, ignore me then. Don’t bother reaching out ever again.”',
-          insightLabel: 'Reconcile recommendation:',
-          insightText: '“Hey, things feel awkward between us and I miss talking to you. When you’re free this week, can we chat for 5 minutes?”'
-        },
-        {
-          number: '04',
-          title: 'Shared clarity without mutual blame.',
-          eyebrow: 'The Joint Mediation Bridge',
-          description:
-            'When both participants join, Reconcile maps where the wires got crossed, highlights shared values, and produces a mutually agreed next step.',
-          rawLabel: 'The Disconnect:',
-          rawText: 'Maya felt micro-managed; Elena felt terrified for Maya’s future.',
-          insightLabel: 'Shared Agreement:',
-          insightText: 'Scheduled weekly check-in instead of daily surprise interrogations.'
-        }
-      ]
-    },
-    privacy: {
-      badge: 'Cryptographic Privacy Boundaries',
-      title: 'Your raw words stay private.',
-      subtitle:
-        'Confidentiality is not an option in Reconcile. It is the architectural boundary that makes honesty possible. You can say what you really feel without fear of making things worse.',
-      pillars: [
-        {
-          title: 'Person A cannot see Person B’s conversation',
-          description:
-            'Person A’s intake channel is strictly isolated from Person B. Even after mediation is generated, Person B cannot read what Person A wrote during their private session.'
-        },
-        {
-          title: 'Person B cannot see Person A’s conversation',
-          description:
-            'Person B’s intake channel is completely confidential. Raw emotional venting, accusations, or insecurities remain locked to their individual view.'
-        },
-        {
-          title: 'Raw emotional venting is never forwarded',
-          description:
-            'Reconcile is not a messaging app that blindly sends messages across. The only text both people see is the neutral, consented Mediation Bridge.'
-        },
-        {
-          title: 'Private data is used only for mediation',
-          description:
-            'Your conversations are used solely to generate mutual understanding for your active session. We do not sell user data or train public commercial models on your private relationships.'
+            'See if they were tired, stressed, or confused, rather than trying to hurt you on purpose.',
+          rawLabel: 'Their situation:',
+          rawText: 'They were stressed with school or work.',
+          insightLabel: 'The big picture:',
+          insightText: 'Their silence was from tiredness, not anger.'
         }
       ]
     },
     faq: {
-      badge: 'Questions & Answers',
+      badge: 'Questions',
       title: 'Frequently asked questions.',
-      subtitle: 'Everything you need to know about Reconcile and how your confidentiality is preserved.',
+      subtitle: 'Simple answers to help you get started.',
       items: [
         {
-          question: 'Will the other person know I used Reconcile?',
+          question: 'Will the other person see what I typed?',
           answer:
-            'Yes, transparency is essential for rebuilding trust. When you choose to invite the other person, Reconcile sends a calm, neutral invitation introducing itself as an AI communication mediator that helps both people understand each other without arguments. Nothing is done behind their back.'
+            'Never. What you type stays 100% private with you. The other person only gets a kind, respectful message when you are ready.'
         },
         {
-          question: 'What if the other person refuses to participate?',
+          question: 'Do I need an account or email?',
           answer:
-            'Even if the other person chooses not to join, Reconcile is deeply useful. Your private intake helps you untangle your own feelings, explore their likely pressures and intentions, and gives you a ready-to-send message you can text them directly on your own terms.'
+            'No. You can start talking right away. No sign-up, no password, and completely free.'
         },
         {
-          question: 'Can the other person read what I typed during my private intake?',
+          question: 'Does Reconcile take sides?',
           answer:
-            'Never. Reconcile strictly isolates private intake channels. The only content both participants ever see is the neutral Mediation Bridge, which contains agreed-upon common ground and de-escalating language.'
-        },
-        {
-          question: 'Is Reconcile a replacement for therapy or counseling?',
-          answer:
-            'No. Reconcile is a focused communication tool for everyday misunderstandings between people who care about each other. It is not psychotherapy, medical care, or crisis intervention. If a conversation involves domestic violence, self-harm, or abuse, our safety protocol immediately redirects to certified crisis resources.'
-        },
-        {
-          question: 'How does Reconcile make sure it doesn’t take sides?',
-          answer:
-            'Reconcile is engineered with strict neutrality rules: validate emotions, but never validate hostile assumptions; avoid blaming or labeling either person as “toxic”; separate intent from impact; and always seek constructive common ground.'
-        },
-        {
-          question: 'Do I need to create an account or pay?',
-          answer:
-            'No account or password is required. You can start a conversation immediately. Reconcile is currently free to use with no paywalls or advertising.'
+            'No, never! We don’t decide who is right or wrong. We only help both of you understand each other and make peace.'
         }
       ]
     },
     closingCta: {
-      badge: 'Confidential Mediation',
-      title: 'Ready to have a better conversation?',
-      subtitle:
-        'You don’t have to stay stuck in silence or repeat the same argument. Take two minutes to explain what happened in private.',
-      ctaPrimary: 'Tell Me What Happened',
-      ctaSecondary: 'Explore an Example First',
-      trustProof: 'Free to use • No login or password • Your words stay strictly private'
+      badge: 'Make Peace',
+      title: 'Ready to fix your argument?',
+      subtitle: 'Take two minutes to talk things through in private.',
+      ctaPrimary: 'Start Talking',
+      ctaSecondary: 'See an Example',
+      trustProof: '100% free • No sign-up • Completely private'
     },
     footer: {
       philosophy: '“Understanding someone doesn’t mean agreeing with them.”',
       mission:
-        'An empathetic AI communication mediator built to help people navigate misunderstandings privately without taking sides.',
+        'A friendly AI helper to solve arguments and misunderstandings peacefully.',
       productTitle: 'Product',
-      privacyTitle: 'Confidentiality',
-      resourcesTitle: 'India Support Helplines',
-      crisisIndiaTitle: '24/7 Mental Health Helplines (India):',
+      privacyTitle: 'Safety',
+      resourcesTitle: 'Helpline Numbers',
+      crisisIndiaTitle: '24/7 Helplines (India):',
       crisisDesc:
-        'If you or someone you know is in immediate distress or facing a crisis, professional confidential help is available 24/7 across India:',
-      teleManas: 'Tele-MANAS (Govt. of India): 14416 (Toll-Free, 24/7)',
-      aasra: 'AASRA Crisis Support: +91 9820466726 (24/7)',
+        'If you or someone you know is feeling very sad, hopeless, or unsafe, please reach out for help right now:',
+      teleManas: 'Tele-MANAS (Govt of India): 14416 (Free, 24/7)',
+      aasra: 'AASRA Helpline: +91 9820466726',
       vandrevala: 'Vandrevala Foundation: +91 9999 666 555',
-      emergency112: 'India National Emergency: 112',
-      copyright: 'Reconcile AI. All rights reserved. Private, confidential conflict resolution.',
-      builtWithEmpathy: 'Built with empathy for honest human connections.'
+      emergency112: 'National Emergency Number: 112',
+      copyright: 'Reconcile AI. All rights reserved. Helping people talk peacefully.',
+      builtWithEmpathy: 'Made with care for peaceful conversations.'
     }
   },
 
+  // =========================================================================
+  // HINDI (सरल हिंदी — 4th to 5th Class Student Level)
+  // बिल्कुल आसान और घरेलू हिंदी, जिसे चौथी-पाँचवीं का बच्चा भी समझ सके
+  // =========================================================================
   hi: {
     navbar: {
-      howItWorks: 'कार्यप्रणाली',
-      demonstration: 'डेमो / उदाहरण',
-      outcomes: 'परिणाम',
-      privacy: 'गोपनीयता',
-      faq: 'सामान्य प्रश्न',
-      about: 'परिचय',
-      tryReconcile: 'Reconcile आज़माएं',
+      howItWorks: 'यह कैसे काम करता है',
+      demonstration: 'आसान उदाहरण',
+      outcomes: 'फायदे',
+      privacy: 'सुरक्षा और गोपनीयता',
+      faq: 'सवाल-जवाब',
+      about: 'हमारे बारे में',
+      tryReconcile: 'बात शुरू करें',
       start: 'शुरू करें',
       tellMeWhatHappened: 'बताइए क्या हुआ'
     },
     hero: {
-      eyebrow: 'कठिन बातचीत के लिए निजी AI मध्यस्थ',
-      titleLine1: 'आप जानते हैं कि आप क्या महसूस कर रहे हैं।',
-      titleLine2: 'हम इसे सही तरीके से कहने में मदद करते हैं।',
+      eyebrow: 'झगड़े सुलझाने का सुरक्षित साथी',
+      titleLine1: 'किसी से अनबन या झगड़ा हुआ है?',
+      titleLine2: 'आइए शांति से बात सुलझाएं।',
       description:
-        'जब आमने-सामने बातचीत नामुमकिन लगे, Reconcile दोनों पक्षों को गोपनीय तरीके से सुनता है, समझता है कि इरादे और असर में कहाँ दूरी आई, और शांति बहाल करने के लिए सटीक शब्द देता है।',
-      ctaPrimary: 'बताइए क्या हुआ',
+        'गुस्से या दुख में सही शब्द नहीं मिलते। पहले शांति से हमें बताएं। आपकी बातें 100% गुप्त रहेंगी। हम आपकी बात सुनेंगे, मन हल्का करेंगे, और ऐसे प्यारे शब्द देंगे जिससे बिना लड़े सब ठीक हो जाए।',
+      ctaPrimary: 'बात शुरू करें',
       ctaSecondary: 'देखें यह कैसे काम करता है',
-      trustProof: '100% गोपनीय। किसी खाते की आवश्यकता नहीं। आपके शब्द कभी सीधे आगे नहीं भेजे जाते।',
-      demoEyebrow: 'इंटरैक्टिव प्रदर्शन',
-      demoTitle: 'Reconcile कैसे एक वास्तविक ग़लतफ़हमी को सुलझाता है:',
-      feltLabel: 'महसूस हुआ',
-      intentLabel: 'असली इरादा',
-      neverSeenBy: 'इन्होंने कभी नहीं देखा',
-      privateIntake: 'गोपनीय संवाद',
-      theActualDisconnect: 'असल में ग़लतफ़हमी कहाँ हुई',
-      suggestedStarter: 'बातचीत शुरू करने के लिए सही शब्द',
-      tryThisLive: 'इस स्थिति को लाइव आज़माएं',
+      trustProof:
+        '100% गुप्त और सुरक्षित। कोई खाता बनाने की ज़रूरत नहीं। आपकी निजी बातें किसी को नहीं दिखाई जातीं।',
+      demoEyebrow: 'आसान उदाहरण',
+      demoTitle: 'देखें झगड़ा कितनी आसानी से सुलझ सकता है:',
+      feltLabel: 'क्या महसूस हुआ',
+      intentLabel: 'असली मंशा क्या थी',
+      neverSeenBy: 'इन्हें कभी नहीं दिखेगा',
+      privateIntake: 'निजी बातचीत',
+      theActualDisconnect: 'बात कहाँ उलझी थी',
+      suggestedStarter: 'बात शुरू करने के लिए प्यारे शब्द',
+      tryThisLive: 'यह उदाहरण चलाकर देखें',
       scenarios: [
         {
           id: 'parent-teen',
           demoKey: 'demo-parent-child',
-          label: 'माता-पिता और किशोर',
-          context: 'पढ़ाई के घंटों और आज़ादी को लेकर रोज़ाना बहस',
+          label: 'मम्मी-पापा और बच्चा',
+          context: 'रोज़ पढ़ाई और होमवर्क को लेकर टोकना',
           sideA: {
             name: 'माया',
-            role: 'बेटी, 19 वर्ष',
+            role: 'बेटी',
             rawText:
-              '“मम्मी रोज़ सुबह मेरी परीक्षाओं और पढ़ाई के बारे में पूछती हैं। मुझे पता है वो परवाह करती हैं, लेकिन ऐसा लगता है कि उन्हें मुझ पर ज़रा भी भरोसा नहीं है।”',
-            felt: 'सख्त निगरानी और अविश्वास महसूस हुआ'
+              '“मम्मी हर घंटे पढ़ाई और परीक्षा के बारे में पूछती रहती हैं। मुझे लगता है उन्हें मुझ पर बिल्कुल भरोसा नहीं है।”',
+            felt: 'बुरा लगा और अविश्वास महसूस हुआ'
           },
           sideB: {
-            name: 'एलेना',
-            role: 'माँ',
+            name: 'माँ',
+            role: 'माता-पिता',
             rawText:
-              '“मैंने उसके अच्छे भविष्य के लिए अपना करियर तक छोड़ दिया। मैं इसलिए पूछती हूँ क्योंकि मुझे उसकी चिंता रहती है और मैं नहीं चाहती कि वो मेरी तरह संघर्ष करे।”',
-            intent: 'गहरा प्रेम और भविष्य के संघर्ष का डर'
+              '“मैं इसलिए पूछती हूँ क्योंकि मुझे उसकी चिंता होती है। मैं चाहती हूँ कि वो अच्छे से पढ़े और खुश रहे।”',
+            intent: 'सच्चा प्यार और फिक्र'
           },
           bridge: {
             disconnect:
-              'माँ का इरादा चिंता भरी सुरक्षा था; लेकिन बेटी पर असर यह हुआ कि उसे लगा उस पर भरोसा नहीं किया जा रहा।',
+              'माँ प्यार और चिंता से पूछ रही थीं, पर बेटी को लगा कि माँ उस पर शक कर रही हैं।',
             suggestedMessage:
-              '“मम्मी, मैं जानती हूँ आप मेरी चिंता करती हैं। लेकिन रोज़-रोज़ पूछने से मुझे लगता है आपको मुझ पर भरोसा नहीं है। क्या हम रविवार को एक तय समय पर इस बारे में बात कर सकते हैं?”'
+              '“मम्मी, मैं जानती हूँ आप मुझसे प्यार करती हैं। लेकिन जब आप बार-बार पूछती हैं, तो मुझे तनाव होता है। क्या हम हर रविवार शाम को पढ़ाई की बात कर सकते हैं?”'
           }
         },
         {
           id: 'friends-silence',
           demoKey: 'demo-friend-friend',
-          label: 'दो पक्के दोस्त',
-          context: 'एक भावनात्मक बहस के बाद तीन दिनों की चुप्पी',
+          label: 'दो दोस्त',
+          context: 'दोस्त ने दो दिन से मैसेज का जवाब नहीं दिया',
           sideA: {
-            name: 'सारा',
+            name: 'राहुल',
             role: 'दोस्त A',
             rawText:
-              '“मैंने अपनी एक बहुत निजी और संवेदनशील बात साझा की और उसने तीन दिन तक कोई जवाब नहीं दिया। मुझे लगा कि यह दोस्ती सिर्फ मेरी तरफ से है।”',
-            felt: 'उपेक्षित और अकेलापन महसूस हुआ'
+              '“मेरे पक्के दोस्त ने दो दिन से कोई जवाब नहीं दिया। मुझे लगा अब वो मुझसे दोस्ती नहीं रखना चाहता।”',
+            felt: 'अकेलापन और बुरा लगा'
           },
           sideB: {
-            name: 'क्लोई',
+            name: 'अमन',
             role: 'दोस्त B',
             rawText:
-              '“ऑफिस के तनाव ने मुझे इस हफ़्ते पूरी तरह तोड़ दिया था। मैंने दो बार जवाब लिखने की कोशिश की, लेकिन मुझमें बात करने की ज़रा भी ऊर्जा नहीं बची थी।”',
-            intent: 'गंभीर व्यक्तिगत तनाव और थकान से जूझना'
+              '“घर में बहुत काम था और मैं बहुत थक गया था। मैंने फोन देखा ही नहीं।”',
+            intent: 'थकावट और काम में व्यस्त'
           },
           bridge: {
             disconnect:
-              'इरादा खुद को मानसिक थकान से बचाना था; लेकिन चुप्पी का असर उपेक्षा और बेरुखी के रूप में महसूस हुआ।',
+              'अमन थका हुआ था, लेकिन राहुल को लगा कि अमन उसे नज़रअंदाज़ कर रहा है।',
             suggestedMessage:
-              '“नमस्ते — तुरंत जवाब देने का कोई दबाव नहीं है। मुझे पता है काम का बहुत तनाव था। बस यह बताना था कि जब भी तुम सहज महसूस करो, मैं बात करने के लिए यहाँ हूँ।”'
+              '“अरे भाई, कोई जल्दी नहीं है। मुझे पता है तुम व्यस्त थे। बस याद आ रही थी तो मैसेज किया!”'
+          }
+        },
+        {
+          id: 'sibling-sharing',
+          demoKey: 'demo-sibling-sibling',
+          label: 'भाई और बहन',
+          context: 'बिना पूछे सामान ले लेना',
+          sideA: {
+            name: 'रोहन',
+            role: 'भाई',
+            rawText:
+              '“मेरी बहन बिना पूछे मेरा सामान उठा लेती है। मुझे बहुत गुस्सा आता है!”',
+            felt: 'गुस्सा आया और बुरा लगा'
+          },
+          sideB: {
+            name: 'प्रिया',
+            role: 'बहन',
+            rawText:
+              '“मुझे बस थोड़ी देर के लिए उसकी कॉपी चाहिए थी। मुझे नहीं पता था कि वो इतना गुस्सा हो जाएगा।”',
+            intent: 'बस थोड़ी मदद चाहिए थी'
+          },
+          bridge: {
+            disconnect:
+              'प्रिया को लगा छोटी सी बात है, लेकिन रोहन को लगा कि उसके सामान की कद्र नहीं की गई।',
+            suggestedMessage:
+              '“प्रिया, सामान लेने में कोई दिक्कत नहीं है, बस लेने से पहले एक बार पूछ लिया करो ताकि मुझे पता रहे!”'
           }
         }
       ]
     },
-    problemStory: {
-      badge: 'टकराव का मनोविज्ञान',
-      headline: '“जब दिल दुखा हो, तो हर स्पष्टीकरण एक बहाना लगता है।”',
+    howItWorks: {
+      badge: 'आसान 4 कदम',
+      title: 'Reconcile कैसे मदद करता है',
       subtitle:
-        'आपस में प्यार करने वाले लोगों के बीच झगड़े प्यार की कमी से नहीं होते। वे संवाद की विफलता से होते हैं: जो कहा गया और जो समझा गया, उसमें हमेशा अंतर रह जाता है।',
-      sectionTitle: 'बातचीत क्यों अटक जाती है:',
-      whatWasSaid: 'क्या कहा गया था:',
-      whatWasHeard: 'क्या सुना गया:',
+        'हम दो लोगों को एक-दूसरे की बात समझाने में मदद करते हैं ताकि झगड़ा खत्म हो सके।',
+      steps: [
+        {
+          number: '01',
+          title: 'बताइए क्या हुआ',
+          description:
+            'जैसे किसी अच्छे दोस्त को बताते हैं, वैसे ही दिल की बात आराम से लिखें।',
+          tag: 'पहला कदम',
+          microExample: '“आज मेरे दोस्त ने मुझे खेलने नहीं बुलाया...”'
+        },
+        {
+          number: '02',
+          title: 'हम आपकी बात सुनते हैं',
+          description:
+            'हम आपकी भावना समझते हैं, आपका मन शांत करते हैं, और सामने वाले की मजबूरी भी देखते हैं।',
+          tag: 'दूसरा कदम',
+          microExample: '“बुरा लगना स्वाभाविक है। आइए देखें उन्होंने ऐसा क्यों किया।”'
+        },
+        {
+          number: '03',
+          title: 'ग़लतफ़हमी ढूंढते हैं',
+          description:
+            'हम दिखाते हैं कि बात कहाँ उलझी थी, ताकि किसी पर कोई दोष न आए।',
+          tag: 'तीसरा कदम',
+          microExample: '“उनका इरादा आपको दुख पहुँचाना नहीं था, बस समझने में भूल हुई।”'
+        },
+        {
+          number: '04',
+          title: 'मीठे शब्द मिलते हैं',
+          description:
+            'हम आपको ऐसे शांत और सीधे शब्द देते हैं, जिन्हें भेजकर आप बिना लड़े बात सुलझा सकते हैं।',
+          tag: 'चौथा कदम',
+          microExample: '“चलो पुरानी बात भूलकर फिर से बात करते हैं!”'
+        }
+      ]
+    },
+    privacy: {
+      badge: 'सुरक्षित और गुप्त',
+      title: 'आपकी बातें बिल्कुल गुप्त रहती हैं।',
+      subtitle:
+        'यहाँ आप बिना किसी डर के खुलकर बोल सकते हैं। आपकी बातें कोई दूसरा इंसान नहीं पढ़ सकता।',
+      pillars: [
+        {
+          title: 'आपकी चैट कोई नहीं पढ़ सकता',
+          description:
+            'आप जो लिखते हैं वो सिर्फ आपके पास रहता है। सामने वाले को कभी आपकी निजी बातें नहीं दिखतीं।'
+        },
+        {
+          title: 'हम कभी किसी का पक्ष नहीं लेते',
+          description:
+            'हम किसी को गलत या सही नहीं ठहराते। हम बस दोनों को एक-दूसरे की बात समझाते हैं।'
+        },
+        {
+          title: 'गुस्से वाले शब्द कभी नहीं भेजे जाते',
+          description:
+            'हम आपकी कही कड़वी बातें कभी आगे नहीं भेजते। हम सिर्फ सुलह कराने वाले मीठे शब्द देते हैं।'
+        },
+        {
+          title: 'कोई लॉगिन या पासवर्ड नहीं',
+          description:
+            'न ईमेल चाहिए, न पासवर्ड। बस पेज खोलिए और आराम से अपनी बात कहिए।'
+        }
+      ]
+    },
+    problemStory: {
+      badge: 'झगड़े क्यों होते हैं',
+      headline: '“जब दिल दुखा हो, तो हर बात बुरी लगती है।”',
+      subtitle:
+        'अक्सर झगड़े इसलिए नहीं होते कि प्यार खत्म हो गया, बल्कि इसलिए होते हैं क्योंकि हम अपनी बात सही से कह नहीं पाते।',
+      sectionTitle: 'बातें कैसे उलझती हैं:',
+      whatWasSaid: 'क्या कहा गया:',
+      whatWasHeard: 'क्या समझा गया:',
       whatWasMeant: 'असली मतलब क्या था:',
       disconnects: [
         {
-          spoken: '“क्या हम इस बारे में कल बात कर सकते हैं?”',
-          perceived: '“तुम्हें मेरी भावनाओं की कोई परवाह नहीं है और तुम बात को टालना चाहते हो।”',
-          intended: '“मैं इस समय बहुत तनाव में हूँ और डर है कि गुस्से में कुछ गलत न कह दूँ।”'
-        },
-        {
-          spoken: '“मैं बस नहीं चाहता कि तुम पीछे रह जाओ।”',
-          perceived: '“मुझे तुम्हारी समझदारी या काबिलियत पर कोई भरोसा नहीं है।”',
-          intended: '“मैं तुमसे प्यार करता हूँ और तुम्हें मेरी तरह ठोकरें खाते नहीं देख सकता।”'
-        },
-        {
-          spoken: '“ठीक है। जो मन करे वही करो।”',
-          perceived: '“तुमने इस रिश्ते की उम्मीद छोड़ दी है।”',
-          intended: '“मैं बहुत लाचार और आहत महसूस कर रहा हूँ, और समझ नहीं आ रहा क्या कहूँ।”'
+          spoken: '“क्या हम कल बात कर सकते हैं?”',
+          perceived: '“तुम मेरी कोई परवाह नहीं करते।”',
+          intended: '“मैं बहुत थका हूँ और गुस्से में कुछ गलत नहीं बोलना चाहता।”'
         }
       ],
-      loopTitle: 'Reconcile रक्षात्मक चक्र को कैसे तोड़ता है',
-      loopSubtitle:
-        'जब दो लोग गुस्से में बात करते हैं, तो उनका दिमाग सिर्फ खुद का बचाव करता है। Reconcile बीच में एक गोपनीय मध्यस्थ बनकर भावनात्मक सुरक्षा लौटाता है।',
+      loopTitle: 'झगड़ा खत्म करने का तरीका',
+      loopSubtitle: 'Reconcile कैसे बातचीत को आसान बनाता है',
       pillars: [
-        {
-          num: '01',
-          title: 'बिना किसी संकोच के बात कहें',
-          desc: 'आप गुस्सा निकाल सकते हैं, अपनी उलझन बयां कर सकते हैं। आपके शब्द केवल Reconcile के पास गोपनीय रहते हैं।'
-        },
-        {
-          num: '02',
-          title: 'शांत और सटीक अनुवाद',
-          desc: 'Reconcile कड़वाहट और आरोपों को हटाकर आपकी असली भावना और ज़रूरत को पहचानता है।'
-        },
-        {
-          num: '03',
-          title: 'दोनों पक्षों का सम्मान',
-          desc: 'दूसरा व्यक्ति भी बिना किसी डर या इल्ज़ाम के अपनी बात रखता है। दोनों पक्षों को निष्पक्षता से सुना जाता है।'
-        },
-        {
-          num: '04',
-          title: 'बातचीत के लिए सही शब्द',
-          desc: 'आपको ऐसे वाक्य मिलते हैं जो बिना आत्मसम्मान गिराए, शांति से बातचीत का रास्ता खोलते हैं।'
-        }
+        { num: '01', title: 'शांत हों', desc: 'अपनी बात खुलकर और बिना डर के बताएं।' },
+        { num: '02', title: 'दोनों तरफ देखें', desc: 'समझें कि सामने वाले ने ऐसा क्यों किया होगा।' },
+        { num: '03', title: 'बात सुलझाएं', desc: 'प्यारे और सीधे शब्दों से दोबारा दोस्ती करें।' }
       ]
     },
     demoSection: {
-      eyebrow: 'उत्पाद का इंटरैक्टिव प्रदर्शन',
-      title: 'कैसे दो अलग-अलग नज़रिए एक साझी समझ बन जाते हैं।',
-      subtitle:
-        'नीचे दिए गए वास्तविक स्थितियों को देखें। समझें कि कैसे Reconcile ग़लतफ़हमी को पहचानता है और समाधान का रास्ता तैयार करता है।',
-      copyButton: 'संदेश कॉपी करें',
+      eyebrow: 'सच्ची कहानियाँ',
+      title: 'झगड़े कैसे सुलझे',
+      subtitle: 'देखें दूसरों ने कैसे अपनी बात सुलझाई।',
+      copyButton: 'मैसेज कॉपी करें',
       copiedText: 'कॉपी हो गया!',
-      tryLiveSession: 'इस सत्र को लाइव आज़माएं',
-      privateThoughtsA: 'गोपनीय संवाद',
-      privateThoughtsB: 'गोपनीय संवाद',
+      tryLiveSession: 'यह उदाहरण आज़माएं',
+      privateThoughtsA: 'इनका पक्ष',
+      privateThoughtsB: 'उनका पक्ष',
       feltBadge: 'महसूस हुआ',
-      intentBadge: 'असली इरादा',
-      coreNeedLabel: 'मूल आवश्यकता',
-      theActualGap: 'असल में ग़लतफ़हमी कहाँ हुई',
-      commonGroundLabel: 'साझा सहमति',
-      readyToSendMessage: 'शांतिपूर्ण सुलह का तैयार संदेश',
+      intentBadge: 'असली मंशा',
+      coreNeedLabel: 'ज़रूरत',
+      theActualGap: 'कहाँ उलझन हुई',
+      commonGroundLabel: 'सहमति',
+      readyToSendMessage: 'भेजने के लिए अच्छा मैसेज',
       tabs: [
         {
-          key: 'demo-parent-child',
-          tag: 'प्रमुख परिदृश्य',
-          title: 'माता-पिता और किशोर',
-          subtitle: 'पढ़ाई, आज़ादी और असफलता का डर',
+          key: 'parent-kid',
+          tag: 'परिवार',
+          title: 'मम्मी-पापा और बच्चा',
+          subtitle: 'पढ़ाई को लेकर रोज़ की बहस',
           personA: {
             name: 'माया',
-            role: 'बेटी (19 वर्ष)',
-            quote:
-              '“वे हर रोज़ मेरे अंकों और परीक्षा की तैयारी को लेकर सवाल पूछते हैं। मुझे पता है वो परवाह करते हैं, लेकिन ऐसा लगता है कि उन्हें मुझ पर ज़रा भी भरोसा नहीं है।”',
-            coreNeed: 'आज़ादी, भरोसा और एक वयस्क के रूप में सम्मान की ज़रूरत।'
+            role: 'बेटी',
+            quote: '“मम्मी हर रोज़ पढ़ाई के लिए टोकती हैं।”',
+            coreNeed: 'भरोसा और थोड़ा समय'
           },
           personB: {
-            name: 'एलेना',
-            role: 'माँ',
-            quote:
-              '“मैंने उसके अवसरों के लिए बहुत त्याग किया है। जब मैं पूछती हूँ तो इसलिए क्योंकि मुझे उसके भविष्य की चिंता रहती है। मैं नहीं चाहती कि उसे पछतावा हो।”',
-            coreNeed: 'इस बात का भावनात्मक आश्वासन कि उसकी संतान सुरक्षित और खुश रहेगी।'
+            name: 'माँ',
+            role: 'माता-पिता',
+            quote: '“मुझे उसकी भविष्य की चिंता रहती है।”',
+            coreNeed: 'सच्चा प्यार'
           },
           reconcileAnalysis: {
-            intent: 'गहरा प्रेम, सुरक्षा और संतान के भविष्य को लेकर चिंता।',
-            impact: 'दमघोंटू निगरानी और अविश्वास के रूप में महसूस होना।',
-            commonGround: 'दोनों ही माया की दीर्घकालिक सफलता और मानसिक शांति चाहते हैं।',
+            intent: 'माँ प्यार से चिंता कर रही थीं।',
+            impact: 'बेटी को लगा उस पर भरोसा नहीं है।',
+            commonGround: 'दोनों चाहते हैं कि घर में शांति रहे।',
             readyOpener:
-              '“मम्मी, मैं जानती हूँ आप मेरी भलाई के लिए पूछती हैं। लेकिन रोज़ पूछने से मुझे लगता है आपको मुझ पर भरोसा नहीं है। क्या हम रविवार को एक समय तय कर सकते हैं जब मैं बिना तनाव के आपको अपडेट दे सकूँ?”'
+              '“मम्मी, मैं जानती हूँ आप प्यार करती हैं। हम रविवार को पढ़ाई की बात करेंगे ताकि रोज़ तनाव न हो।”'
           }
-        },
-        {
-          key: 'demo-friend-friend',
-          tag: 'लोकप्रिय परिदृश्य',
-          title: 'पक्के दोस्त',
-          subtitle: 'मैसेज का जवाब न आना और अचानक दूरी',
-          personA: {
-            name: 'सारा',
-            role: 'दोस्त A',
-            quote:
-              '“मैंने अपने जीवन की एक गंभीर परेशानी साझा की और उसने तीन दिन तक कोई जवाब नहीं दिया। मुझे लगा कि यह दोस्ती सिर्फ मेरी तरफ से चल रही है।”',
-            coreNeed: 'पारस्परिकता, भावनात्मक सहारा और दोस्ती में निरंतरता।'
-          },
-          personB: {
-            name: 'क्लोई',
-            role: 'दोस्त B',
-            quote:
-              '“इस हफ़्ते काम के तनाव ने मेरी हालत खराब कर दी थी। मैंने दो बार जवाब लिखना शुरू किया, लेकिन मुझमें ठीक से बात करने की मानसिक ऊर्जा ही नहीं थी।”',
-            coreNeed: 'बिना अपराधबोध के अत्यधिक थकान से उबरने के लिए थोड़ा समय।'
-          },
-          reconcileAnalysis: {
-            intent: 'दोस्ती की कद्र करते हुए तब तक रुकना जब तक कि सही से बात करने की स्थिति न हो।',
-            impact: 'चुप्पी को भावनात्मक उपेक्षा और बेरुखी के रूप में महसूस किया गया।',
-            commonGround: 'दोनों एक-दूसरे की दोस्ती की कद्र करते हैं और एक-दूसरे का साथ चाहते हैं।',
-            readyOpener:
-              '“नमस्ते — तुरंत जवाब देने की कोई जल्दी नहीं है! मुझे पता है जीवन में बहुत उलझनें हो सकती हैं। बस यह पूछना था कि तुम ठीक हो ना? जब भी ऊर्जा हो, बात करना।”'
-          }
-        },
-        {
-          key: 'demo-sibling-sibling',
-          tag: 'पारिवारिक परिदृश्य',
-          title: 'भाई और बहन',
-          subtitle: 'बिना पूछे सामान लेना और सीमाओं का आदर न करना',
-          personA: {
-            name: 'रिली',
-            role: 'बड़ा भाई / बहन',
-            quote:
-              '“मेरा भाई बिना पूछे मेरे हेडफ़ोन और कपड़े ले लेता है। मुझे बाँटने में कोई ऐतराज़ नहीं है, लेकिन ऐसा लगता है जैसे इस घर में मेरी कोई निजता ही नहीं है।”',
-            coreNeed: 'बुनियादी शिष्टाचार, व्यक्तिगत स्थान का आदर और सहमति।'
-          },
-          personB: {
-            name: 'केसी',
-            role: 'छोटा भाई / बहन',
-            quote:
-              '“हम एक ही घर में रहते हैं और बहुत करीब हैं। मैं हमेशा चीज़ वापस रख देता हूँ। जब वो एक हुडी के लिए इतना गुस्सा करते हैं, तो लगता है जैसे मुझे पराया समझ रहे हों।”',
-            coreNeed: 'पारिवारिक अपनापन, बेतकल्लुफ़ी और बिना डांट-फटकार के नज़दीकी।'
-          },
-          reconcileAnalysis: {
-            intent: 'पारिवारिक सहजता और सहज नज़दीकी।',
-            impact: 'अधिकार जताने और व्यक्तिगत सीमाओं के अनादर के रूप में महसूस होना।',
-            commonGround: 'दोनों अपनी नज़दीकी और एक ही छत के नीचे शांति से रहना चाहते हैं।',
-            readyOpener:
-              '“मुझे अपनी चीज़ें तुम्हारे साथ साझा करने में खुशी है, लेकिन बिना पूछे लेने से मुझे बुरा लगता है। बस लेने से पहले एक छोटा-सा मैसेज भेज दिया करो, फिर कोई परेशानी नहीं होगी।”'
-          }
-        }
-      ]
-    },
-    howItWorks: {
-      badge: 'Reconcile की कार्यप्रणाली',
-      title: 'बचावात्मक चुप्पी से एक सार्थक बातचीत तक।',
-      subtitle:
-        'आपकी भावनात्मक सुरक्षा की रक्षा करने और सच्चे जुड़ाव को बहाल करने के लिए चार विचारशील कदम।',
-      steps: [
-        {
-          number: '01',
-          title: 'आप बोलिए, हम सुनेंगे।',
-          description:
-            'Reconcile को अपने शब्दों में बताइए कि क्या हुआ। जितना चाहें गुस्सा या उलझन व्यक्त करें। यह बातचीत पूरी तरह गोपनीय है — कोई अन्य व्यक्ति इसे कभी नहीं पढ़ पाएगा।',
-          tag: '100% गोपनीय',
-          microExample: '“मुझे लगा कि उन्हें मेरी कोई परवाह नहीं है और उन्होंने मुझे पूरी तरह नज़रअंदाज़ कर दिया।”'
-        },
-        {
-          number: '02',
-          title: 'हम आपका असली मतलब समझते हैं।',
-          description:
-            'गुस्से के नीचे अक्सर एक अनकही भावना छिपी होती है: विश्वास, आदर या सुने जाने की ज़रूरत। Reconcile कड़वाहट से आपके वास्तविक इरादे को अलग करता है।',
-          tag: 'भावनात्मक बुद्धिमत्ता',
-          microExample: 'पहचानी गई आवश्यकता: भावनात्मक सुरक्षा और सम्मान की इच्छा।'
-        },
-        {
-          number: '03',
-          title: 'हम दूसरे पक्ष को आमंत्रित करते हैं।',
-          description:
-            'हम दूसरे व्यक्ति को एक शांतिपूर्ण, सम्मानजनक निमंत्रण भेजते हैं। कोई इल्ज़ाम नहीं, कोई ताने नहीं, और कोई पुराना मैसेज फॉरवर्ड नहीं किया जाता। वे भी पूरी गोपनीयता में अपनी बात रखते हैं।',
-          tag: 'शून्य कड़वाहट',
-          microExample: 'शांतिपूर्ण निमंत्रण: “Reconcile ने बातचीत में दूरी देखी है। हम आपका नज़रिया भी सुनना चाहते हैं।”'
-        },
-        {
-          number: '04',
-          title: 'दोनों पक्षों की बात समझ में आ जाती है।',
-          description:
-            'जब दोनों पक्ष अपनी बात कह लेते हैं, तो Reconcile मध्यस्थता सेतु दिखाता है: जहाँ इरादे और असर में फर्क आया, और दोनों को रिश्ते सुधारने के लिए सही शब्द देता है।',
-          tag: 'समाधान सेतु',
-          microExample: 'भेजने के लिए तैयार: तनाव घटाने वाला और जुड़ाव बनाने वाला संवाद।'
         }
       ]
     },
     outcomes: {
-      badge: 'वास्तविक परिणाम',
-      title: 'बिना किसी भावनात्मक जोखिम के स्पष्ट संवाद।',
-      subtitle:
-        'Reconcile कैसे विनाशकारी बहस को एक सार्थक और रचनात्मक बातचीत में बदलता है।',
+      badge: 'अच्छे नतीजे',
+      title: 'बिना लड़े अपनी बात कहें।',
+      subtitle: 'गुस्से को शांति में बदलने का आसान तरीका।',
       cards: [
         {
           number: '01',
-          title: 'जैसा महसूस हो वैसा कहिए। हम उसे संवार देंगे।',
-          eyebrow: 'बिना फ़िल्टर की भावनात्मक अभिव्यक्ति',
-          description:
-            'जब आप दुखी या गुस्से में होते हैं, तो शांत रहना मुश्किल होता है। Reconcile आपको बिना किसी पछतावे के अपना दिल हल्का करने की जगह देता है। आपके कच्चे शब्द कभी दूसरे व्यक्ति तक नहीं पहुँचते।',
-          rawLabel: 'आपकी निजी अभिव्यक्ति (गोपनीय):',
-          rawText: '“मैं उनके मुझे नज़रअंदाज़ करने से तंग आ गया हूँ। इससे साबित होता है कि उन्हें मेरी ज़रा भी परवाह नहीं है।”',
-          insightLabel: 'Reconcile क्या पहचानता है:',
-          insightText: 'मूल आवश्यकता: रिश्ते में भावनात्मक भरोसा और खुद को मूल्यवान महसूस करने की इच्छा।'
-        },
-        {
-          number: '02',
-          title: 'जानिए कि उनका असली इरादा क्या रहा होगा।',
-          eyebrow: 'बिना बहानेबाजी के दूसरा नज़रिया',
-          description:
-            'बचाव की संकीर्ण सोच से बाहर निकलिए। Reconcile आपको दूसरे व्यक्ति के दबाव, डर या झिझक को समझने में मदद करता है — बिना उनके गलत व्यवहार को सही ठहराए या आपकी पीड़ा को कम आंके।',
-          rawLabel: 'उनकी संभावित स्थिति:',
-          rawText: 'वे दिल से परवाह करते हैं, लेकिन अत्यधिक तनाव या झगड़े के डर से चुप हो गए थे।',
-          insightLabel: 'नज़रिए का बदलाव:',
-          insightText: 'उनकी चुप्पी तनाव और उलझन का संकेत थी, किसी दुर्भावना या बेरुखी का नहीं।'
-        },
-        {
-          number: '03',
-          title: 'ऐसा संदेश जो दीवारें नहीं, दरवाजे खोले।',
-          eyebrow: 'तनाव कम करने वाला संवाद',
-          description:
-            'गुस्से में भेजे गए मैसेज तुरंत दूसरे व्यक्ति को रक्षात्मक बना देते हैं। Reconcile एक ऐसा संदेश तैयार करता है जो बिना चरित्र पर उंगली उठाए आपकी तकलीफ़ को स्पष्ट करता है।',
-          rawLabel: 'गुस्से की स्वाभाविक प्रतिक्रिया:',
-          rawText: '“ठीक है, मत करो बात। आगे से कभी मुझे फोन भी मत करना।”',
-          insightLabel: 'Reconcile की सलाह:',
-          insightText: '“सुनो, हमारे बीच अजीब-सा खिंचाव है और मुझे तुमसे बात करना याद आ रहा है। इस हफ़्ते जब भी फुरसत हो, क्या 5 मिनट बात कर सकते हैं?”'
-        },
-        {
-          number: '04',
-          title: 'बिना किसी पर इल्ज़ाम लगाए साझी स्पष्टता।',
-          eyebrow: 'साझा मध्यस्थता सेतु',
-          description:
-            'जब दोनों पक्ष शामिल होते हैं, तो Reconcile दिखाता है कि बात कहाँ उलझी, साझा मूल्यों को रेखांकित करता है, और आगे बढ़ने के लिए एक स्वीकार्य कदम सुझाता है।',
-          rawLabel: 'ग़लतफ़हमी:',
-          rawText: 'माया को लगा उस पर नज़र रखी जा रही है; माँ को माया के भविष्य की चिंता सता रही थी।',
-          insightLabel: 'साझा सहमति:',
-          insightText: 'रोज़ाना पूछताछ के बदले हफ़्ते में एक बार रविवार को आराम से बात करने का समझौता।'
-        }
-      ]
-    },
-    privacy: {
-      badge: 'कठोर गोपनीयता सुरक्षा',
-      title: 'आपके शब्द हमेशा पूरी तरह निजी रहते हैं।',
-      subtitle:
-        'गोपनीयता Reconcile में कोई विकल्प नहीं है। यह वह नींव है जो सच्ची ईमानदारी को संभव बनाती है। आप स्थिति खराब होने के डर के बिना अपनी बात कह सकते हैं।',
-      pillars: [
-        {
-          title: 'व्यक्ति A, व्यक्ति B की बातचीत नहीं देख सकता',
-          description:
-            'व्यक्ति A का चैनल पूरी तरह अलग रखा जाता है। मध्यस्थता बनने के बाद भी, व्यक्ति B यह नहीं पढ़ सकता कि व्यक्ति A ने अपने निजी सत्र में क्या लिखा था।'
-        },
-        {
-          title: 'व्यक्ति B, व्यक्ति A की बातचीत नहीं देख सकता',
-          description:
-            'व्यक्ति B का चैनल भी पूरी तरह गोपनीय रहता है। उनके कच्चे विचार, भावनाएं या शिकायतें सिर्फ उन्हीं के पास सुरक्षित रहती हैं।'
-        },
-        {
-          title: 'गुस्से भरे कच्चे संदेश कभी आगे नहीं भेजे जाते',
-          description:
-            'Reconcile कोई साधारण चैट ऐप नहीं है जो आपके मैसेज सीधे फॉरवर्ड कर दे। दोनों लोग सिर्फ वही देखते हैं जो तटस्थ और स्वीकृत मध्यस्थता सेतु है।'
-        },
-        {
-          title: 'डेटा केवल आपके समाधान के लिए उपयोग होता है',
-          description:
-            'आपकी बातचीत का उपयोग केवल आपके सत्र में आपसी समझ बनाने के लिए किया जाता है। हम आपका डेटा कभी किसी को नहीं बेचते और न ही सार्वजनिक मॉडल ट्रेन करते हैं।'
+          title: 'दिल की पूरी बात कहें।',
+          eyebrow: 'सुरक्षित बातचीत',
+          description: 'जो भी महसूस हो रहा है, खुलकर कहें। आपकी बातें कोई और नहीं पढ़ सकता।',
+          rawLabel: 'क्या महसूस हुआ:',
+          rawText: '“मुझे बहुत गुस्सा आ रहा है!”',
+          insightLabel: 'असली चाहत:',
+          insightText: 'आप सम्मान और प्यार चाहते हैं।'
         }
       ]
     },
     faq: {
-      badge: 'सवाल और जवाब',
+      badge: 'सवाल-जवाब',
       title: 'अक्सर पूछे जाने वाले सवाल।',
-      subtitle: 'Reconcile और आपकी गोपनीयता सुरक्षा से जुड़ी सभी महत्वपूर्ण जानकारियाँ।',
+      subtitle: 'सीधे और आसान जवाब।',
       items: [
         {
-          question: 'क्या दूसरे व्यक्ति को पता चलेगा कि मैंने Reconcile का उपयोग किया है?',
+          question: 'क्या सामने वाला मेरी लिखी बातें पढ़ सकता है?',
           answer:
-            'हाँ, विश्वास की बहाली के लिए पारदर्शिता ज़रूरी है। जब आप दूसरे व्यक्ति को आमंत्रित करते हैं, तो Reconcile एक शांत, निष्पक्ष निमंत्रण भेजता है और बताता है कि वह एक AI संचार मध्यस्थ है जो बिना किसी झगड़े के दोनों को समझने में मदद करता है। पीठ पीछे कुछ नहीं होता।'
+            'बिल्कुल नहीं! आपकी बातें सिर्फ आपके पास सुरक्षित रहती हैं। उन्हें सिर्फ वही प्यार भरा मैसेज मिलता है जो आप भेजना चाहते हैं।'
         },
         {
-          question: 'अगर दूसरा व्यक्ति शामिल होने से मना कर दे तो?',
-          answer:
-            'अगर दूसरा व्यक्ति शामिल नहीं भी होता, तब भी Reconcile बहुत मददगार है। आपका निजी सत्र आपको अपनी भावनाओं को सुलझाने, उनके संभावित दबावों को समझने और उन्हें सीधे भेजने के लिए एक बेहतरीन संदेश तैयार करने में मदद करता है।'
+          question: 'क्या कोई खाता या पासवर्ड चाहिए?',
+          answer: 'नहीं, कुछ भी नहीं। बस पेज खोलिए और तुरंत बात शुरू कीजिए। यह पूरी तरह मुफ्त है।'
         },
         {
-          question: 'क्या दूसरा व्यक्ति मेरे द्वारा लिखे गए निजी शब्द पढ़ सकता है?',
+          question: 'क्या Reconcile किसी का पक्ष लेता है?',
           answer:
-            'कभी नहीं। Reconcile दोनों व्यक्तियों के निजी चैनलों को पूरी तरह अलग रखता है। दोनों केवल वही देखते हैं जो तटस्थ मध्यस्थता सेतु है, जिसमें दोनों की सहमति से तैयार भाषा होती है।'
-        },
-        {
-          question: 'क्या Reconcile थेरेपी या काउंसलिंग का विकल्प है?',
-          answer:
-            'नहीं। Reconcile एक संचार उपकरण है जो रोज़मर्रा की ग़लतफ़हमियों को सुलझाने के लिए बनाया गया है। यह कोई चिकित्सा, थेरेपी या आपातकालीन सेवा नहीं है। यदि मामला घरेलू हिंसा, आत्म-हानि या गंभीर दुर्व्यवहार का है, तो हमारा सिस्टम तुरंत प्रमाणित आपातकालीन हेल्पलाइन पर भेजता है।'
-        },
-        {
-          question: 'Reconcile कैसे सुनिश्चित करता है कि वह किसी का पक्ष न ले?',
-          answer:
-            'Reconcile कड़े निष्पक्षता नियमों पर काम करता है: भावनाओं को समझें लेकिन नकारात्मक धारणाओं का समर्थन न करें; किसी को “विषाक्त” या गलत करार न दें; इरादे और असर को अलग करें; और हमेशा साझा सहमति तलाशें।'
-        },
-        {
-          question: 'क्या मुझे अकाउंट बनाना होगा या कोई शुल्क देना होगा?',
-          answer:
-            'किसी अकाउंट या पासवर्ड की ज़रूरत नहीं है। आप तुरंत बातचीत शुरू कर सकते हैं। Reconcile पूरी तरह निःशुल्क है और इसमें कोई विज्ञापन या छिपा हुआ शुल्क नहीं है।'
+            'नहीं, हम कभी किसी को गलत या सही नहीं कहते। हम सिर्फ दोनों को एक-दूसरे की बात समझाने में मदद करते हैं।'
         }
       ]
     },
     closingCta: {
-      badge: 'गोपनीय मध्यस्थता',
-      title: 'एक बेहतर बातचीत के लिए तैयार हैं?',
-      subtitle:
-        'आपको चुप्पी में घुटने या वही पुरानी बहस दोहराने की ज़रूरत नहीं है। दो मिनट निकालकर अपनी बात शांति से साझा करें।',
-      ctaPrimary: 'बताइए क्या हुआ',
-      ctaSecondary: 'पहले एक उदाहरण देखें',
-      trustProof: 'उपयोग के लिए निःशुल्क • कोई लॉगिन नहीं • आपकी बातें 100% गोपनीय'
+      badge: 'शांति से सुलझाएं',
+      title: 'क्या आप बात सुलझाने के लिए तैयार हैं?',
+      subtitle: 'बस दो मिनट निकालें और शांति से अपनी बात कहें।',
+      ctaPrimary: 'बात शुरू करें',
+      ctaSecondary: 'एक उदाहरण देखें',
+      trustProof: '100% मुफ्त • कोई लॉगिन नहीं • पूरी तरह गुप्त'
     },
     footer: {
-      philosophy: '“किसी को समझने का मतलब उनकी हर बात से सहमत होना नहीं है।”',
+      philosophy: '“समझने का मतलब हर बात मान लेना नहीं होता।”',
       mission:
-        'एक संवेदनशील AI संचार मध्यस्थ, जिसे बिना किसी का पक्ष लिए लोगों को ग़लतफ़हमियाँ सुलझाने में मदद करने के लिए बनाया गया है।',
-      productTitle: 'उत्पाद',
-      privacyTitle: 'गोपनीयता',
-      resourcesTitle: 'भारत सहायता हेल्पलाइन',
-      crisisIndiaTitle: '24/7 मानसिक स्वास्थ्य हेल्पलाइन (भारत):',
+        'झगड़े और ग़लतफ़हमी को बिना लड़े, शांति से सुलझाने वाला एक प्यारा AI साथी।',
+      productTitle: 'सुविधाएं',
+      privacyTitle: 'सुरक्षा',
+      resourcesTitle: 'मदद के लिए हेल्पलाइन',
+      crisisIndiaTitle: '24 घंटे हेल्पलाइन (भारत):',
       crisisDesc:
-        'यदि आप या आपका कोई जानने वाला गंभीर तनाव में है या संकट से जूझ रहा है, तो पूरे भारत में 24/7 गोपनीय पेशेवर सहायता उपलब्ध है:',
-      teleManas: 'टेली-मानस (भारत सरकार): 14416 (टोल-फ्री, 24/7)',
-      aasra: 'आसरा संकट सहायता: +91 9820466726 (24/7)',
+        'यदि आप या आपका कोई अपना बहुत दुखी, परेशान या असुरक्षित महसूस कर रहा है, तो इन नंबरों पर अभी मदद लें:',
+      teleManas: 'टेलि-मानस (भारत सरकार): 14416 (मुफ्त, 24/7)',
+      aasra: 'आसरा हेल्पलाइन: +91 9820466726',
       vandrevala: 'वांद्रेवाला फाउंडेशन: +91 9999 666 555',
-      emergency112: 'भारत राष्ट्रीय आपातकालीन सेवा: 112',
-      copyright: 'Reconcile AI. सर्वाधिकार सुरक्षित। गोपनीय, सुरक्षित विवाद समाधान।',
-      builtWithEmpathy: 'ईमानदार मानवीय रिश्तों के लिए संवेदनशीलता के साथ निर्मित।'
+      emergency112: 'राष्ट्रीय आपातकालीन सेवा: 112',
+      copyright: 'Reconcile AI. सर्वाधिकार सुरक्षित। शांति से बात सुलझाने में सहायक।',
+      builtWithEmpathy: 'आपसी रिश्तों में मिठास बनाए रखने के लिए प्यार से निर्मित।'
     }
   },
 
+  // =========================================================================
+  // MARATHI (सोपी मराठी — 4th to 5th Class Student Level)
+  // अगदी साधी आणि घरगुती मराठी, जी चौथी-पाचवीच्या मुलालाही सहज समजेल
+  // =========================================================================
   mr: {
     navbar: {
-      howItWorks: 'कसे कार्य करते',
-      demonstration: 'प्रात्यक्षिक',
+      howItWorks: 'कसे चालते',
+      demonstration: 'सोपी उदाहरणे',
       outcomes: 'फायदे',
-      privacy: 'गोपनीयता',
-      faq: 'नेहमीचे प्रश्न',
-      about: 'माहिती',
-      tryReconcile: 'Reconcile वापरा',
+      privacy: 'सुरक्षा आणि गोपनीयता',
+      faq: 'प्रश्न-उत्तरे',
+      about: 'आमच्याबद्दल',
+      tryReconcile: 'बोलणे सुरू करा',
       start: 'सुरू करा',
-      tellMeWhatHappened: 'काय घडलं ते सांगा'
+      tellMeWhatHappened: 'काय घडले ते सांगा'
     },
     hero: {
-      eyebrow: 'कठीण संवादांसाठी खाजगी AI मध्यस्थ',
-      titleLine1: 'तुम्हाला काय वाटतं हे तुम्हाला ठाऊक आहे.',
-      titleLine2: 'ते योग्य शब्दांत कसं सांगायचं यात आम्ही मदत करतो.',
+      eyebrow: 'भांडण मिटवणारा सुरक्षित सोबती',
+      titleLine1: 'कोणाशी भांडण किंवा अबोला झालाय?',
+      titleLine2: 'शांतपणे गैरसमज दूर करूया.',
       description:
-        'जेव्हा एकमेकांशी बोलणं अशक्य वाटतं, तेव्हा Reconcile दोन्ही बाजू गोपनीयपणे ऐकून घेतं, हेतू आणि प्रभाव यात कुठे गैरसमज झाला ते शोधतं आणि संवाद सुधारण्यासाठी योग्य शब्द देतं.',
-      ctaPrimary: 'काय घडलं ते सांगा',
-      ctaSecondary: 'कसे कार्य करते ते पहा',
-      trustProof: '100% खाजगी. कोणत्याही खात्याची गरज नाही. तुमचे मूळ शब्द कधीही पुढे पाठवले जात नाहीत.',
-      demoEyebrow: 'थेट प्रात्यक्षिक',
-      demoTitle: 'Reconcile प्रत्यक्ष गैरसमज कसा सोडवतो:',
-      feltLabel: 'जाणवले',
-      intentLabel: 'मूळ हेतू',
-      neverSeenBy: 'यांना कधीही दिसले नाही',
+        'रागात किंवा दुखावल्यावर योग्य शब्द सुचत नाहीत. आधी निवांतपणे आम्हाला सांगा. तुमचे शब्द १००% खाजगी राहतील. आम्ही तुमचे म्हणणे ऐकू, मन शांत करू, आणि असे प्रेमळ शब्द देऊ ज्यामुळे भांडण न होता गैरसमज मिटेल.',
+      ctaPrimary: 'बोलणे सुरू करा',
+      ctaSecondary: 'कसे चालते ते पहा',
+      trustProof:
+        '१००% खाजगी आणि सुरक्षित. लॉगिनची गरज नाही. तुमचे खाजगी शब्द कोणालाही दाखवले जात नाहीत.',
+      demoEyebrow: 'सोपी उदाहरणे',
+      demoTitle: 'भांडण किती सहज मिटू शकते ते पहा:',
+      feltLabel: 'काय वाटले',
+      intentLabel: 'खरा हेतू काय होता',
+      neverSeenBy: 'यांना कधीही दिसणार नाही',
       privateIntake: 'खाजगी संवाद',
-      theActualDisconnect: 'नक्की कुठे गैरसमज झाला',
-      suggestedStarter: 'संवाद सुरू करण्यासाठी योग्य शब्द',
-      tryThisLive: 'हा प्रसंग थेट अनुभवून पहा',
+      theActualDisconnect: 'गैरसमज कुठे झाला',
+      suggestedStarter: 'गोड शब्दांत बोलण्याची सुरुवात',
+      tryThisLive: 'हे उदाहरण चालवून पहा',
       scenarios: [
         {
           id: 'parent-teen',
           demoKey: 'demo-parent-child',
-          label: 'आई-वडील आणि मुलगी',
-          context: 'अभ्यास आणि स्वातंत्र्यावरून रोज होणारे वाद',
+          label: 'आई-वडील आणि मुलं',
+          context: 'अभ्यासावरून रोज होणारी विचारपूस',
           sideA: {
             name: 'माया',
-            role: 'मुलगी, १९ वर्षे',
+            role: 'मुलगी',
             rawText:
-              '“आई रोज सकाळी माझ्या अभ्यास आणि परीक्षांबद्दल विचारते. मला ठाऊक आहे तिला काळजी वाटते, पण मला वाटतं तिचा माझ्या क्षमतेवर अजिबात विश्वास नाही.”',
-            felt: 'सतत तपासणी आणि अविश्वास जाणवला'
+              '“आई रोज सकाळी अभ्यासाबद्दल विचारत राहते. मला वाटते तिचा माझ्यावर अजिबात विश्वास नाही.”',
+            felt: 'वाईट वाटले आणि अविश्वास वाटला'
           },
           sideB: {
-            name: 'एलेना',
-            role: 'आई',
+            name: 'आई',
+            role: 'पालक',
             rawText:
-              '“मी तिच्या चांगल्या भविष्यासाठी माझ्या करिअरचा त्याग केला. मला तिची सतत काळजी वाटते म्हणून मी विचारते, मला नाही वाटत तिने माझ्यासारखा संघर्ष करावा.”',
-            intent: 'गाढ प्रेम आणि भविष्याची चिंता'
+              '“तिची काळजी वाटते म्हणून मी विचारते. तिने छान शिकावे आणि मोठे व्हावे एवढीच माझी इच्छा आहे.”',
+            intent: 'सच्चे प्रेम आणि काळजी'
           },
           bridge: {
             disconnect:
-              'आईचा हेतू काळजीपोटी संरक्षणाचा होता; पण मुलीला तिच्यावर अविश्वास दाखवला जात असल्याचे जाणवले.',
+              'आई काळजीने विचारत होती, पण मुलीला वाटले की आई तिच्यावर अविश्वास दाखवते आहे.',
             suggestedMessage:
-              '“आई, मला ठाऊक आहे तू माझ्या भल्यासाठी विचारतेस. पण रोज सकाळी विचारल्याने मला वाटतं तुला माझ्यावर विश्वास नाही. आपण दर रविवारी निवांत बोलू शकतो का?”'
+              '“आई, मला माहित आहे तू माझ्यावर प्रेम करतेस. पण रोज विचारल्याने मला खूप ताण येतो. आपण दर रविवारी निवांतपणे अभ्यासाबद्दल बोलूया का?”'
           }
         },
         {
           id: 'friends-silence',
           demoKey: 'demo-friend-friend',
-          label: 'दोन जीवलग मित्र',
-          context: 'एका भावनिक वादानंतर तीन दिवसांची शांतता',
+          label: 'दोन मित्र',
+          context: 'मित्राने दोन दिवस मेसेजला उत्तर न देणे',
           sideA: {
-            name: 'सारा',
-            role: 'मैत्रीण A',
+            name: 'राहुल',
+            role: 'मित्र A',
             rawText:
-              '“मी तिच्याशी माझी एक अतिशय खाजगी गोष्ट शेअर केली आणि तिने तीन दिवस काहीच उत्तर दिले नाही. मैत्री फक्त माझ्याच बाजूने आहे असं वाटतं.”',
-            felt: 'दुर्लक्ष आणि एकटेपण जाणवले'
+              '“माझ्या मित्राने दोन दिवस माझ्या मेसेजला उत्तर दिले नाही. मला वाटले त्याला आता माझी मैत्री नकोय.”',
+            felt: 'एकटेपणा आणि वाईट वाटले'
           },
           sideB: {
-            name: 'क्लोई',
-            role: 'मैत्रीण B',
+            name: 'अमन',
+            role: 'मित्र B',
             rawText:
-              '“कामाच्या तणावाने मला या आठवड्यात पूर्णपणे खचवून टाकलं होतं. मी दोनदा उत्तर टाईप केलं, पण नीट संवाद साधण्याची माझ्यात अजिबात ताकद नव्हती.”',
-            intent: 'तीव्र मानसिक तणाव आणि थकव्याशी मुकाबला'
+              '“घरात खूप काम होते आणि मी खूप थकलो होतो. फोन बघायला वेळच मिळाला नाही.”',
+            intent: 'थकवा आणि कामात व्यग्र'
           },
           bridge: {
             disconnect:
-              'हेतू स्वतःला थकव्यातून सावरण्याचा होता; पण शांततेचा प्रभाव दुर्लक्ष आणि बेपर्वाईसारखा जाणवला.',
+              'अमन दमलेला होता, पण राहुलला वाटले की अमन मुद्दाम त्याच्याशी बोलत नाही.',
             suggestedMessage:
-              '“हाय — लगेच उत्तर देण्याचं काही दडपण नाही. कामाचा खूप ताण होता हे समजलं. फक्त सांगायचं होतं की तू ठीक आहेस ना, जेव्हा तुला जमेल तेव्हा आपण बोलू.”'
-          }
-        }
-      ]
-    },
-    problemStory: {
-      badge: 'वादाचे मानसशास्त्र',
-      headline: '“जेव्हा मन दुखावलेलं असतं, तेव्हा प्रत्येक स्पष्टीकरण निव्वळ सबब वाटते.”',
-      subtitle:
-        'परस्पर प्रेम असलेल्या व्यक्तींमधील वाद प्रेमाच्या अभावामुळे होत नाहीत. ते संवादाच्या त्रुटीमुळे होतात: जो हेतू होता, तो समोरच्यापर्यंत क्वचितच पोहोचतो.',
-      sectionTitle: 'संवाद का अडकतो:',
-      whatWasSaid: 'काय बोलले गेले:',
-      whatWasHeard: 'काय ऐकू गेले:',
-      whatWasMeant: 'नक्की काय सांगायचे होते:',
-      disconnects: [
-        {
-          spoken: '“आपण यावर उद्या बोलू शकतो का?”',
-          perceived: '“तुला माझ्या भावनांची काहीच किंमत नाही आणि तुला हा विषय टाळायचा आहे.”',
-          intended: '“मी सध्या खूप तणावात आहे आणि रागाच्या भरात काही चुकीचं बोलण्याची भीती वाटतेय.”'
-        },
-        {
-          spoken: '“तू मागे पडू नयेस इतकीच माझी इच्छा आहे.”',
-          perceived: '“माझ्या हुशारीवर किंवा निर्णयावर तुझा अजिबात विश्वास नाही.”',
-          intended: '“माझं तुझ्यावर प्रेम आहे आणि मी जसा त्रास सहन केला तसा तुला होऊ नये हीच भीती आहे.”'
-        },
-        {
-          spoken: '“ठीक आहे. तुला जे वाटेल ते कर.”',
-          perceived: '“तू या नात्याचा विचार सोडून दिला आहेस.”',
-          intended: '“मला खूप हतबल आणि दुःखी वाटतंय, आणि काय बोलावे हेच सुचत नाहीये.”'
-        }
-      ],
-      loopTitle: 'Reconcile तणावपूर्ण वादाचे चक्र कसे तोडतो',
-      loopSubtitle:
-        'जेव्हा दोन व्यक्ती बचावात्मक पवित्र्यात बोलतात, तेव्हा त्यांचे मन फक्त स्वतःचे रक्षण करते. Reconcile मध्ये एक गोपनीय मध्यस्थ बनून भावनिक सुरक्षितता निर्माण करतो.',
-      pillars: [
-        {
-          num: '01',
-          title: 'मनातील भावना मोकळेपणाने मांडा',
-          desc: 'तुम्ही तुमचा राग किंवा संताप व्यक्त करू शकता. तुमचे मूळ शब्द फक्त Reconcile कडे सुरक्षित आणि खाजगी राहतात.'
-        },
-        {
-          num: '02',
-          title: 'शांत आणि तटस्थ विश्लेषण',
-          desc: 'Reconcile कटुता बाजूला ठेवून तुमच्या मनातील खरी गरज आणि भावना समजून घेतो.'
-        },
-        {
-          num: '03',
-          title: 'दोन्ही बाजूंचा आदर',
-          desc: 'दुसरी व्यक्तीही कोणताही दोषारोप न होता आपली बाजू मांडू शकते. दोन्ही बाजू निष्पक्षपणे ऐकल्या जातात.'
-        },
-        {
-          num: '04',
-          title: 'योग्य आणि शांत शब्द',
-          desc: 'आत्मसन्मानाला धक्का न लावता, शांततेने संवाद सुरू करण्यासाठी योग्य वाक्ये दिली जातात.'
-        }
-      ]
-    },
-    demoSection: {
-      eyebrow: 'उत्पादनाचे थेट प्रात्यक्षिक',
-      title: 'दोन खाजगी दृष्टिकोन एक सामायिक समज कसे बनतात.',
-      subtitle:
-        'खालील प्रत्यक्ष प्रसंग पहा. Reconcile गैरसमज कसा ओळखतो आणि योग्य संवाद कसा घडवतो ते समजून घ्या.',
-      copyButton: 'मेसेज कॉपी करा',
-      copiedText: 'कॉपी झाला!',
-      tryLiveSession: 'हा संवाद थेट सुरू करा',
-      privateThoughtsA: 'खाजगी संवाद',
-      privateThoughtsB: 'खाजगी संवाद',
-      feltBadge: 'जाणवले',
-      intentBadge: 'मूळ हेतू',
-      coreNeedLabel: 'मूलभूत गरज',
-      theActualGap: 'नक्की कुठे गैरसमज झाला',
-      commonGroundLabel: 'सामायिक सहमती',
-      readyToSendMessage: 'शांततेने संवाद साधण्यासाठी तयार मेसेज',
-      tabs: [
-        {
-          key: 'demo-parent-child',
-          tag: 'महत्त्वाचा प्रसंग',
-          title: 'आई-वडील आणि मुलगी',
-          subtitle: 'अभ्यास, स्वातंत्र्य आणि अपयशाची भीती',
-          personA: {
-            name: 'माया',
-            role: 'मुलगी (१९ वर्षे)',
-            quote:
-              '“ते रोज माझ्या अभ्यासाबद्दल विचारतात. मला माहितीय ते काळजी करतात, पण मला वाटतं त्यांना माझ्या क्षमतेवर अजिबात विश्वास नाही.”',
-            coreNeed: 'स्वातंत्र्य, विश्वास आणि एक प्रौढ व्यक्ती म्हणून आदराची गरज.'
-          },
-          personB: {
-            name: 'एलेना',
-            role: 'आई',
-            quote:
-              '“मी तिच्यासाठी खूप त्याग केला आहे. मला तिच्या भविष्याची काळजी वाटते म्हणून मी विचारते. मला नाही वाटत तिचे नुकसान व्हावे.”',
-            coreNeed: 'मुलगी सुरक्षित आणि आनंदी राहील याबद्दल भावनिक दिलासा.'
-          },
-          reconcileAnalysis: {
-            intent: 'गाढ प्रेम, काळजी आणि भविष्याविषयी भीती.',
-            impact: 'सतत नियंत्रण आणि अविश्वास असल्याचे जाणवणे.',
-            commonGround: 'दोघांनाही मायाचे यश आणि तिची मानसिक शांतता हवी आहे.',
-            readyOpener:
-              '“आई, मला ठाऊक आहे तू माझ्या काळजीपोटी विचारतेस. पण रोज विचारल्याने मला वाटतं तुला माझ्यावर विश्वास नाही. आपण दर रविवारी बोलू शकतो का, जेणेकरून मी तणावाशिवाय तुला अपडेट देऊ शकेन?”'
+              '“अरे मित्रा, निवांत उत्तर दे. मला माहित आहे तू कामात होतास. फक्त आठवण आली म्हणून मेसेज केला!”'
           }
         },
         {
-          key: 'demo-friend-friend',
-          tag: 'लोकप्रिय प्रसंग',
-          title: 'जीवलग मित्र',
-          subtitle: 'उत्तराची वाट आणि अचानक दुरावा',
-          personA: {
-            name: 'सारा',
-            role: 'मैत्रीण A',
-            quote:
-              '“मी तिच्याशी माझी महत्त्वाची अडचण मांडली आणि तिने तीन दिवस काहीच उत्तर दिले नाही. मैत्री टिकवण्याचा प्रयत्न फक्त मीच करतेय असं वाटतं.”',
-            coreNeed: 'भावनिक आधार, समजूतदारपणा आणि नात्यातील विश्वास.'
+          id: 'sibling-sharing',
+          demoKey: 'demo-sibling-sibling',
+          label: 'भाऊ आणि बहीण',
+          context: 'न विचारता वस्तू घेणे',
+          sideA: {
+            name: 'रोहन',
+            role: 'भाऊ',
+            rawText:
+              '“माझी बहीण न विचारता माझे सामान घेऊन जाते. मला याचा खूप राग येतो!”',
+            felt: 'राग आला आणि वाईट वाटले'
           },
-          personB: {
-            name: 'क्लोई',
-            role: 'मैत्रीण B',
-            quote:
-              '“या आठवड्यात कामाच्या ताणाने मला बेजार केले होते. मी दोनदा मेसेज टाईप केला, पण नीट बोलण्याची मानसिक ताकदच माझ्यात नव्हती.”',
-            coreNeed: 'अपराधबोधाशिवाय विश्रांती घेण्यासाठी आणि सावरण्यासाठी थोडा वेळ.'
+          sideB: {
+            name: 'प्रिया',
+            role: 'बहीण',
+            rawText:
+              '“मला थोड्या वेळासाठी त्याची वही हवी होती. मला वाटले नव्हते की त्याला इतका राग येईल.”',
+            intent: 'फक्त थोडी मदत हवी होती'
           },
-          reconcileAnalysis: {
-            intent: 'मैत्री जपण्यासाठी योग्य मानसिक स्थितीत येईपर्यंत थांबणे.',
-            impact: 'शांततेचा अर्थ भावनिक दुर्लक्ष आणि बेफिकिरी असा काढला गेला.',
-            commonGround: 'दोघींनाही एकमेकांची मैत्री मनापासून जपायची आहे.',
-            readyOpener:
-              '“हाय — लगेच उत्तर द्यायची काही घाई नाही! मला ठाऊक आहे खूप धावपळ असू शकते. तू ठीक आहेस ना इतकंच विचारायचं होतं. वेळ मिळेल तेव्हा बोलू.”'
-          }
-        },
-        {
-          key: 'demo-sibling-sibling',
-          tag: 'कौटुंबिक प्रसंग',
-          title: 'भाऊ आणि बहीण',
-          subtitle: 'विचारल्याशिवाय वस्तू वापरणे आणि मर्यादा न पाळणे',
-          personA: {
-            name: 'रिली',
-            role: 'मोठा भाऊ / बहीण',
-            quote:
-              '“माझा भाऊ विचारल्याशिवाय माझे हेडफोन्स आणि कपडे घेतो. मला शेअर करायला हरकत नाही, पण या घरात माझ्या खाजगी जागेला काही किंमतच नाही असं वाटतं.”',
-            coreNeed: 'मूलभूत शिष्टाचार, वैयक्तिक जागेचा आदर आणि पूर्वपरवानगी.'
-          },
-          personB: {
-            name: 'केसी',
-            role: 'लहान भाऊ / बहीण',
-            quote:
-              '“आम्ही एकाच घरात राहतो आणि खूप जवळ आहोत. मी नेहमी वस्तू परत ठेवतो. हुडीसाठी एवढा मोठा वाद घातला की ते मला परकं समजतात असं वाटतं.”',
-            coreNeed: 'कौटुंबिक जिव्हाळा, अनौपचारिकता आणि कोणतीही टीका न होता जवळीक.'
-          },
-          reconcileAnalysis: {
-            intent: 'कौटुंबिक सहजता आणि जवळीक.',
-            impact: 'अधिकार गाजवणे आणि वैयक्तिक मर्यादांचा अनादर झाल्याची भावना.',
-            commonGround: 'दोघांनाही आपापसातील जिव्हाळा आणि शांततेने एकत्र राहणे महत्त्वाचे वाटते.',
-            readyOpener:
-              '“मला माझ्या वस्तू तुझ्यासोबत शेअर करायला आवडतं, पण विचारल्याशिवाय घेतल्यास मला अनादर झाल्यासारखं वाटतं. फक्त घेण्यापूर्वी एक छोटा मेसेज करत जा, मग काही अडचण नाही.”'
+          bridge: {
+            disconnect:
+              'प्रियाला वाटले साधी गोष्ट आहे, पण रोहनला वाटले की त्याच्या सामानाचा आदर केला नाही.',
+            suggestedMessage:
+              '“प्रिया, वस्तू घ्यायला हरकत नाही, पण घेण्यापूर्वी फक्त एकदा विचारून घेत जा म्हणजे मला समजेल!”'
           }
         }
       ]
     },
     howItWorks: {
-      badge: 'Reconcile कसे कार्य करते',
-      title: 'तणावपूर्ण शांततेकडून एका सुसंवादी संवादाकडे.',
+      badge: 'सोप्या ४ पायऱ्या',
+      title: 'Reconcile कशी मदत करते',
       subtitle:
-        'तुमची भावनिक सुरक्षितता जपण्यासाठी आणि नात्यातील जिव्हाळा परत आणण्यासाठी चार विचारपूर्वक पावले.',
+        'आम्ही दोन व्यक्तींना एकमेकांची बाजू समजावून सांगतो, जेणेकरून भांडण मिटेल आणि पुन्हा गट्टी होईल.',
       steps: [
         {
           number: '01',
-          title: 'तुम्ही बोला, आम्ही ऐकू.',
+          title: 'काय घडले ते सांगा',
           description:
-            'Reconcile ला तुमच्या शब्दांत नक्की काय घडले ते सांगा. राग किंवा संताप व्यक्त करा. हा संवाद पूर्णपणे खाजगी आहे — कोणीही हा मूळ मेसेज वाचू शकणार नाही.',
-          tag: '100% खाजगी',
-          microExample: '“मला वाटलं त्यांना माझी काहीच किंमत नाही आणि त्यांनी मला पूर्णपणे दुर्लक्षित केलं.”'
+            'एखाद्या चांगल्या मित्राला सांगतो, तसेच मनातले मोकळेपणाने सांगा.',
+          tag: 'पहिली पायरी',
+          microExample: '“आज माझ्या मित्राने मला खेळायला बोलावले नाही...”'
         },
         {
           number: '02',
-          title: 'आम्ही तुमचा खरा अर्थ समजून घेतो.',
+          title: 'आम्ही तुमचे म्हणणे ऐकतो',
           description:
-            'रागाच्या मागे नेहमी एक न बोललेली भावना असते: आदर, विश्वास किंवा समजून घेण्याची गरज. Reconcile संतापातून तुमचा मूळ हेतू वेगळा करतो.',
-          tag: 'भावनिक बुद्धिमत्ता',
-          microExample: 'शोधलेली मूलभूत गरज: नात्यात सुरक्षितता आणि आदराची तीव्र इच्छा.'
+            'आम्ही तुमच्या भावना समजून घेतो, मन शांत करतो, आणि समोरच्याची अडचणही पाहतो.',
+          tag: 'दुसरी पायरी',
+          microExample: '“वाईट वाटणे स्वाभाविक आहे. त्यांनी असे का केले ते पाहूया.”'
         },
         {
           number: '03',
-          title: 'आम्ही दुसऱ्या बाजूला आमंत्रित करतो.',
+          title: 'गैरसमज शोधतो',
           description:
-            'आम्ही समोरच्या व्यक्तीला एक शांततापूर्ण, आदरयुक्त निमंत्रण पाठवतो. कोणतेही आरोप नाहीत आणि जुने मेसेज फॉरवर्ड केले जात नाहीत. तेही विश्वासाने आपली बाजू मांडतात.',
-          tag: 'कोणतीही कटुता नाही',
-          microExample: 'शांततापूर्ण निमंत्रण: “Reconcile ने संवादातील अंतर पाहिले आहे. आम्हाला तुमची बाजूही जाणून घ्यायची आहे.”'
+            'नक्की कुठे चूक झाली ते शोधतो, जेणेकरून कोणावरही दोष येणार नाही.',
+          tag: 'तिसरी पायरी',
+          microExample: '“त्यांचा हेतू वाईट नव्हता, फक्त समजण्यात चूक झाली होती.”'
         },
         {
           number: '04',
-          title: 'दोन्ही बाजूंचा खरा अर्थ स्पष्ट होतो.',
+          title: 'गोड शब्द मिळतात',
           description:
-            'दोन्ही बाजू आल्यानंतर, Reconcile मध्यस्थता सेतू तयार करतो: हेतू आणि भावना यातील अंतर दाखवून गैरसमज दूर करण्यासाठी योग्य शब्द देतो.',
-          tag: 'तोडगा सेतू',
-          microExample: 'पाठवण्यासाठी तयार: तणाव कमी करणारा आणि मन जुळवणारा संवाद.'
-        }
-      ]
-    },
-    outcomes: {
-      badge: 'स्पष्ट परिणाम',
-      title: 'कोणत्याही भावनिक धोक्याशिवाय स्पष्ट संवाद.',
-      subtitle:
-        'Reconcile वादग्रस्त आणि संतापजनक चर्चांना सकारात्मक संवादात कसे रूपांतरित करतो.',
-      cards: [
-        {
-          number: '01',
-          title: 'मनात येईल तसं मोकळं व्हा. आम्ही ते सावरून घेऊ.',
-          eyebrow: 'अनफिल्टर्ड भावनिक संवाद',
-          description:
-            'जेव्हा राग येतो किंवा मन दुखतं, तेव्हा शांत राहणं कठीण असतं. Reconcile पश्चात्ताप न होता भावना व्यक्त करायला सुरक्षित जागा देतो. तुमचे कच्चे शब्द कधीही समोरच्यापर्यंत पोहोचत नाहीत.',
-          rawLabel: 'तुमची खाजगी भावना (गोपनीय):',
-          rawText: '“त्यांच्या मेसेज न करण्याने मी वैतागलो आहे. त्यांना माझी काहीच किंमत नाही हेच यातून दिसतं.”',
-          insightLabel: 'Reconcile काय ओळखतो:',
-          insightText: 'मूलभूत गरज: नात्यात भावनिक विश्वास आणि स्वतःची कदर केली जाण्याची गरज.'
-        },
-        {
-          number: '02',
-          title: 'त्यांचा नक्की काय हेतू असावा ते समजून घ्या.',
-          eyebrow: 'समर्थन न करता समजून घेणे',
-          description:
-            'बचावात्मक विचारांच्या पलीकडे पहा. Reconcile तुम्हाला समोरच्या व्यक्तीचा ताण, भीती किंवा अवघडलेपण समजून घ्यायला मदत करतो — त्यांच्या चुकीचे समर्थन न करता.',
-          rawLabel: 'त्यांची संभाव्य परिस्थिती:',
-          rawText: 'त्यांना मनापासून काळजी आहे, पण प्रचंड ताणामुळे किंवा वाद नको म्हणून ते शांत बसले.',
-          insightLabel: 'दृष्टिकोनातील बदल:',
-          insightText: 'त्यांची शांतता ही मानसिक थकव्याचे लक्षण होती, कोणतीही कपटी भावना नव्हती.'
-        },
-        {
-          number: '03',
-          title: 'भिंती नाही, संवाद जोडणारा मार्ग देणारा मेसेज.',
-          eyebrow: 'तणाव कमी करणारा संवाद',
-          description:
-            'रागाच्या भरात पाठवलेले मेसेज समोरच्या व्यक्तीला दुखावून टाकतात. Reconcile एक असा मेसेज तयार करतो जो आदर राखून तुमची अडचण शांतपणे मांडतो.',
-          rawLabel: 'रागातील पहिली प्रतिक्रिया:',
-          rawText: '“ठीक आहे, नको बोलूस. पुन्हा कधी फोनही करू नकोस.”',
-          insightLabel: 'Reconcile चा सल्ला:',
-          insightText: '“आपल्यात सध्या दुरावा जाणवतोय आणि मला तुझ्याशी बोलायची आठवण येतेय. या आठवड्यात सवड मिळेल तेव्हा आपण ५ मिनिटे बोलू शकतो का?”'
-        },
-        {
-          number: '04',
-          title: 'कोणावरही दोष न देता सामायिक स्पष्टता.',
-          eyebrow: 'मध्यस्थता सेतू',
-          description:
-            'दोन्ही व्यक्ती आल्यावर, Reconcile नक्की कुठे मतभेद झाले ते दाखवतो आणि पुढे जाण्यासाठी एक मान्य तोडगा सुचवतो.',
-          rawLabel: 'झालेला गैरसमज:',
-          rawText: 'मायेला सतत नियंत्रण वाटले; आईला तिच्या भविष्याची चिंता सतावत होती.',
-          insightLabel: 'सामायिक तोडगा:',
-          insightText: 'दररोजच्या चौकशीऐवजी दर रविवारी निवांतपणे चर्चा करण्याचे ठरवले.'
+            'भांडण न होता समजूतदारपणे बोलण्यासाठी आम्ही तुम्हाला शांत आणि योग्य शब्द देतो.',
+          tag: 'चौथी पायरी',
+          microExample: '“चला जुने विसरून पुन्हा छान बोलूया!”'
         }
       ]
     },
     privacy: {
-      badge: 'गोपनीयतेची भक्कम सुरक्षा',
-      title: 'तुमचे मूळ शब्द नेहमी पूर्णपणे खाजगी राहतात.',
+      badge: 'सुरक्षित आणि गुप्त',
+      title: 'तुमचे बोलणे पूर्णपणे खाजगी राहते.',
       subtitle:
-        'Reconcile मध्ये गोपनीयता हा निव्वळ पर्याय नाही, तर संवादाचा मुख्य पाया आहे. तुम्ही भीतीशिवाय मन मोकळे करू शकता.',
+        'येथे तुम्ही कोणतीही भीती न बाळगता बोलू शकता. तुमचे शब्द दुसरा कोणीही वाचू शकत नाही.',
       pillars: [
         {
-          title: 'A व्यक्ती, B व्यक्तीचा संवाद पाहू शकत नाही',
+          title: 'तुमचे बोलणे कोणीही वाचत नाही',
           description:
-            'A व्यक्तीचे संभाषण पूर्णपणे वेगळे ठेवले जाते. मध्यस्थता सेतू तयार झाल्यानंतरही B व्यक्ती A व्यक्तीचे खाजगी मेसेज वाचू शकत नाही.'
+            'तुम्ही जे लिहिता ते फक्त तुमच्यापुरतेच राहते. समोरच्याला तुमचे खाजगी विचार कधीही दिसत नाहीत.'
         },
         {
-          title: 'B व्यक्ती, A व्यक्तीचा संवाद पाहू शकत नाही',
+          title: 'आम्ही कोणाचीही बाजू घेत नाही',
           description:
-            'B व्यक्तीचे संभाषणही पूर्णपणे खाजगी असते. त्यांच्या भावना किंवा विचार फक्त त्यांच्याकडेच सुरक्षित राहतात.'
+            'आम्ही कोणालाही चूक किंवा बरोबर ठरवत नाही. फक्त दोघांना एकमेकांची बाजू समजावून सांगतो.'
         },
         {
-          title: 'संतापातील कच्चे शब्द कधीही पुढे पाठवले जात नाहीत',
+          title: 'रागातील शब्द कधीही पाठवले जात नाहीत',
           description:
-            'Reconcile कोणतंही मेसेजिंग ॲप नाही जे थेट मेसेज फॉरवर्ड करेल. दोन्ही व्यक्ती फक्त तटस्थ मध्यस्थता सेतूच पाहू शकतात.'
+            'तुम्ही रागात बोललेले शब्द कोणाकडेही जात नाहीत. आम्ही फक्त भांडण मिटवणारे शांत शब्द देतो.'
         },
         {
-          title: 'माहिती फक्त तुमच्या संवादासाठी वापरली जाते',
+          title: 'लॉगिन किंवा पासवर्डची गरज नाही',
           description:
-            'तुमच्या बोलण्याचा वापर फक्त चालू सत्रातील तोडग्यासाठी होतो. आम्ही डेटा विकत नाही किंवा सार्वजनिक मॉडेल ट्रेन करत नाही.'
+            'ईमेल किंवा पासवर्डची काहीही गरज नाही. फक्त पान उघडा आणि शांतपणे बोलायला सुरुवात करा.'
+        }
+      ]
+    },
+    problemStory: {
+      badge: 'भांडणे का होतात',
+      headline: '“मन दुखावले की प्रत्येक गोष्टीत वाईट वाटते.”',
+      subtitle:
+        'भांडणे प्रेमाच्या अभावामुळे नव्हे, तर एकमेकांना नीट न समजल्यामुळे होतात. Reconcile हा दुरावा मिटवते.',
+      sectionTitle: 'गैरसमज कसे होतात:',
+      whatWasSaid: 'काय बोलले गेले:',
+      whatWasHeard: 'काय ऐकू गेले:',
+      whatWasMeant: 'खरा अर्थ काय होता:',
+      disconnects: [
+        {
+          spoken: '“आपण उद्या बोलूया का?”',
+          perceived: '“तुला माझी काहीच काळजी नाही.”',
+          intended: '“मी खूप दमलोय आणि रागात काही चुकीचे बोलू नये असे वाटतेय.”'
+        }
+      ],
+      loopTitle: 'भांडण संपवण्याचा मार्ग',
+      loopSubtitle: 'Reconcile कशी मदत करते',
+      pillars: [
+        { num: '01', title: 'शांत व्हा', desc: 'मनातले मोकळेपणाने आणि निवांतपणे सांगा.' },
+        { num: '02', title: 'दोन्ही बाजू पहा', desc: 'समोरच्याने असे का केले असावे ते समजून घ्या.' },
+        { num: '03', title: 'गैरसमज मिटवा', desc: 'गोड आणि समजूतदार शब्दांनी पुन्हा संवाद साधा.' }
+      ]
+    },
+    demoSection: {
+      eyebrow: 'खऱ्या गोष्टी',
+      title: 'भांडणे कशी मिटली',
+      subtitle: 'इतरांनी आपले गैरसमज कसे सोडवले ते पहा.',
+      copyButton: 'मेसेज कॉपी करा',
+      copiedText: 'कॉपी झाला!',
+      tryLiveSession: 'हे उदाहरण पहा',
+      privateThoughtsA: 'यांची बाजू',
+      privateThoughtsB: 'त्यांची बाजू',
+      feltBadge: 'काय वाटले',
+      intentBadge: 'खरा हेतू',
+      coreNeedLabel: 'गरज',
+      theActualGap: 'कुठे गैरसमज झाला',
+      commonGroundLabel: 'सहमती',
+      readyToSendMessage: 'पाठवण्यासाठी गोड मेसेज',
+      tabs: [
+        {
+          key: 'parent-kid',
+          tag: 'कुटुंब',
+          title: 'आई-वडील आणि मुलं',
+          subtitle: 'अभ्यासावरून रोज होणारे वाद',
+          personA: {
+            name: 'माया',
+            role: 'मुलगी',
+            quote: '“आई रोज अभ्यासावरून विचारत राहते.”',
+            coreNeed: 'विश्वास आणि थोडी मोकळीक'
+          },
+          personB: {
+            name: 'आई',
+            role: 'पालक',
+            quote: '“तिच्या चांगल्या भविष्याची काळजी वाटते.”',
+            coreNeed: 'सच्चे प्रेम'
+          },
+          reconcileAnalysis: {
+            intent: 'आई काळजीपोटी विचारत होती.',
+            impact: 'मुलीला वाटले की तिच्यावर विश्वास नाही.',
+            commonGround: 'दोघांनाही घरात शांतता हवी आहे.',
+            readyOpener:
+              '“आई, मला माहित आहे तू काळजी करतेस. आपण दर रविवारी अभ्यासाबद्दल बोलूया म्हणजे रोज ताण येणार नाही.”'
+          }
+        }
+      ]
+    },
+    outcomes: {
+      badge: 'उत्तम परिणाम',
+      title: 'भांडण न करता स्वतःचे म्हणणे मांडा.',
+      subtitle: 'रागाचे रूपांतर शांततेत करण्याची सोपी पद्धत.',
+      cards: [
+        {
+          number: '01',
+          title: 'मनातले सगळे मोकळेपणाने सांगा.',
+          eyebrow: 'सुरक्षित जागा',
+          description: 'जे काही वाटत आहे, ते बिनधास्त सांगा. तुमचे शब्द इतर कोणालाही दिसत नाहीत.',
+          rawLabel: 'काय वाटले:',
+          rawText: '“मला खूप राग आला आहे!”',
+          insightLabel: 'खरी गरज:',
+          insightText: 'तुम्हाला आदर आणि प्रेम हवे आहे.'
         }
       ]
     },
     faq: {
-      badge: 'प्रश्न आणि उत्तरे',
+      badge: 'प्रश्न-उत्तरे',
       title: 'नेहमी विचारले जाणारे प्रश्न.',
-      subtitle: 'Reconcile आणि तुमच्या गोपनीयतेबद्दल संपूर्ण माहिती.',
+      subtitle: 'सोपी आणि थेट उत्तरे.',
       items: [
         {
-          question: 'मी Reconcile वापरत असल्याचे समोरच्या व्यक्तीला कळेल का?',
+          question: 'समोरच्या व्यक्तीला मी लिहिलेले वाचता येईल का?',
           answer:
-            'होय, विश्वास परत मिळवण्यासाठी पारदर्शकता महत्त्वाची आहे. जेव्हा तुम्ही समोरच्या व्यक्तीला आमंत्रित करता, तेव्हा Reconcile एक शांत आणि तटस्थ निमंत्रण पाठवतो. यात कोणाच्याही पाठीमागे काहीही केले जात नाही.'
+            'अजिबात नाही! तुम्ही जे लिहिता ते पूर्णपणे खाजगी राहते. समोरच्या व्यक्तीला फक्त तेच शांत शब्द मिळतात जे तुम्ही पाठवायला तयार होता.'
         },
         {
-          question: 'समोरच्या व्यक्तीने नकार दिला तर काय?',
-          answer:
-            'समोरची व्यक्ती आली नाही तरीही Reconcile खूप उपयुक्त आहे. तुमचा खाजगी संवाद तुम्हाला स्वतःच्या भावना समजून घ्यायला आणि त्यांना थेट पाठवण्यासाठी शांत शब्द शोधायला मदत करतो.'
+          question: 'खाते किंवा पासवर्डची गरज आहे का?',
+          answer: 'नाही, अजिबात नाही. लगेच बोलणे सुरू करा. हे पूर्णपणे मोफत आहे.'
         },
         {
-          question: 'समोरची व्यक्ती माझे खाजगी शब्द वाचू शकते का?',
+          question: 'Reconcile कोणाची बाजू घेते का?',
           answer:
-            'कधीही नाही. Reconcile खाजगी संभाषणे पूर्णपणे वेगळी ठेवतो. दोन्ही व्यक्तींना फक्त तटस्थ मध्यस्थता सेतूच दिसतो.'
-        },
-        {
-          question: 'Reconcile थेरपी किंवा समुपदेशनाचा पर्याय आहे का?',
-          answer:
-            'नाही. Reconcile हे दैनंदिन गैरसमज सोडवण्यासाठीचे एक संवाद साधन आहे. हे वैद्यकीय उपचार किंवा थेरपी नाही. गंभीर हिंसा किंवा आत्महत्येसारख्या प्रसंगी आमची यंत्रणा त्वरित आपत्कालीन हेल्पलाइनकडे वळवते.'
-        },
-        {
-          question: 'Reconcile कोणाचीही बाजू न घेण्याची खात्री कशी देतो?',
-          answer:
-            'Reconcile निष्पक्षतेच्या कठोर नियमांवर काम करतो: भावनांचा आदर करा पण पूर्वग्रहांचे समर्थन करू नका; कोणावरही आरोप करू नका; हेतू आणि परिणाम वेगळे करा; आणि नेहमी सामायिक मार्ग शोधा.'
-        },
-        {
-          question: 'मला अकाऊंट तयार करावे लागेल किंवा पैसे द्यावे लागतील का?',
-          answer:
-            'कोणत्याही अकाऊंट किंवा पासवर्डची गरज नाही. तुम्ही त्वरित संवाद सुरू करू शकता. Reconcile सध्या पूर्णपणे मोफत आहे.'
+            'नाही, कधीच नाही! आम्ही कोणालाही चूक किंवा बरोबर ठरवत नाही. फक्त दोघांना एकमेकांची बाजू समजून सांगतो.'
         }
       ]
     },
     closingCta: {
-      badge: 'गोपनीय मध्यस्थता',
-      title: 'एक चांगला संवाद सुरू करण्यासाठी तयार आहात का?',
-      subtitle:
-        'शांततेत घुसमटत राहण्याची किंवा तेच वाद पुन्हा करण्याची गरज नाही. दोन मिनिटे काढून आपली बाजू खाजगीत मांडा.',
-      ctaPrimary: 'काय घडलं ते सांगा',
-      ctaSecondary: 'आधी एक उदाहरण पहा',
-      trustProof: 'वापरण्यासाठी पूर्णपणे मोफत • लॉगिनची गरज नाही • १००% खाजगी'
+      badge: 'शांततेचा मार्ग',
+      title: 'गैरसमज मिटवण्यासाठी तयार आहात?',
+      subtitle: 'फक्त दोन मिनिटे काढून खाजगीत आपले म्हणणे मांडा.',
+      ctaPrimary: 'बोलणे सुरू करा',
+      ctaSecondary: 'एक उदाहरण पहा',
+      trustProof: '१००% मोफत • लॉगिनची गरज नाही • १००% खाजगी'
     },
     footer: {
-      philosophy: '“एखाद्या व्यक्तीला समजून घेणे म्हणजे त्यांच्या प्रत्येक मताशी सहमत असणे नव्हे.”',
+      philosophy: '“समजून घेणे म्हणजे प्रत्येक गोष्टीशी सहमत असणे नव्हे.”',
       mission:
-        'एक संवेदनशील AI संवाद मध्यस्थ, ज्याची निर्मिती कोणाचीही बाजू न घेता गैरसमज शांततेने सोडवण्यासाठी करण्यात आली आहे.',
-      productTitle: 'उत्पादन',
-      privacyTitle: 'गोपनीयता',
-      resourcesTitle: 'भारतातील हेल्पलाइन',
-      crisisIndiaTitle: '२४/७ मानसिक स्वास्थ्य हेल्पलाइन (भारत):',
+        'भांडण आणि गैरसमज शांततेने सोडवणारा एक प्रेमळ AI सोबती.',
+      productTitle: 'वैशिष्ट्ये',
+      privacyTitle: 'सुरक्षा',
+      resourcesTitle: 'मदतीसाठी हेल्पलाइन',
+      crisisIndiaTitle: '२४ तास हेल्पलाइन (भारत):',
       crisisDesc:
-        'तुम्ही किंवा तुमच्या ओळखीची कोणतीही व्यक्ती संकटात असल्यास, संपूर्ण भारतात २४/७ गोपनीय व्यावसायिक मदत उपलब्ध आहे:',
-      teleManas: 'टेलि-मानस (भारत सरकार): 14416 (टोल-फ्री, २४/७)',
-      aasra: 'आसरा हेल्पलाइन: +91 9820466726 (२४/७)',
+        'तुम्ही किंवा तुमच्या ओळखीची कोणतीही व्यक्ती खूप दुःखी, हताश किंवा संकटात असल्यास, या नंबरवर लगेच मदत घ्या:',
+      teleManas: 'टेलि-मानस (भारत सरकार): 14416 (मोफत, २४/७)',
+      aasra: 'आसरा हेल्पलाइन: +91 9820466726',
       vandrevala: 'वांद्रेवाला फाउंडेशन: +91 9999 666 555',
-      emergency112: 'भारत राष्ट्रीय आपत्कालीन सेवा: 112',
-      copyright: 'Reconcile AI. सर्व हक्क राखीव. खाजगी आणि सुरक्षित वाद निवारण.',
-      builtWithEmpathy: 'नात्यांमधील जिव्हाळा जपण्यासाठी संवेदनशीलतेने विकसित.'
+      emergency112: 'आपत्कालीन सेवा: 112',
+      copyright: 'Reconcile AI. सर्व हक्क राखीव. शांततेने गैरसमज मिटवण्यासाठी सहाय्यक.',
+      builtWithEmpathy: 'नात्यांमधील गोडवा टिकवण्यासाठी प्रेमाने विकसित.'
     }
   }
 };

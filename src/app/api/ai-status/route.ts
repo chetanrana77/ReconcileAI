@@ -6,12 +6,12 @@ import { NextResponse } from 'next/server';
  */
 async function testGemini(apiKey: string) {
   const startTime = Date.now();
-  const models = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+  const models = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
 
   for (const model of models) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -36,8 +36,8 @@ async function testGemini(apiKey: string) {
         return { ok: true, latencyMs, model: 'Google Gemini 3.8 Flash' };
       }
 
-      if (res.status === 404) {
-        // Model not available in this API revision, try next candidate
+      if (res.status === 404 || res.status === 503 || res.status === 429) {
+        // Model busy or not in revision, try next candidate
         continue;
       }
 
@@ -45,7 +45,7 @@ async function testGemini(apiKey: string) {
       return { ok: false, error: err?.error?.message || `HTTP ${res.status}` };
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        return { ok: false, error: 'Connection timed out' };
+        continue;
       }
       return { ok: false, error: err?.message || 'Network error connecting to Gemini API' };
     }

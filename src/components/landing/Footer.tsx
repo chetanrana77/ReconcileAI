@@ -65,42 +65,10 @@ export function Footer({ language = 'en' }: FooterProps) {
                 </li>
                 <li>
                   <button
-                    onClick={() => scrollTo('demonstration')}
-                    className="hover:text-stone-900 cursor-pointer"
-                  >
-                    {lt.navbar.demonstration}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => scrollTo('outcomes')}
-                    className="hover:text-stone-900 cursor-pointer"
-                  >
-                    {lt.navbar.outcomes}
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            <div className="space-y-3">
-              <span className="font-semibold text-stone-900 uppercase tracking-wider block">
-                {ft.privacyTitle}
-              </span>
-              <ul className="space-y-2 text-stone-600">
-                <li>
-                  <button
                     onClick={() => scrollTo('privacy')}
                     className="hover:text-stone-900 cursor-pointer"
                   >
                     {lt.navbar.privacy}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => scrollTo('faq')}
-                    className="hover:text-stone-900 cursor-pointer"
-                  >
-                    {lt.navbar.faq}
                   </button>
                 </li>
                 <li>

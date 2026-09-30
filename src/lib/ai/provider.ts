@@ -46,13 +46,13 @@ async function callGemini(
     return { ok: false, reason: 'missing_key', error: 'GEMINI_API_KEY is not configured in server environment' };
   }
 
-  // Primary model: gemini-3.8-flash (with fallback cascade if Google API version returns 404)
-  const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+  // Real confirmed Google Generative Language models available for key
+  const candidateModels = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
 
   for (const model of candidateModels) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 18000);
+      const timeoutId = setTimeout(() => controller.abort(), 6500);
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
@@ -75,7 +75,7 @@ async function callGemini(
             generationConfig: {
               response_mime_type: 'application/json',
               temperature: config?.temperature ?? 0.7,
-              maxOutputTokens: config?.maxOutputTokens ?? 1000
+              maxOutputTokens: config?.maxOutputTokens ?? 320
             }
           }),
           signal: controller.signal
@@ -88,7 +88,7 @@ async function callGemini(
         const json = await res.json().catch(() => null);
         const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!rawText || typeof rawText !== 'string' || rawText.trim().length === 0) {
-          return { ok: false, reason: 'empty_response', error: 'Empty candidate content returned from Gemini' };
+          continue;
         }
         const clean = rawText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
         const parsed = JSON.parse(clean);
@@ -100,28 +100,26 @@ async function callGemini(
       const errMsg = errJson?.error?.message || `HTTP ${res.status}`;
 
       if (res.status === 404) {
-        console.warn(`[Gemini API] Model "${model}" not found (404). Trying next candidate...`);
+        continue;
+      }
+
+      if (res.status === 503 || res.status === 429 || res.status === 500) {
+        console.warn(`[Gemini API] Temporary server demand on "${model}" (${res.status}). Trying next active model immediately...`);
         continue;
       }
 
       if (res.status === 400 || res.status === 403) {
-        console.warn(`[Gemini API] Auth or request error (${res.status}): ${errMsg}`);
+        console.warn(`[Gemini API] Auth error (${res.status}): ${errMsg}`);
         return { ok: false, reason: 'invalid_key', error: errMsg };
       }
 
-      if (res.status === 429) {
-        console.warn(`[Gemini API] Rate limit reached (429): ${errMsg}`);
-        return { ok: false, reason: 'rate_limited', error: errMsg };
-      }
-
-      console.warn(`[Gemini API] Error status (${res.status}): ${errMsg}`);
-      return { ok: false, reason: 'network_error', error: errMsg };
+      continue;
     } catch (err: any) {
       if (err.name === 'AbortError') {
-        console.warn(`[Gemini API] Request timeout calling model "${model}"`);
-        return { ok: false, reason: 'network_error', error: 'Request timeout' };
+        console.warn(`[Gemini API] Timeout (6.5s) calling "${model}". Trying next model...`);
+        continue;
       }
-      console.warn(`[Gemini API] Network exception calling model "${model}":`, err?.message || err);
+      console.warn(`[Gemini API] Exception calling "${model}":`, err?.message || err);
       continue;
     }
   }
@@ -140,22 +138,17 @@ export async function generateMediatorReply(params: {
 }): Promise<MediatorTurnResult> {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
-  const userMsgCount = params.history.filter((m) => m.sender === 'user').length;
 
-  // 1. Prioritize Google Gemini API (gemini-3.8-flash) server-side
+  // 1. Prioritize Google Gemini API (gemini-3.8-flash) server-side with fast inference
   const userPrompt = buildConversationPrompt(params);
   const geminiResult = await callGemini(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
     temperature: 0.7,
-    maxOutputTokens: 1000
+    maxOutputTokens: 320
   });
 
   if (geminiResult.ok && geminiResult.data) {
     const parsed = geminiResult.data;
     if (parsed.reply && parsed.extractedInsight) {
-      // Enforce minimum 3 turns before invitation is suggested
-      if (userMsgCount < 3) {
-        parsed.extractedInsight.readyToInvite = false;
-      }
       return {
         reply: parsed.reply,
         quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
@@ -191,9 +184,6 @@ export async function generateMediatorReply(params: {
           const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
           const parsed = JSON.parse(cleanText);
           if (parsed.reply && parsed.extractedInsight) {
-            if (userMsgCount < 3) {
-              parsed.extractedInsight.readyToInvite = false;
-            }
             return {
               reply: parsed.reply,
               quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
@@ -281,7 +271,8 @@ export async function generateMediatorReply(params: {
   const isConflict = /(argument|fight|arguing|shouted|shouting|screamed|yelled|ladai|jhagda|bhas|behass|chilaye|bhandan|vad|tanta|ladte|chilla)/i.test(allUserText);
   const isIgnored = /(ignore|ignored|silent|silence|reply|replied|texted|blocked|ghosted|call|calling|whatsapp|jawab nahi|bolat nahi|uttar nahi|chuppi|katti|seen pe)/i.test(allUserText);
   const isTrustControl = /(trust|faith|doubt|suspicious|control|micromanage|surveillance|check|phone|bharosa|viswas|shak|azadi|freedom|space|nazar|rok tok|rok-tok|moklik)/i.test(allUserText);
-  const isReadyIntent = /(invitation|invite|message|bhejo|sandesh|tayyar|ready|batana|samjhana|agreed|agree|bridge|khatam|solution|aage kya)/i.test(lastUserMsg);
+  const isDirectTalkIntent = /(tumse baat|tum se baat|kisi aur se baat|kisi aur se nahi|samajh rahe ho|you sure|are you sure|talk to you|listen to me|sirf tum|just want to talk|abhibhi baat|mere sath baat)/i.test(lastUserMsg);
+  const isReadyIntent = /(invitation|invite|message|bhejo|sandesh|tayyar|ready|nimantran|निमंत्रण|bridge|khatam|solution|aage kya)/i.test(lastUserMsg);
 
   // Substantive messages filter: messages that describe a situation beyond greetings and pleasantries
   const substantiveUserMsgs = userMessages.filter((m) => {
@@ -350,6 +341,62 @@ export async function generateMediatorReply(params: {
           intent: 'Exchanging pleasantry before opening up',
           emotions: ['open', 'calm'],
           underlyingNeed: 'A respectful, comfortable listening space',
+          readyToInvite: false
+        },
+        aiProvider: 'local'
+      };
+    }
+
+    // Direct Talk with Reconcile (e.g. "Are you sure ki mujhe kisi aur se baat karne ki zaroorat hai? Mujhe tumse baat karni hai abhi.")
+    if (isDirectTalkIntent) {
+      if (lang === 'hi') {
+        return {
+          reply: 'मैं बिल्कुल समझ रहा हूँ। आपको अभी किसी और से बात करने की कोई जल्दबाजी नहीं है — मैं पूरा ध्यान देकर सिर्फ आपकी बात सुन रहा हूँ। आप आराम से बताइए, दिल में क्या बात चल रही है और आप कैसा महसूस कर रहे हैं?',
+          quickReplies: [
+            'मुझे अपनी पढ़ाई को लेकर बहुत दबाव महसूस हो रहा है',
+            'वे मेरी मेहनत को कभी नहीं समझते',
+            'मुझे बस थोड़ा सुकून और समझ चाहिए',
+            'मैं बिना किसी तनाव के बात करना चाहता हूँ'
+          ],
+          extractedInsight: {
+            intent: 'Seeking an empathetic listener before ready for mediation',
+            emotions: ['overwhelmed', 'needing presence', 'cautious'],
+            underlyingNeed: 'To be heard with undivided attention and zero rush',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+      if (lang === 'mr') {
+        return {
+          reply: 'मी नक्कीच समजू शकतो. तुम्हाला आता दुसऱ्या कोणाशीही बोलण्याची अजिबात घाई नाही — मी इथे पूर्णपणे तुमचं ऐकण्यासाठीच आहे. शांतपणे सांगा, मनात नक्की काय चाललंय आणि कशाचा जास्त त्रास होतोय?',
+          quickReplies: [
+            'मला अभ्यासाचा खूप जास्त तणाव आहे',
+            'त्यांना माझे प्रयत्न दिसतच नाहीत',
+            'मला फक्त थोडी मोकळीक हवी आहे',
+            'शांतपणे माझी बाजू कोणीतरी ऐकून घ्यावी'
+          ],
+          extractedInsight: {
+            intent: 'Seeking an empathetic listener before ready for mediation',
+            emotions: ['overwhelmed', 'needing presence', 'cautious'],
+            underlyingNeed: 'To be heard with undivided attention and zero rush',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+      return {
+        reply: "I completely understand. There is no rush at all to talk to anyone else — I am right here with you, listening with an open mind. Take all the time you need and tell me what is going on.",
+        quickReplies: [
+          'I feel so much pressure on my shoulders',
+          'They never see how hard I try',
+          'I just need someone to hear me out',
+          'I want space to breathe without being judged'
+        ],
+        extractedInsight: {
+          intent: 'Seeking an empathetic listener before ready for mediation',
+          emotions: ['overwhelmed', 'needing presence', 'cautious'],
+          underlyingNeed: 'To be heard with undivided attention and zero rush',
           readyToInvite: false
         },
         aiProvider: 'local'
@@ -932,41 +979,103 @@ export async function generateMediatorReply(params: {
     }
 
     // Turn 4+ Substantive (or explicit ready intent): Preparing the Neutral Invitation
+    // Turn 4+ Substantive: Continuing open dialogue unless user explicitly requests invitation
+    if (!isReadyIntent) {
+      if (lang === 'hi') {
+        return {
+          reply: 'मैं आपकी बात बहुत गहराई से समझ रहा हूँ। जब मन में इतनी सारी बातें चल रही हों, तो उन्हें खुलकर कह देना ही सबसे अच्छा होता है। कोई जल्दी नहीं है, आप बिल्कुल तनावमुक्त होकर बताइए — और क्या बात है जो आपको परेशान कर रही है?',
+          quickReplies: [
+            'वे हर बात पर शक करते हैं और टोकते रहते हैं',
+            'मुझे लगता है कि मेरी मेहनत को कोई नहीं समझता',
+            'मैं बस शांति से रहना चाहता हूँ',
+            'हाँ, अब मैं निमंत्रण तैयार करने के लिए तैयार हूँ'
+          ],
+          extractedInsight: {
+            intent: 'Continuing to unpack complex interpersonal feelings in a safe space',
+            emotions: ['reflective', 'unburdening', 'seeking calm'],
+            underlyingNeed: 'Space to talk through feelings and relax',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      if (lang === 'mr') {
+        return {
+          reply: 'मी तुमची परिस्थिती पूर्णपणे समजू शकतो. मनात जेव्हा एवढ्या गोष्टी सुरू असतात, तेव्हा ते मोकळेपणाने बोलल्याने मन हलके होते. अजिबात घाई करू नका, शांतपणे सांगा — आणखी काय त्रास होतोय?',
+          quickReplies: [
+            'ते सतत माझ्यावर संशय घेतात आणि टोकतात',
+            'मला फक्त शांततेने राहायचे आहे',
+            'माझी मेहनत कधीतरी समजून घ्यावी',
+            'हो, आता मी निमंत्रण तयार करायला तयार आहे'
+          ],
+          extractedInsight: {
+            intent: 'Continuing to unpack complex interpersonal feelings in a safe space',
+            emotions: ['reflective', 'unburdening', 'seeking calm'],
+            underlyingNeed: 'Space to talk through feelings and relax',
+            readyToInvite: false
+          },
+          aiProvider: 'local'
+        };
+      }
+
+      return {
+        reply: "I hear you completely. When you are carrying this much weight, talking through it is the best way to feel light again. There is no hurry at all — take your time and tell me what else has been weighing on you.",
+        quickReplies: [
+          'They constantly question my effort and decisions',
+          'I just want peace and breathing room',
+          'It feels like I can never do enough for them',
+          'Yes, I feel ready to invite them now'
+        ],
+        extractedInsight: {
+          intent: 'Continuing to unpack complex interpersonal feelings in a safe space',
+          emotions: ['reflective', 'unburdening', 'seeking calm'],
+          underlyingNeed: 'Space to talk through feelings and relax',
+          readyToInvite: false
+        },
+        aiProvider: 'local'
+      };
+    }
+
+    // Only if user explicitly expressed ready intent:
     if (lang === 'hi') {
       return {
-        reply: 'आपने अपनी भावना और स्थिति को बहुत अच्छी तरह समझ लिया है। आप यह रिश्ता चाहते हैं, लेकिन सम्मान और सुकून के साथ। जब भी आप तैयार हों, मैं बिना किसी आरोप के एक शांत और सम्मानजनक निमंत्रण तैयार कर सकता हूँ, ताकि वे अपनी बात रख सकें और आप दोनों एक स्वस्थ समाधान निकाल सकें।',
+        reply: 'आपने अपनी भावना और स्थिति को बहुत अच्छी तरह समझ लिया है। जब भी आप तैयार हों, हम बिना किसी आरोप के एक शांत और सम्मानजनक निमंत्रण तैयार कर सकते हैं, ताकि वे अपनी बात रख सकें और आप दोनों एक स्वस्थ समाधान निकाल सकें।',
         quickReplies: ['हाँ, कृपया निमंत्रण तैयार कीजिए', 'निमंत्रण में क्या लिखा होगा?', 'क्या हम पहले संदेश देख सकते हैं?'],
         extractedInsight: {
           intent: 'Ready to bridge the disconnect through a neutral mediator',
           emotions: ['mature', 'ready for clarity', 'hopeful'],
           underlyingNeed: 'Mutual respect, independence, and peaceful connection',
           readyToInvite: true
-        }
+        },
+        aiProvider: 'local'
       };
     }
 
     if (lang === 'mr') {
       return {
-        reply: 'तुम्ही स्वतःच्या भावना आणि परिस्थिती खूप चांगल्या पद्धतीने स्पष्ट केली आहे. तुम्ही तयार असाल तेव्हा मी कोणतीही कटुता न आणता एक शांत निमंत्रण तयार करू शकतो, ज्यामुळे ती व्यक्ती तिची बाजू मांडू शकेल आणि तुमच्यात चांगला तोडगा निघेल.',
+        reply: 'तुम्ही स्वतःच्या भावना आणि परिस्थिती खूप चांगल्या पद्धतीने स्पष्ट केली आहे. तुम्ही तयार असाल तेव्हा आपण कोणतीही कटुता न आणता एक शांत निमंत्रण तयार करू शकतो, ज्यामुळे ती व्यक्ती तिची बाजू मांडू शकेल आणि चांगला तोडगा निघेल.',
         quickReplies: ['हो, कृपया निमंत्रण तयार करा', 'निमंत्रणात काय लिहिलेलं असेल?', 'आधी आपण संदेश तपासू शकतो का?'],
         extractedInsight: {
           intent: 'Ready to bridge the disconnect through a neutral mediator',
           emotions: ['mature', 'ready for clarity', 'hopeful'],
           underlyingNeed: 'Mutual respect, independence, and peaceful connection',
           readyToInvite: true
-        }
+        },
+        aiProvider: 'local'
       };
     }
 
     return {
-      reply: 'You have untangled something truly important here. You want this connection, but with mutual respect and calm communication. When you are ready, I can help invite them with a calm, neutral message — no blame, no forwarded venting — so they can share their perspective and you two can agree on a healthy way forward.',
+      reply: 'You have untangled something truly important here. When you are ready, I can help invite them with a calm, neutral message — no blame, no forwarded venting — so they can share their perspective and you two can agree on a healthy way forward.',
       quickReplies: ['Yes, let us create the invitation', 'What will the invitation say?', 'Can we preview what they see?'],
       extractedInsight: {
         intent: 'Ready to bridge the disconnect through a neutral mediator',
         emotions: ['mature', 'ready for clarity', 'hopeful'],
         underlyingNeed: 'Mutual respect, independence, and peaceful connection',
         readyToInvite: true
-      }
+      },
+      aiProvider: 'local'
     };
   } else {
     // ========================================================
