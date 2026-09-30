@@ -127,6 +127,93 @@ async function callGemini(
   return { ok: false, reason: 'not_found', error: 'No compatible Gemini model answered' };
 }
 
+interface OpenAICallResult {
+  ok: boolean;
+  data?: any;
+  modelUsed?: string;
+  error?: string;
+  reason?: 'missing_key' | 'invalid_key' | 'rate_limited' | 'network_error';
+}
+
+/**
+ * Server-side helper to call OpenAI ChatGPT API (gpt-4o-mini / gpt-4o).
+ * Strictly reads process.env.OPENAI_API_KEY, process.env.CHATGPT_API_KEY, or process.env.OPENAI_KEY.
+ * Never exposes key to client.
+ */
+async function callOpenAI(
+  systemInstruction: string,
+  userPrompt: string,
+  config?: { temperature?: number; maxTokens?: number }
+): Promise<OpenAICallResult> {
+  const apiKey = (
+    process.env.OPENAI_API_KEY ||
+    process.env.CHATGPT_API_KEY ||
+    process.env.OPENAI_KEY
+  )?.trim();
+
+  if (!apiKey) {
+    return { ok: false, reason: 'missing_key', error: 'OpenAI API key not configured in server environment' };
+  }
+
+  const candidateModels = ['gpt-4o-mini', 'gpt-4o', 'gpt-3.5-turbo'];
+
+  for (const model of candidateModels) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 7500);
+
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemInstruction },
+            { role: 'user', content: userPrompt }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: config?.temperature ?? 0.7,
+          max_tokens: config?.maxTokens ?? 1000
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const json = await res.json().catch(() => null);
+        const rawContent = json?.choices?.[0]?.message?.content;
+        if (!rawContent || typeof rawContent !== 'string' || rawContent.trim().length === 0) {
+          continue;
+        }
+        const clean = rawContent.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+        const parsed = JSON.parse(clean);
+        return { ok: true, data: parsed, modelUsed: model };
+      }
+
+      if (res.status === 404 || res.status === 429 || res.status === 500 || res.status === 503) {
+        console.warn(`[OpenAI API] ${model} returned HTTP ${res.status}. Trying next candidate/provider...`);
+        continue;
+      }
+
+      const errJson = await res.json().catch(() => ({}));
+      return { ok: false, error: errJson?.error?.message || `HTTP ${res.status}` };
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.warn(`[OpenAI API] Timeout calling ${model}. Trying next...`);
+        continue;
+      }
+      console.warn(`[OpenAI API] Exception calling ${model}:`, err?.message || err);
+      continue;
+    }
+  }
+
+  return { ok: false, error: 'All OpenAI models unavailable or timed out' };
+}
+
 export async function generateMediatorReply(params: {
   relationship: RelationshipType;
   topic?: string;
@@ -136,32 +223,69 @@ export async function generateMediatorReply(params: {
   counterpartInsight?: ExtractedInsight;
   language?: SupportedLanguage;
 }): Promise<MediatorTurnResult> {
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const openAiKey = process.env.OPENAI_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+  const openAiKey = (
+    process.env.OPENAI_API_KEY ||
+    process.env.CHATGPT_API_KEY ||
+    process.env.OPENAI_KEY
+  )?.trim();
+  const anthropicKey = process.env.ANTHROPIC_API_KEY?.trim();
 
-  // 1. Prioritize Google Gemini API (gemini-3.8-flash) server-side with fast inference
   const userPrompt = buildConversationPrompt(params);
-  const geminiResult = await callGemini(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
-    temperature: 0.7,
-    maxOutputTokens: 650
-  });
 
-  if (geminiResult.ok && geminiResult.data) {
-    const parsed = geminiResult.data;
-    if (parsed.reply && parsed.extractedInsight) {
-      return {
-        reply: parsed.reply,
-        quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
-        extractedInsight: parsed.extractedInsight,
-        aiProvider: 'gemini'
-      };
+  // 1. Google Gemini API (with automatic fallback to ChatGPT if unavailable)
+  if (geminiKey) {
+    try {
+      const geminiResult = await callGemini(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
+        temperature: 0.7,
+        maxOutputTokens: 650
+      });
+
+      if (geminiResult.ok && geminiResult.data) {
+        const parsed = geminiResult.data;
+        if (parsed.reply && parsed.extractedInsight) {
+          return {
+            reply: parsed.reply,
+            quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
+            extractedInsight: parsed.extractedInsight,
+            aiProvider: 'gemini'
+          };
+        }
+      }
+      console.warn('[Mediator] Gemini call was not successful. Automatically failing over to ChatGPT (OpenAI)...');
+    } catch (err) {
+      console.warn('[Mediator] Gemini call error. Automatically failing over to ChatGPT (OpenAI):', err);
     }
   }
 
-  // 2. Try Anthropic Claude API if configured
+  // 2. OpenAI ChatGPT API (automatic failover if Gemini is down or primary if configured)
+  if (openAiKey) {
+    try {
+      const openAiResult = await callOpenAI(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
+        temperature: 0.7,
+        maxTokens: 1000
+      });
+
+      if (openAiResult.ok && openAiResult.data) {
+        const parsed = openAiResult.data;
+        if (parsed.reply && parsed.extractedInsight) {
+          return {
+            reply: parsed.reply,
+            quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
+            extractedInsight: parsed.extractedInsight,
+            aiProvider: 'openai'
+          };
+        }
+      }
+      console.warn('[Mediator] ChatGPT API was not successful. Falling over to next active provider...');
+    } catch (err) {
+      console.warn('[Mediator] ChatGPT API error:', err);
+    }
+  }
+
+  // 3. Anthropic Claude API if configured
   if (anthropicKey) {
     try {
-      const userPrompt = buildConversationPrompt(params);
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -195,47 +319,6 @@ export async function generateMediatorReply(params: {
       }
     } catch (err) {
       console.warn('Anthropic live call error, trying fallback:', err);
-    }
-  }
-
-  // 2. Try OpenAI API if configured
-  if (openAiKey) {
-    try {
-      const userPrompt = buildConversationPrompt(params);
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openAiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: MEDIATOR_SYSTEM_PROMPT },
-            { role: 'user', content: userPrompt }
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.7,
-          max_tokens: 1000
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const content = data.choices[0]?.message?.content;
-        if (content) {
-          const parsed = JSON.parse(content);
-          if (parsed.reply && parsed.extractedInsight) {
-            return {
-              reply: parsed.reply,
-              quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
-              extractedInsight: parsed.extractedInsight
-            };
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('OpenAI live call error, using local conversational engine:', err);
     }
   }
 
