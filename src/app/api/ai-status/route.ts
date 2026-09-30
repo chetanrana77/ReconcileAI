@@ -118,11 +118,24 @@ export async function GET(req: Request) {
         message: `Connected & Answering Live via Gemini 3.8 Flash (${check.latencyMs}ms)`
       });
     } else {
-      // Key is set, but test failed — provide honest status that it is in fallback mode
+      // Key is set but Gemini test failed — check if ChatGPT is available as automatic fallback
+      if (openAiKey) {
+        return NextResponse.json({
+          geminiConfigured: true,
+          anthropicConfigured: !!anthropicKey,
+          openAiConfigured: true,
+          activeProvider: 'openai',
+          modelName: 'ChatGPT (GPT-4o-mini)',
+          status: 'connected',
+          latencyMs: 0,
+          message: `Gemini unavailable (${check.error}). Automatically using ChatGPT (GPT-4o-mini) as primary AI.`
+        });
+      }
+      // No fallback available — honest local engine status
       return NextResponse.json({
         geminiConfigured: true,
         anthropicConfigured: !!anthropicKey,
-        openAiConfigured: !!openAiKey,
+        openAiConfigured: false,
         activeProvider: 'local',
         modelName: 'Reconcile Local Conversational Engine',
         status: 'fallback',
@@ -180,35 +193,62 @@ export async function GET(req: Request) {
 export async function POST() {
   try {
     const geminiKey = process.env.GEMINI_API_KEY?.trim();
+    const openAiKey = (
+      process.env.OPENAI_API_KEY ||
+      process.env.CHATGPT_API_KEY ||
+      process.env.OPENAI_KEY
+    )?.trim();
 
-    if (!geminiKey) {
+    if (!geminiKey && !openAiKey) {
       return NextResponse.json({
         ok: false,
         status: 'fallback',
         activeProvider: 'local',
         modelName: 'Reconcile Local Conversational Engine',
-        error: 'GEMINI_API_KEY is not set in server environment variables (process.env.GEMINI_API_KEY).'
+        error: 'No AI API keys found in server environment (GEMINI_API_KEY or OPENAI_API_KEY).'
       });
     }
 
-    const check = await testGemini(geminiKey);
-    if (check.ok) {
+    if (geminiKey) {
+      const check = await testGemini(geminiKey);
+      if (check.ok) {
+        return NextResponse.json({
+          ok: true,
+          status: 'connected',
+          activeProvider: 'gemini',
+          modelName: 'Google Gemini 3.8 Flash',
+          latencyMs: check.latencyMs,
+          message: `Successfully connected to Gemini 3.8 Flash! (${check.latencyMs}ms)`
+        });
+      }
+      // Gemini failed — check OpenAI
+      if (openAiKey) {
+        return NextResponse.json({
+          ok: true,
+          status: 'connected',
+          activeProvider: 'openai',
+          modelName: 'ChatGPT (GPT-4o-mini)',
+          latencyMs: 0,
+          message: `Gemini unavailable (${check.error}). ChatGPT (GPT-4o-mini) is active as automatic fallback.`
+        });
+      }
       return NextResponse.json({
-        ok: true,
-        status: 'connected',
-        activeProvider: 'gemini',
-        modelName: 'Google Gemini 3.8 Flash',
-        latencyMs: check.latencyMs,
-        message: `Successfully connected to Gemini 3.8 Flash! (${check.latencyMs}ms)`
+        ok: false,
+        status: 'fallback',
+        activeProvider: 'local',
+        modelName: 'Reconcile Local Conversational Engine',
+        error: check.error || 'Failed to verify Gemini API connection'
       });
     }
 
+    // No Gemini key, but OpenAI key is present
     return NextResponse.json({
-      ok: false,
-      status: 'fallback',
-      activeProvider: 'local',
-      modelName: 'Reconcile Local Conversational Engine',
-      error: check.error || 'Failed to verify Gemini API connection'
+      ok: true,
+      status: 'connected',
+      activeProvider: 'openai',
+      modelName: 'ChatGPT (GPT-4o-mini)',
+      latencyMs: 0,
+      message: 'ChatGPT (GPT-4o-mini) configured as primary AI engine.'
     });
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: err?.message || 'Server error' }, { status: 500 });

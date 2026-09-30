@@ -1724,12 +1724,11 @@ export async function generateMediationBridge(params: {
   language?: SupportedLanguage;
 }): Promise<MediationBridge> {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const openAiKey = process.env.OPENAI_API_KEY;
   const lang = params.language || 'en';
 
   const userPrompt = buildBridgePrompt(params);
 
-  // 1. Google Gemini API (gemini-3.8-flash) server-side
+  // 1. Google Gemini API — primary engine
   const geminiResult = await callGemini(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
     temperature: 0.6,
     maxOutputTokens: 1400
@@ -1750,7 +1749,43 @@ export async function generateMediationBridge(params: {
     }
   }
 
-  // 2. Anthropic Claude API if configured
+  console.warn('[Bridge] Gemini unavailable. Automatically failing over to ChatGPT (OpenAI)...');
+
+  // 2. OpenAI ChatGPT — automatic failover (reads OPENAI_API_KEY / CHATGPT_API_KEY / OPENAI_KEY)
+  const openAiKeyResolved = (
+    process.env.OPENAI_API_KEY ||
+    process.env.CHATGPT_API_KEY ||
+    process.env.OPENAI_KEY
+  )?.trim();
+
+  if (openAiKeyResolved) {
+    try {
+      const openAiResult = await callOpenAI(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
+        temperature: 0.6,
+        maxTokens: 1200
+      });
+
+      if (openAiResult.ok && openAiResult.data) {
+        const parsed = openAiResult.data;
+        if (parsed.disconnectAnalysis && parsed.suggestedSharedMessage) {
+          return {
+            status: 'ready' as const,
+            personASideNeutral: parsed.personASideNeutral || '',
+            personBSideNeutral: parsed.personBSideNeutral || '',
+            disconnectAnalysis: parsed.disconnectAnalysis,
+            commonGround: parsed.commonGround || [],
+            proposedNextStep: parsed.proposedNextStep || parsed.sharedAgreementStep || '',
+            suggestedSharedMessage: parsed.suggestedSharedMessage
+          };
+        }
+      }
+      console.warn('[Bridge] ChatGPT bridge also unavailable. Trying Anthropic...');
+    } catch (err) {
+      console.warn('[Bridge] ChatGPT bridge error, trying Anthropic:', err);
+    }
+  }
+
+  // 3. Anthropic Claude API if configured
   if (anthropicKey) {
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1788,51 +1823,7 @@ export async function generateMediationBridge(params: {
         }
       }
     } catch (err) {
-      console.warn('Anthropic bridge error, trying OpenAI/local:', err);
-    }
-  }
-
-  if (openAiKey) {
-    try {
-      const userPrompt = buildBridgePrompt(params);
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${openAiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: MEDIATOR_SYSTEM_PROMPT },
-            { role: 'user', content: userPrompt }
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.6,
-          max_tokens: 1200
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const content = data.choices[0]?.message?.content;
-        if (content) {
-          const parsed = JSON.parse(content);
-          if (parsed.disconnectAnalysis && parsed.suggestedSharedMessage) {
-            return {
-              status: 'ready' as const,
-              personASideNeutral: parsed.personASideNeutral || '',
-              personBSideNeutral: parsed.personBSideNeutral || '',
-              disconnectAnalysis: parsed.disconnectAnalysis,
-              commonGround: parsed.commonGround || [],
-              proposedNextStep: parsed.proposedNextStep || parsed.sharedAgreementStep || '',
-              suggestedSharedMessage: parsed.suggestedSharedMessage
-            };
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('OpenAI bridge error, using fallback:', err);
+      console.warn('Anthropic bridge error, using local fallback:', err);
     }
   }
 
