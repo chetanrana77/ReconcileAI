@@ -123,19 +123,21 @@ export function detectLanguage(text: string): SupportedLanguage {
     'कसं', 'कशी', 'काय', 'घडलं', 'झाला', 'झाली', 'येथे', 'मित्रा', 'मित्राने', 'काही'
   ];
   const mrRomanized = [
-    'aai', 'abhyas', 'bhandan', 'sangto', 'sangte', 'vicharte', 'vichartat', 'samjat', 'kasa',
-    'kashi', 'kiti', 'mala', 'mazya', 'ticha', 'tyancha', 'ahe', 'nahi'
+    'aai', 'baba', 'abhyas', 'bhandan', 'sangto', 'sangte', 'vicharte', 'vichartat', 'samjat', 'kasa',
+    'kashi', 'kiti', 'mala', 'mazya', 'ticha', 'tyancha', 'ahe', 'nahi', 'traas', 'tras', 'chinta', 'khup'
   ];
 
   // 2. Hindi Devanagari specific keywords / markers
   const hiSpecificWords = [
     'है', 'हैं', 'नहीं', 'मुझे', 'मेरा', 'मेरी', 'मेरे', 'माँ', 'मम्मी', 'पापा', 'दोस्त',
     'बात', 'झगड़ा', 'गुस्सा', 'पूछती', 'पूछते', 'पढ़ाई', 'होता', 'रहा', 'रही', 'रहे',
-    'करना', 'चाहता', 'चाहती', 'समझ', 'बहुत', 'कुछ', 'क्या'
+    'करना', 'चाहता', 'चाहती', 'समझ', 'बहुत', 'कुछ', 'क्या', 'परेशान', 'परेशानी', 'तनाव', 'उदास'
   ];
   const hiRomanized = [
     'mujhe', 'mummy', 'papa', 'padhai', 'jhagda', 'gussa', 'baat', 'puchti', 'puchte', 'hota',
-    'hoti', 'raha', 'rahi', 'kuch', 'samajh', 'nahi', 'kare', 'kaise', 'batao'
+    'hoti', 'raha', 'rahi', 'kuch', 'samajh', 'nahi', 'kare', 'kaise', 'batao',
+    'are', 'yrr', 'yaar', 'presaan', 'pareshan', 'pareshaan', 'paresan', 'hu', 'hoon', 'tanaav',
+    'udas', 'udaas', 'chinta', 'takleef', 'dard', 'bura', 'lag'
   ];
 
   // Count matches

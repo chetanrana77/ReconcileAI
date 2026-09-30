@@ -33,9 +33,49 @@ export async function generateMediatorReply(params: {
   language?: SupportedLanguage;
 }): Promise<MediatorTurnResult> {
   const geminiKey = process.env.GEMINI_API_KEY;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
 
-  // 1. Try Google Gemini API if configured
+  // 1. Try Anthropic Claude API if configured
+  if (anthropicKey) {
+    try {
+      const userPrompt = buildConversationPrompt(params);
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-haiku-20241022',
+          max_tokens: 1000,
+          system: MEDIATOR_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: userPrompt + '\n\nIMPORTANT: Output strict JSON only matching: {"reply":"...","quickReplies":["..."],"extractedInsight":{"intent":"...","emotions":["..."],"underlyingNeed":"...","readyToInvite":false}}' }]
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.content?.[0]?.text;
+        if (text) {
+          const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsed = JSON.parse(cleanText);
+          if (parsed.reply && parsed.extractedInsight) {
+            return {
+              reply: parsed.reply,
+              quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
+              extractedInsight: parsed.extractedInsight
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Anthropic live call error, trying fallback:', err);
+    }
+  }
+
+  // 2. Try Google Gemini API if configured
   if (geminiKey) {
     try {
       const userPrompt = buildConversationPrompt(params);
@@ -118,13 +158,15 @@ export async function generateMediatorReply(params: {
     }
   }
 
-  // 3. Deep Multi-Turn Multilingual Conversational Engine (English, Hindi, Marathi)
+  // 3. Deep Adaptive Context-Aware Multilingual Conversational Engine (English, Hindi, Marathi)
   const isRoleA = params.role === 'a';
   const userMessages = params.history.filter((m) => m.sender === 'user');
   const historyLen = userMessages.length;
   const lastUserMsg = (userMessages.slice(-1)[0]?.text || '').trim().toLowerCase();
   const allUserText = userMessages.map((m) => m.text.toLowerCase()).join(' ');
-  const isParentRel = params.relationship === 'parent';
+  const rel = params.relationship || 'parent';
+  const isParentRel = rel === 'parent';
+  const isFriendRel = rel === 'friend';
 
   // Determine active language
   let lang: SupportedLanguage = params.language || 'en';
@@ -133,26 +175,38 @@ export async function generateMediatorReply(params: {
     lang = detected;
   }
 
-  // Greeting detection (English, Hindi, Marathi)
-  const isGreeting = /^(hi|hii|hiii|hello|helo|hey|heyy|hey there|good morning|good evening|yo|namaste|namaskar|help|नमस्ते|नमस्कार|हॅलो|हाय|प्रणाम|सलाम)$/i.test(lastUserMsg);
+  // 1. Semantic & Emotional Classifiers
+  const isGreeting = /^(hi|hii|hiii|hello|helo|hey|heyy|hey there|good morning|good evening|yo|namaste|namaskar|help|नमस्ते|नमस्कार|हॅलो|हाय|प्रणाम|सलाम|kasa ahes|kaise ho)$/i.test(lastUserMsg);
+
+  // Emotional distress / feeling low / stressed (e.g. "are yrr presaan hu", "bahut pareshan hu", "tension ho rahi hai")
+  const isGeneralDistress = /(presaan|pareshan|pareshaan|paresan|tension|tanaav|udas|udaas|chinta|traas|tras|stressed|stress|anxious|troubled|upset|exhausted|sad|depressed|thak gaya|bura lag raha|kuch samajh nahi|dard|takleef|help me|radayla|ghutan|ro raha|heavy)/i.test(lastUserMsg);
+
+  // Specific themes
+  const isAcademic = /(study|studies|exam|exams|marks|grade|school|college|test|career|padhai|pariksha|percentage|coaching|abhyas|dakhla|paper|future)/i.test(allUserText);
+  const isConflict = /(argument|fight|arguing|shouted|shouting|screamed|yelled|ladai|jhagda|bhas|behass|chilaye|bhandan|vad|tanta|ladte|chilla)/i.test(allUserText);
+  const isIgnored = /(ignore|ignored|silent|silence|reply|replied|texted|blocked|ghosted|call|calling|whatsapp|jawab nahi|bolat nahi|uttar nahi|chuppi|katti|seen pe)/i.test(allUserText);
+  const isTrustControl = /(trust|faith|doubt|suspicious|control|micromanage|surveillance|check|phone|bharosa|viswas|shak|azadi|freedom|space|nazar|rok tok|rok-tok|moklik)/i.test(allUserText);
+  const isReadyIntent = /(invitation|invite|message|bhejo|sandesh|tayyar|ready|batana|samjhana|agreed|agree|bridge|khatam|solution|aage kya)/i.test(lastUserMsg);
 
   if (isRoleA) {
-    // ==========================================
-    // PERSON A (CHILD / INITIATOR)
-    // ==========================================
+    // ========================================================
+    // PERSON A (INITIATOR / SEEKING MEDIATION OR REFLECTION)
+    // ========================================================
 
-    // TURN 1: Initial Greeting / Opening
-    if (isGreeting || lastUserMsg.length <= 4) {
+    // Case 1: Pure Greeting
+    if (isGreeting || (lastUserMsg.length <= 4 && !isGeneralDistress)) {
       if (lang === 'hi') {
         return {
-          reply: "नमस्ते। गहरी साँस लीजिए — मैं यहाँ आपके साथ हूँ। कोई जल्दबाज़ी नहीं है और यह बातचीत केवल आपके और मेरे बीच है। क्या बात हुई है जिसे आप साझा करना चाहेंगे?",
+          reply: 'नमस्ते। गहरी साँस लीजिए — मैं यहाँ आपके साथ हूँ। कोई जल्दबाज़ी नहीं है और यह बातचीत केवल आपके और मेरे बीच है। क्या बात हुई है जिसे आप साझा करना चाहेंगे?',
           quickReplies: isParentRel
-            ? ["मम्मी रोज़ मेरी पढ़ाई को लेकर सवाल पूछती हैं", "मुझे लगता है उन्हें मुझ पर ज़रा भी भरोसा नहीं है", "कल हमारी बहुत बहस हो गई थी", "मुझे थोड़ा सुकून और आज़ादी चाहिए"]
-            : ["मेरे दोस्त ने अचानक बात करना बंद कर दिया", "हम दोनों के बीच ग़लतफ़हमी हो गई है", "मुझे लग रहा है कि वह मुझे नज़रअंदाज़ कर रहा है", "मुझे समझ नहीं आ रहा उससे कैसे बात करूँ"],
+            ? ['मम्मी-पापा रोज़ मेरी पढ़ाई को लेकर सवाल पूछते हैं', 'मुझे लगता है उन्हें मुझ पर ज़रा भी भरोसा नहीं है', 'कल हमारी बहुत बहस हो गई थी', 'मुझे थोड़ा सुकून और आज़ादी चाहिए']
+            : isFriendRel
+            ? ['मेरे दोस्त ने अचानक बात करना बंद कर दिया', 'हम दोनों के बीच ग़लतफ़हमी हो गई है', 'मुझे लग रहा है कि वह मुझे नज़रअंदाज़ कर रहा है', 'समझ नहीं आ रहा उससे कैसे बात करूँ']
+            : ['घर में किसी बात को लेकर बहुत तनाव चल रहा है', 'किसी करीबी के साथ ग़लतफ़हमी हो गई है', 'मैं बहुत परेशान महसूस कर रहा हूँ', 'कोई मेरी बात सुनने को तैयार नहीं है'],
           extractedInsight: {
-            intent: "Opening up in a safe container",
-            emotions: ["cautious", "open"],
-            underlyingNeed: "A private place to be heard without judgment",
+            intent: 'Opening up in a safe container',
+            emotions: ['cautious', 'open'],
+            underlyingNeed: 'A private place to be heard without judgment',
             readyToInvite: false
           }
         };
@@ -160,43 +214,52 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: "नमस्कार. दीर्घ श्वास घ्या — मी तुमच्यासोबत आहे. कसलीही घाई नाही आणि हे संभाषण पूर्णपणे गोपनीय आहे. नक्की काय घडलंय, कशाबद्दल बोलायला आवडेल?",
+          reply: 'नमस्कार. दीर्घ श्वास घ्या — मी तुमच्यासोबत आहे. कसलीही घाई नाही आणि हे संभाषण पूर्णपणे गोपनीय आहे. नक्की काय घडलंय, कशाबद्दल बोलायला आवडेल?',
           quickReplies: isParentRel
-            ? ["आई रोज माझ्या अभ्यासाबद्दल विचारत राहते", "मला वाटतं तिचा माझ्या क्षमतेवर अजिबात विश्वास नाही", "काल आमच्यात खूप मोठा वाद झाला", "मला स्वतःसाठी थोडी मोकळीक हवी आहे"]
-            : ["माझ्या मित्राने दोन दिवसांपासून उत्तर दिलेले नाही", "आमच्यात गैरसमज झाला आहे", "मला वाटतं तो मला टाळत आहे", "त्याच्याशी पुन्हा कसं बोलायचं हे समजत नाही"],
+            ? ['आई-बाबा रोज माझ्या अभ्यासाबद्दल विचारत राहतात', 'मला वाटतं त्यांचा माझ्या क्षमतेवर अजिबात विश्वास नाही', 'काल आमच्यात खूप मोठा वाद झाला', 'मला स्वतःसाठी थोडी मोकळीक हवी आहे']
+            : isFriendRel
+            ? ['माझ्या मित्राने दोन दिवसांपासून उत्तर दिलेले नाही', 'आमच्यात गैरसमज झाला आहे', 'मला वाटतं तो मला टाळत आहे', 'त्याच्याशी पुन्हा कसं बोलायचं हे समजत नाही']
+            : ['घरात एखाद्या गोष्टीवरून खूप वाद सुरू आहे', 'जवळच्या व्यक्तीसोबत गैरसमज झाला आहे', 'मला खूप तणाव जाणवतोय', 'माझं कोणी ऐकून घेत नाहीये'],
           extractedInsight: {
-            intent: "Opening up in a safe container",
-            emotions: ["cautious", "open"],
-            underlyingNeed: "A private place to be heard without judgment",
+            intent: 'Opening up in a safe container',
+            emotions: ['cautious', 'open'],
+            underlyingNeed: 'A private place to be heard without judgment',
             readyToInvite: false
           }
         };
       }
 
       return {
-        reply: "Hello. Take a breath — I'm right here with you. There's no hurry and nobody else sees this. What's been going on that you'd like to talk through?",
+        reply: "Hello. Take a breath — I am right here with you. There is no hurry and nobody else sees this. What has been going on that you would like to talk through?",
         quickReplies: isParentRel
-          ? ["Mom keeps asking about my exams every day", "It feels like they have zero faith in me", "We had a huge argument yesterday", "I'm stressed and need breathing room"]
-          : ["My friend stopped replying to me", "We had an emotional argument", "I feel completely ignored and hurt", "Things have become really awkward"],
+          ? ["Mom keeps asking about my exams every day", "It feels like they have zero faith in me", "We had a huge argument yesterday", "I am stressed and need breathing room"]
+          : isFriendRel
+          ? ["My friend stopped replying to me", "We had an emotional argument", "I feel completely ignored and hurt", "Things have become really awkward"]
+          : ["There is heavy tension in my life right now", "Had a misunderstanding with someone close", "I feel completely overwhelmed", "Nobody is listening to my side"],
         extractedInsight: {
-          intent: "Opening up in a safe container",
-          emotions: ["cautious", "open"],
-          underlyingNeed: "A private place to be heard without judgment",
+          intent: 'Opening up in a safe container',
+          emotions: ['cautious', 'open'],
+          underlyingNeed: 'A private place to be heard without judgment',
           readyToInvite: false
         }
       };
     }
 
-    // TURN 2: Exploring What Happened & Acknowledging the Surface Pain
-    if (historyLen === 1) {
+    // Case 2: User expresses emotional distress without specific topic (e.g. "are yrr presaan hu", "bahut tension hai")
+    if (isGeneralDistress && !isAcademic && !isConflict && !isIgnored && historyLen <= 2) {
       if (lang === 'hi') {
         return {
-          reply: "यह रोज़-रोज़ झेलना सच में थका देने वाला होता है। जब सुबह उठते ही सबसे पहले परीक्षाओं और तैयारी को लेकर सवाल शुरू हो जाते हैं, तो वह चिंता नहीं बल्कि निगरानी जैसा लगने लगता है। हाल ही में उन्होंने ऐसा क्या कहा जिससे आपको सबसे ज़्यादा ठेस पहुँची?",
-          quickReplies: ["उन्होंने पूछा कि क्या मैं वाकई पढ़ाई कर भी रहा हूँ", "उन्हें लगता है मेरी ज़िंदगी की कोई योजना ही नहीं है", "वे मेरी तुलना दूसरों से करने लगती हैं", "वे हर बात पर शक करती हैं"],
+          reply: 'मैं समझ सकता हूँ। जब मन परेशान होता है तो सब कुछ बहुत भारी और उलझा हुआ लगने लगता है। गहरी साँस लीजिए — आप बिल्कुल सुरक्षित जगह पर हैं, यहाँ कोई आपको जज नहीं करेगा। Exactly क्या बात आपको परेशान कर रही है? किस वजह से आप इतना तनाव महसूस कर रहे हैं, थोड़ा खुलकर बताइए?',
+          quickReplies: [
+            'घर में परिवार के साथ किसी बात पर बहुत तनाव चल रहा है',
+            'किसी अपने के साथ ग़लतफ़हमी या झगड़ा हो गया है',
+            'बहुत सारी चिंताएँ एक साथ सिर पर आ गई हैं और कोई समझ नहीं रहा',
+            'मुझे समझ नहीं आ रहा कि उनसे बिना लड़े अपनी बात कैसे कहूँ'
+          ],
           extractedInsight: {
-            intent: "Explaining how daily questioning feels like surveillance",
-            emotions: ["pressured", "scrutinized", "suffocated"],
-            underlyingNeed: "Autonomy, space, and recognition of their effort",
+            intent: 'Expressing acute emotional distress and seeking understanding',
+            emotions: ['overwhelmed', 'distressed', 'seeking clarity'],
+            underlyingNeed: 'A safe space to untangle emotions without judgment',
             readyToInvite: false
           }
         };
@@ -204,52 +267,220 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: "रोज सकाळी उठल्या उठल्या अभ्यासाची चौकशी होणं खरंच खूप त्रासदायक आणि मानसिक तणावाचं ठरू शकतं. ते प्रेमापेक्षा सतत पाळत ठेवल्यासारखं वाटतं. अलीकडे आई असं काय बोलली ज्याचा तुम्हाला सर्वात जास्त त्रास झाला?",
-          quickReplies: ["ती म्हणाली की तू खरंच अभ्यास करतोस का?", "तिला वाटतं मला माझ्या भविष्याची काहीच काळजी नाही", "ती सतत इतरांशी माझी तुलना करत राहते", "तिला माझ्यावर अजिबात विश्वास नाही"],
+          reply: 'मी समजू शकतो. जेव्हा मन अस्वस्थ किंवा तणावात असतं, तेव्हा सगळंच खूप जड आणि त्रासदायक वाटायला लागतं. दीर्घ श्वास घ्या — येथे तुमचं बोलणं पूर्णपणे सुरक्षित आहे. नक्की काय घडलंय? कोणत्या गोष्टीमुळे तुम्हाला एवढा त्रास किंवा काळजी वाटतेय? थोडे मोकळेपणाने सांगा, मी ऐकत आहे.',
+          quickReplies: [
+            'घरात एखाद्या गोष्टीवरून खूप वाद किंवा तणाव आहे',
+            'जवळच्या व्यक्तीसोबत गैरसमज किंवा भांडण झाले आहे',
+            'माझी बाजू कशी मांडायची हेच समजत नाहीये',
+            'डोक्यात खूप वेगवेगळ्या चिंता एकदम सुरू आहेत'
+          ],
           extractedInsight: {
-            intent: "Explaining how daily questioning feels like surveillance",
-            emotions: ["pressured", "scrutinized", "suffocated"],
-            underlyingNeed: "Autonomy, space, and recognition of their effort",
-            readyToInvite: false
-          }
-        };
-      }
-
-      if (/study|exam|grade|school|marks|college|schedule|career|morning|parent|mom|dad/i.test(allUserText)) {
-        return {
-          reply: "That sounds exhausting to live with every day. When questions about exams and preparation start first thing in the morning, it doesn't feel like caring — it feels like being under constant surveillance. What did she say recently that bothered you the most?",
-          quickReplies: ["She asked if I'm even studying", "She acts like I have no plan", "She said I'm on my phone too much", "She compares me to other people"],
-          extractedInsight: {
-            intent: "Explaining how daily questioning feels like surveillance",
-            emotions: ["pressured", "scrutinized", "suffocated"],
-            underlyingNeed: "Autonomy, space, and recognition of their effort",
+            intent: 'Expressing acute emotional distress and seeking understanding',
+            emotions: ['overwhelmed', 'distressed', 'seeking clarity'],
+            underlyingNeed: 'A safe space to untangle emotions without judgment',
             readyToInvite: false
           }
         };
       }
 
       return {
-        reply: "Thank you for sharing that with me. That sounds really heavy to hold onto by yourself. When that happened, what was the hardest part for you to swallow?",
-        quickReplies: ["How unfair it felt", "That they didn't even listen to me", "Feeling like whatever I say is wrong", "That they assumed the worst"],
+        reply: "I hear you, and I can tell you are carrying a lot of stress right now. Take a deep breath — you are in a completely safe, private space here. What is the main thing causing you so much distress right now? Tell me what happened.",
+        quickReplies: [
+          'There is heavy tension at home with family',
+          'Had an argument or falling out with someone close',
+          'Everything is piling up and nobody is listening to me',
+          'I do not know how to explain what I feel without fighting'
+        ],
         extractedInsight: {
-          intent: "Describing painful interpersonal experience",
-          emotions: ["frustrated", "hurt"],
-          underlyingNeed: "Validation and fair hearing",
+          intent: 'Expressing acute emotional distress and seeking understanding',
+          emotions: ['overwhelmed', 'distressed', 'seeking clarity'],
+          underlyingNeed: 'A safe space to untangle emotions without judgment',
           readyToInvite: false
         }
       };
     }
 
-    // TURN 3: Going Beneath the Surface (Unpacking Intention vs Impact)
-    if (historyLen === 2) {
+    // Case 3: Initial Problem Explanation (Turn 1 or 2 with specific topic)
+    if (historyLen <= 2) {
+      // 3A. Academic / Studies pressure
+      if (isAcademic) {
+        if (lang === 'hi') {
+          return {
+            reply: 'रोज़-रोज़ पढ़ाई और परीक्षाओं को लेकर लगातार सवाल पूछे जाना वाकई बहुत थका देने वाला होता है। जब हर बात पढ़ाई पर आ जाती है, तो वह फिक्र से ज़्यादा निगरानी और अविश्वास जैसा लगने लगता है। हाल ही में उन्होंने ऐसा क्या कहा जिससे आपको सबसे ज़्यादा ठेस पहुँची?',
+            quickReplies: [
+              'उन्होंने पूछा कि क्या मैं वाकई पढ़ाई कर भी रहा हूँ',
+              'उन्हें लगता है मेरी ज़िंदगी की कोई योजना ही नहीं है',
+              'वे मेरी तुलना दूसरों से करने लगते हैं',
+              'वे हर बात पर शक करते हैं'
+            ],
+            extractedInsight: {
+              intent: 'Explaining how daily questioning feels like surveillance',
+              emotions: ['pressured', 'scrutinized', 'suffocated'],
+              underlyingNeed: 'Autonomy, space, and recognition of their effort',
+              readyToInvite: false
+            }
+          };
+        }
+
+        if (lang === 'mr') {
+          return {
+            reply: 'रोज सकाळी उठल्या उठल्या अभ्यासाची चौकशी होणं खरंच खूप त्रासदायक आणि मानसिक तणावाचं ठरू शकतं. ते प्रेमापेक्षा सतत पाळत ठेवल्यासारखं वाटतं. अलीकडे असं काय बोलणं झालं ज्याचा तुम्हाला सर्वात जास्त त्रास झाला?',
+            quickReplies: [
+              'ती म्हणाली की तू खरंच अभ्यास करतोस का?',
+              'तिला वाटतं मला माझ्या भविष्याची काहीच काळजी नाही',
+              'ती सतत इतरांशी माझी तुलना करत राहते',
+              'तिला माझ्यावर अजिबात विश्वास नाही'
+            ],
+            extractedInsight: {
+              intent: 'Explaining how daily questioning feels like surveillance',
+              emotions: ['pressured', 'scrutinized', 'suffocated'],
+              underlyingNeed: 'Autonomy, space, and recognition of their effort',
+              readyToInvite: false
+            }
+          };
+        }
+
+        return {
+          reply: 'That sounds exhausting to live with every day. When questions about exams and preparation start first thing in the morning, it does not feel like caring — it feels like being under constant surveillance. What did they say recently that bothered you the most?',
+          quickReplies: [
+            'They asked if I am even studying',
+            'They act like I have no plan for my life',
+            'They compare me to other people',
+            'They constantly doubt my effort'
+          ],
+          extractedInsight: {
+            intent: 'Explaining how daily questioning feels like surveillance',
+            emotions: ['pressured', 'scrutinized', 'suffocated'],
+            underlyingNeed: 'Autonomy, space, and recognition of their effort',
+            readyToInvite: false
+          }
+        };
+      }
+
+      // 3B. Ignored / Silence / Ghosting
+      if (isIgnored) {
+        if (lang === 'hi') {
+          return {
+            reply: 'जब कोई करीबी अचानक बात करना बंद कर दे या आपके संदेशों का जवाब न दे, तो वह चुप्पी बहुत चुभती है। ऐसा लगता है जैसे हमारी कोई कद्र ही नहीं रही। यह बात कितने समय से चल रही है, और पिछली बार क्या बातचीत हुई थी?',
+            quickReplies: [
+              'दो-तीन दिन से कोई जवाब नहीं आया है',
+              'एक छोटी सी बात के बाद उन्होंने बात बंद कर दी',
+              'मुझे लग रहा है कि दोस्ती सिर्फ मेरी तरफ से है',
+              'वे ऑनलाइन हैं पर मुझे जानबूझकर इग्नोर कर रहे हैं'
+            ],
+            extractedInsight: {
+              intent: 'Describing emotional pain of silent treatment',
+              emotions: ['ignored', 'hurt', 'anxious'],
+              underlyingNeed: 'Communication clarity and reassurance of care',
+              readyToInvite: false
+            }
+          };
+        }
+
+        if (lang === 'mr') {
+          return {
+            reply: 'जेव्हा एखादी जवळची व्यक्ती अचानक मेसेजचे उत्तर देणे थांबवते किंवा दुर्लक्ष करते, तेव्हा ती शांतता मनाला खूप टोचते. हे कधीपासून सुरू आहे, आणि शेवटचं तुमच्यात काय बोलणं झालं होतं?',
+            quickReplies: [
+              'दोन-तीन दिवसांपासून काहीच उत्तर आलेले नाही',
+              'एका छोट्या वादानंतर त्यांनी बोलणे बंद केले',
+              'मला वाटतं मैत्री फक्त माझ्याच बाजूने आहे',
+              'ते ऑनलाइन आहेत पण मला टाळत आहेत'
+            ],
+            extractedInsight: {
+              intent: 'Describing emotional pain of silent treatment',
+              emotions: ['ignored', 'hurt', 'anxious'],
+              underlyingNeed: 'Communication clarity and reassurance of care',
+              readyToInvite: false
+            }
+          };
+        }
+
+        return {
+          reply: 'Being met with cold silence is painful — your mind naturally rushes to the worst conclusions. How long have they been silent, and what happened right before the communication stopped?',
+          quickReplies: [
+            'It has been two days with no reply',
+            'They stopped talking right after a minor disagreement',
+            'It feels like they do not care about our connection',
+            'They are online but ignoring my messages'
+          ],
+          extractedInsight: {
+            intent: 'Describing emotional pain of silent treatment',
+            emotions: ['ignored', 'hurt', 'anxious'],
+            underlyingNeed: 'Communication clarity and reassurance of care',
+            readyToInvite: false
+          }
+        };
+      }
+
+      // 3C. Conflict / Argument / Shouting
+      if (isConflict) {
+        if (lang === 'hi') {
+          return {
+            reply: 'तीखी बहस या लड़ाई के बाद मन बहुत भारी हो जाता है और अंदर तक बेचैनी भर जाती है। गुस्से में अक्सर ऐसी बातें निकल जाती हैं जो इंसान वाकई में नहीं कहना चाहता। यह बहस किस बात पर शुरू हुई थी, और क्या ऐसा कुछ कहा गया जो आपको बहुत चुभ गया?',
+            quickReplies: [
+              'पुरानी बातें खींचकर मुझ पर इल्ज़ाम लगाए गए',
+              'मेरी बात को पूरा सुने बिना चिल्लाना शुरू कर दिया',
+              'मुझसे अपनी सीमाएं नहीं संभलीं और मैंने भी गुस्से में बोल दिया',
+              'मुझे बहुत अकेला और गलत समझा गया महसूस हुआ'
+            ],
+            extractedInsight: {
+              intent: 'Processing heated emotional clash',
+              emotions: ['angry', 'shaken', 'misunderstood'],
+              underlyingNeed: 'Fair hearing and mutual respect without yelling',
+              readyToInvite: false
+            }
+          };
+        }
+
+        if (lang === 'mr') {
+          return {
+            reply: 'मोठ्या वादानंतर किंवा भांडणानंतर मन खूप अशांत होतं. रागाच्या भरात अनेकदा असे शब्द बाहेर पडतात जे मनापासून म्हणायचे नसतात. हा वाद नेमका कशावरून सुरू झाला होता?',
+            quickReplies: [
+              'जुने वाद उकरून काढून माझ्यावर आरोप केले',
+              'माझं काहीही न ऐकता ओरडणे सुरू केले',
+              'रागाच्या भरात माझ्याकडूनही काही चुकीचे शब्द गेले',
+              'मला खूप वाईट आणि एकटं वाटलं'
+            ],
+            extractedInsight: {
+              intent: 'Processing heated emotional clash',
+              emotions: ['angry', 'shaken', 'misunderstood'],
+              underlyingNeed: 'Fair hearing and mutual respect without yelling',
+              readyToInvite: false
+            }
+          };
+        }
+
+        return {
+          reply: 'Heated arguments leave you feeling completely drained and emotionally raw. When voices get raised, the real feelings get buried under anger. What was the spark that set this argument off?',
+          quickReplies: [
+            'Old issues were dragged up as accusations',
+            'They started shouting without hearing me out',
+            'I lost my temper too and said things in frustration',
+            'I felt completely cornered and misunderstood'
+          ],
+          extractedInsight: {
+            intent: 'Processing heated emotional clash',
+            emotions: ['angry', 'shaken', 'misunderstood'],
+            underlyingNeed: 'Fair hearing and mutual respect without yelling',
+            readyToInvite: false
+          }
+        };
+      }
+
+      // 3D. General Situation Fallback
       if (lang === 'hi') {
         return {
-          reply: "यह सुनकर बहुत बुरा लगता है जब आपकी पूरी मेहनत को अनदेखा कर दिया जाता है। क्या आपको सच में लगता है कि वे आप पर भरोसा नहीं करतीं, या उनकी अपनी चिंता और डर उन पर हावी हो रहा है?",
-          quickReplies: ["उनकी अपनी चिंता बहुत ज़्यादा बढ़ गई है", "उन्हें सच में लगता है मैं कुछ नहीं कर पाऊँगा", "शायद दोनों बातें हैं — प्यार भी और डर भी", "वे अपनी पुरानी मुश्किलें मुझ पर थोप रही हैं"],
+          reply: 'आपने जो बात साझा की, मैं उसे बहुत ध्यान से सुन रहा हूँ। ऐसी स्थिति में फँसने पर बहुत अकेलापन और गुस्सा आना लाज़मी है। इस पूरी बात में आपके लिए सबसे ज़्यादा तकलीफदेह क्या रहा — उनका रवैया, या यह कि वे आपकी बात को समझ ही नहीं रहे हैं?',
+          quickReplies: [
+            'उनका रवैया और बात करने का तरीका',
+            'यह कि उन्होंने मेरी बात को समझने की कोशिश ही नहीं की',
+            'मुझे लगता है कि वे सिर्फ अपनी ही बात सही मानते हैं',
+            'मुझे एक शांत और सुरक्षित बातचीत चाहिए'
+          ],
           extractedInsight: {
-            intent: "Differentiating between parental anxiety and perceived lack of trust",
-            emotions: ["doubted", "longing for independence", "frustrated"],
-            underlyingNeed: "To be treated as an adult capable of responsibility",
+            intent: 'Describing painful interpersonal experience',
+            emotions: ['frustrated', 'hurt'],
+            underlyingNeed: 'Validation and fair hearing',
             readyToInvite: false
           }
         };
@@ -257,39 +488,54 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: "आपण मनापासून मेहनत करत असताना समोरच्याला त्याचा अंदाज न येणं हे खूप दुःख देणारं असतं. तुम्हाला काय वाटतं, तिला खरोखरच तुमच्यावर विश्वास नाही, की तिच्या मनातील धास्ती आणि चिंता तिच्या तोंडून बाहेर पडतेय?",
-          quickReplies: ["तिची स्वतःची चिंता आणि भीती खूप जास्त आहे", "तिला खरंच वाटतं की मी अपयशी होईन", "दोन्ही गोष्टी आहेत — काळजी पण आहे आणि अविश्वासही", "ती तिचा जुना संघर्ष माझ्यावर लादतेय"],
+          reply: 'तुम्ही जे सांगितलं ते मी अगदी लक्षपूर्वक ऐकतोय. अशा परिस्थितीत अस्वस्थ वाटणं अत्यंत स्वाभाविक आहे. या सगळ्यामध्ये तुमच्या मनाला सर्वात जास्त काय बोचलं — त्यांची वागणूक, की त्यांनी तुमची बाजू समजूनच घेतली नाही हे?',
+          quickReplies: [
+            'त्यांची वागणूक आणि बोलण्याची पद्धत',
+            'त्यांनी माझी बाजू समजून घेण्याचा प्रयत्नच केला नाही',
+            'त्यांना वाटतं फक्त तेच बरोबर आहेत',
+            'मला एक शांत आणि सन्मानपूर्वक संवाद हवा आहे'
+          ],
           extractedInsight: {
-            intent: "Differentiating between parental anxiety and perceived lack of trust",
-            emotions: ["doubted", "longing for independence", "frustrated"],
-            underlyingNeed: "To be treated as an adult capable of responsibility",
+            intent: 'Describing painful interpersonal experience',
+            emotions: ['frustrated', 'hurt'],
+            underlyingNeed: 'Validation and fair hearing',
             readyToInvite: false
           }
         };
       }
 
       return {
-        reply: "I really hear that. It hurts the most because you're already feeling the pressure yourself, and having her constantly doubt your ability makes you feel like an incompetent kid. Do you think she actually doesn't trust you, or is her own anxiety taking over?",
-        quickReplies: ["Her own anxiety is out of control", "She honestly doesn't trust me", "A mix of both", "She thinks she knows what's best for me"],
+        reply: 'Thank you for sharing that with me. That sounds really heavy to hold onto by yourself. Looking at the whole situation, what was the hardest part for you to swallow?',
+        quickReplies: [
+          'How unfair and dismissive they were',
+          'That they did not even listen to my side',
+          'Feeling like whatever I do is judged',
+          'That they assumed the worst about me'
+        ],
         extractedInsight: {
-          intent: "Differentiating between parental anxiety and perceived lack of trust",
-          emotions: ["doubted", "longing for independence", "frustrated"],
-          underlyingNeed: "To be treated as an adult capable of responsibility",
+          intent: 'Describing painful interpersonal experience',
+          emotions: ['frustrated', 'hurt'],
+          underlyingNeed: 'Validation and fair hearing',
           readyToInvite: false
         }
       };
     }
 
-    // TURN 4: Finding the Bridge (Clarifying the Core Wish)
+    // Turn 3: Going Beneath the Surface (Intention vs Impact)
     if (historyLen === 3) {
       if (lang === 'hi') {
         return {
-          reply: "यह बहुत गहरी समझ है। उनकी मंशा शायद आपके भविष्य की सुरक्षा और फिक्र है, लेकिन उनका रोज़ का पूछना आपके लिए घुटन और अविश्वास बन जाता है। अगर आप बिना लड़े एक सीमा तय कर सकें, तो आप उनसे क्या बदलाव चाहेंगे?",
-          quickReplies: ["रोज़ पूछने के बजाय हफ़्ते में एक बार बात करें", "मुझ पर थोड़ा भरोसा रखें और मुझे साँस लेने दें", "शांत माहौल में बैठकर बात हो, डांट-फटकार में नहीं", "मैं अपनी प्रगति खुद साझा करूँगा"],
+          reply: 'यह बहुत गहरी बात है। जब आपकी पूरी मेहनत या भावना को अनदेखा कर दिया जाता है, तो बहुत ठेस पहुँचती है। क्या आपको सच में लगता है कि वे जानबूझकर आपको दुख पहुँचाना चाहते हैं, या उनकी अपनी चिंता, डर या असुरक्षा उन पर हावी हो रही है?',
+          quickReplies: [
+            'उनकी अपनी चिंता और डर बहुत ज़्यादा बढ़ गया है',
+            'उन्हें सच में लगता है मैं कुछ ठीक नहीं कर पाऊँगा',
+            'शायद दोनों बातें हैं — प्यार भी और असुरक्षा भी',
+            'वे अपनी पुरानी मुश्किलें मुझ पर थोप रहे हैं'
+          ],
           extractedInsight: {
-            intent: "Ready to recognize mutual care while holding a healthy boundary",
-            emotions: ["caring", "clear-headed", "ready for change"],
-            underlyingNeed: "A structured, calm way to communicate that preserves autonomy",
+            intent: 'Differentiating between counterpart anxiety and perceived malice',
+            emotions: ['doubted', 'longing for independence', 'frustrated'],
+            underlyingNeed: 'To be treated with trust and capability',
             readyToInvite: false
           }
         };
@@ -297,38 +543,103 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: "ही खूप परिपक्व समज आहे. तिच्या मनात तुमच्या भविष्याची काळजी आणि प्रेम असू शकतं, पण रोजच्या विचारण्याने तुम्हाला अविश्वास आणि घुसमट जाणवते. जर वाद न घालता एक योग्य तोडगा काढायचा असेल, तर तुम्हाला तिच्याकडून काय अपेक्षा आहे?",
-          quickReplies: ["रोज विचारण्याऐवजी आठवड्यातून एकदा रविवारी चर्चा करावी", "माझ्यावर विश्वास ठेवून मला थोडी मोकळीक द्यावी", "भीतीने न बोलता शांतपणे संवाद साधावा", "मी स्वतःहून माझी प्रगती सांगेन"],
+          reply: 'आपण मनापासून प्रयत्न करत असताना समोरच्याला त्याचा अंदाज न येणं हे खूप दुःख देणारं असतं. तुम्हाला काय वाटतं, त्यांना खरोखरच तुम्हाला त्रास द्यायचा आहे, की त्यांच्या मनातील भीती आणि चिंता त्यांच्या वागण्यातून बाहेर पडतेय?',
+          quickReplies: [
+            'त्यांची स्वतःची भीती आणि चिंता खूप जास्त आहे',
+            'त्यांना खरंच वाटतं की मी काही करू शकत नाही',
+            'दोन्ही गोष्टी आहेत — काळजी पण आहे आणि अविश्वासही',
+            'ते त्यांचा जुना संघर्ष माझ्यावर लादतायत'
+          ],
           extractedInsight: {
-            intent: "Ready to recognize mutual care while holding a healthy boundary",
-            emotions: ["caring", "clear-headed", "ready for change"],
-            underlyingNeed: "A structured, calm way to communicate that preserves autonomy",
+            intent: 'Differentiating between counterpart anxiety and perceived malice',
+            emotions: ['doubted', 'longing for independence', 'frustrated'],
+            underlyingNeed: 'To be treated with trust and capability',
             readyToInvite: false
           }
         };
       }
 
       return {
-        reply: "That is so honest and clear. You don't want to fight with her or shut her out — you just want breathing room and to know that she believes in you. And ironically, she probably asks because she is terrified for your future and doesn't know any other way to show it. Does that ring true?",
-        quickReplies: ["Yes, exactly that", "I know she loves me, but it's too much", "I just need a different way to check in", "I want her to stop asking every day"],
+        reply: 'I really hear that. It hurts the most because you are already carrying pressure, and having someone constantly doubt you makes you feel small. Do you think they are acting out of bad intentions, or is their own fear and anxiety taking over?',
+        quickReplies: [
+          'Their own anxiety is out of control',
+          'They honestly do not trust my judgment',
+          'A mix of care and controlling anxiety',
+          'They think only their way is correct'
+        ],
         extractedInsight: {
-          intent: "Ready to recognize mutual care while holding a healthy boundary",
-          emotions: ["caring", "clear-headed", "ready for change"],
-          underlyingNeed: "A structured, calm way to communicate that preserves autonomy",
+          intent: 'Differentiating between counterpart anxiety and perceived malice',
+          emotions: ['doubted', 'longing for independence', 'frustrated'],
+          underlyingNeed: 'To be treated with trust and capability',
           readyToInvite: false
         }
       };
     }
 
-    // TURN 5+: Ready to Create the Neutral Invitation
+    // Turn 4: Finding the Concrete Healthy Boundary
+    if (historyLen === 4 && !isReadyIntent) {
+      if (lang === 'hi') {
+        return {
+          reply: 'यह बहुत परिपक्व समझ है। उनकी मंशा शायद आपके प्रति फिक्र या सुरक्षा की हो, लेकिन उनका कहने का तरीका आपके लिए घुटन और अविश्वास बन जाता है। अगर बिना लड़े एक स्वस्थ सीमा तय करनी हो, तो आप उनसे क्या बदलाव चाहेंगे?',
+          quickReplies: [
+            'रोज़ टोकने के बजाय हफ़्ते में एक बार आराम से बात करें',
+            'मुझ पर थोड़ा भरोसा रखें और मुझे आज़ादी दें',
+            'शांत माहौल में बैठकर बात हो, डांट-फटकार में नहीं',
+            'मैं खुद अपनी प्रगति और स्थिति साझा करूँगा'
+          ],
+          extractedInsight: {
+            intent: 'Ready to recognize mutual care while holding a healthy boundary',
+            emotions: ['caring', 'clear-headed', 'ready for change'],
+            underlyingNeed: 'A structured, calm way to communicate that preserves autonomy',
+            readyToInvite: false
+          }
+        };
+      }
+
+      if (lang === 'mr') {
+        return {
+          reply: 'ही खूप परिपक्व समज आहे. त्यांच्या मनात काळजी असू शकते, पण बोलण्याच्या पद्धतीमुळे तुम्हाला घुसमट जाणवते. जर वाद न घालता एक योग्य तोडगा काढायचा असेल, तर तुम्हाला त्यांच्याकडून काय अपेक्षा आहे?',
+          quickReplies: [
+            'रोज विचारण्याऐवजी आठवड्यातून एकदा शांतपणे चर्चा करावी',
+            'माझ्यावर विश्वास ठेवून मला थोडी मोकळीक द्यावी',
+            'भीतीने न बोलता शांतपणे संवाद साधावा',
+            'मी स्वतःहून माझी परिस्थिती सांगेन'
+          ],
+          extractedInsight: {
+            intent: 'Ready to recognize mutual care while holding a healthy boundary',
+            emotions: ['caring', 'clear-headed', 'ready for change'],
+            underlyingNeed: 'A structured, calm way to communicate that preserves autonomy',
+            readyToInvite: false
+          }
+        };
+      }
+
+      return {
+        reply: 'That is so honest and clear. You do not want to fight or shut them out — you just want breathing room and to know that they believe in you. If you could set a healthy boundary without an argument, what would that look like?',
+        quickReplies: [
+          'Check in once a week calmly instead of daily grilling',
+          'Give me space to handle things on my own',
+          'Talk with calm respect instead of tension',
+          'Trust me to bring up issues when I need help'
+        ],
+        extractedInsight: {
+          intent: 'Ready to recognize mutual care while holding a healthy boundary',
+          emotions: ['caring', 'clear-headed', 'ready for change'],
+          underlyingNeed: 'A structured, calm way to communicate that preserves autonomy',
+          readyToInvite: false
+        }
+      };
+    }
+
+    // Turn 5+: Preparing the Neutral Invitation
     if (lang === 'hi') {
       return {
-        reply: "आपने बहुत महत्वपूर्ण बात समझी है। आप उनका साथ चाहते हैं, लेकिन आपको उनके विश्वास की ज़रूरत है। जब भी आप तैयार हों, मैं बिना किसी आरोप के एक शांत और सम्मानजनक निमंत्रण तैयार कर सकता हूँ, ताकि वे अपनी बात रख सकें और आप दोनों एक स्वस्थ नियम बना सकें।",
-        quickReplies: ["हाँ, कृपया निमंत्रण तैयार कीजिए", "निमंत्रण में क्या लिखा होगा?", "क्या हम पहले संदेश देख सकते हैं?"],
+        reply: 'आपने अपनी भावना और स्थिति को बहुत अच्छी तरह समझ लिया है। आप यह रिश्ता चाहते हैं, लेकिन सम्मान और सुकून के साथ। जब भी आप तैयार हों, मैं बिना किसी आरोप के एक शांत और सम्मानजनक निमंत्रण तैयार कर सकता हूँ, ताकि वे अपनी बात रख सकें और आप दोनों एक स्वस्थ समाधान निकाल सकें।',
+        quickReplies: ['हाँ, कृपया निमंत्रण तैयार कीजिए', 'निमंत्रण में क्या लिखा होगा?', 'क्या हम पहले संदेश देख सकते हैं?'],
         extractedInsight: {
-          intent: "Ready to bridge the disconnect through a neutral mediator",
-          emotions: ["mature", "ready for clarity", "hopeful"],
-          underlyingNeed: "Mutual respect, independence, and peaceful connection",
+          intent: 'Ready to bridge the disconnect through a neutral mediator',
+          emotions: ['mature', 'ready for clarity', 'hopeful'],
+          underlyingNeed: 'Mutual respect, independence, and peaceful connection',
           readyToInvite: true
         }
       };
@@ -336,44 +647,44 @@ export async function generateMediatorReply(params: {
 
     if (lang === 'mr') {
       return {
-        reply: "तुम्ही एक अत्यंत महत्त्वाचा मुद्दा स्पष्ट केला आहे. तुम्हाला तिचा पाठिंबा हवा आहे, पण सोबत तिच्या विश्वासाचीही गरज आहे. तुम्ही तयार असाल तेव्हा मी कोणतीही कटुता न आणता एक शांत निमंत्रण तयार करू शकतो, ज्यामुळे ती तिची बाजू मांडू शकेल आणि तुमच्यात चांगला तोडगा निघेल.",
-        quickReplies: ["हो, कृपया निमंत्रण तयार करा", "निमंत्रणात काय लिहिलेलं असेल?", "आधी आपण संदेश तपासू शकतो का?"],
+        reply: 'तुम्ही स्वतःच्या भावना आणि परिस्थिती खूप चांगल्या पद्धतीने स्पष्ट केली आहे. तुम्ही तयार असाल तेव्हा मी कोणतीही कटुता न आणता एक शांत निमंत्रण तयार करू शकतो, ज्यामुळे ती व्यक्ती तिची बाजू मांडू शकेल आणि तुमच्यात चांगला तोडगा निघेल.',
+        quickReplies: ['हो, कृपया निमंत्रण तयार करा', 'निमंत्रणात काय लिहिलेलं असेल?', 'आधी आपण संदेश तपासू शकतो का?'],
         extractedInsight: {
-          intent: "Ready to bridge the disconnect through a neutral mediator",
-          emotions: ["mature", "ready for clarity", "hopeful"],
-          underlyingNeed: "Mutual respect, independence, and peaceful connection",
+          intent: 'Ready to bridge the disconnect through a neutral mediator',
+          emotions: ['mature', 'ready for clarity', 'hopeful'],
+          underlyingNeed: 'Mutual respect, independence, and peaceful connection',
           readyToInvite: true
         }
       };
     }
 
     return {
-      reply: "You've untangled something truly important here. You want her support, but you need her trust. When you're ready, I can help invite her with a calm, neutral message — no blame, no forwarded venting — so she can share her perspective and you two can agree on a healthy way forward.",
-      quickReplies: ["Yes, let's create the invitation", "What will the invitation say?", "Can we practice what I'll say first?"],
+      reply: 'You have untangled something truly important here. You want this connection, but with mutual respect and calm communication. When you are ready, I can help invite them with a calm, neutral message — no blame, no forwarded venting — so they can share their perspective and you two can agree on a healthy way forward.',
+      quickReplies: ['Yes, let us create the invitation', 'What will the invitation say?', 'Can we preview what they see?'],
       extractedInsight: {
-        intent: "Ready to bridge the disconnect through a neutral mediator",
-        emotions: ["mature", "ready for clarity", "hopeful"],
-        underlyingNeed: "Mutual respect, independence, and peaceful connection",
+        intent: 'Ready to bridge the disconnect through a neutral mediator',
+        emotions: ['mature', 'ready for clarity', 'hopeful'],
+        underlyingNeed: 'Mutual respect, independence, and peaceful connection',
         readyToInvite: true
       }
     };
   } else {
-    // ==========================================
-    // PERSON B (PARENT / FRIEND / SECOND PERSON)
-    // ==========================================
+    // ========================================================
+    // PERSON B (INVITED PARTICIPANT / RESPONDENT)
+    // ========================================================
 
-    // TURN 1: Welcoming Person B
+    // Turn 1: Welcoming Person B
     if (isGreeting || lastUserMsg.length <= 4) {
       if (lang === 'hi') {
         return {
-          reply: "नमस्ते। यहाँ आने और अपनी बात साझा करने के लिए धन्यवाद। Reconcile पर आपकी बातें पूरी तरह गोपनीय रहेंगी। हाल के दिनों में आपके नज़रिए से परिस्थितियाँ कैसी रही हैं?",
+          reply: 'नमस्ते। यहाँ आने और बातचीत के लिए कदम बढ़ाने के लिए धन्यवाद। Reconcile पर आपकी बातें पूरी तरह निजी और गोपनीय रहेंगी। हाल के दिनों में आपके नज़रिए से परिस्थितियाँ कैसी रही हैं?',
           quickReplies: isParentRel
-            ? ["मुझे दिन-रात बच्चों के भविष्य की चिंता रहती है", "मैंने उनके लिए इतना त्याग किया है ताकि उन्हें संघर्ष न करना पड़े", "जब मैं उन्हें फ़ोन पर देखती हूँ तो घबरा जाती हूँ", "मैं उनसे बहुत प्यार करती हूँ और उन्हें सफल देखना चाहती हूँ"]
-            : ["मैं इस हफ़्ते बहुत तनाव में था", "मेरा इरादा उन्हें दुख पहुँचाने का नहीं था", "मुझे अपनी बात रखने के लिए थोड़ा समय चाहिए था", "यह रिश्ता मेरे लिए बहुत कीमती है"],
+            ? ['मुझे दिन-रात बच्चों के भविष्य की चिंता रहती है', 'मैंने उनके लिए इतना त्याग किया है ताकि उन्हें संघर्ष न करना पड़े', 'जब मैं उन्हें बेपरवाह देखती हूँ तो घबरा जाती हूँ', 'मैं उनसे बहुत प्यार करती हूँ और उन्हें सफल देखना चाहती हूँ']
+            : ['मैं इस हफ़्ते बहुत तनाव में था', 'मेरा इरादा उन्हें दुख पहुँचाने का नहीं था', 'मुझे अपनी बात रखने के लिए थोड़ा समय चाहिए था', 'यह रिश्ता मेरे लिए बहुत कीमती है'],
           extractedInsight: {
-            intent: "Entering private consultation",
-            emotions: ["cautious", "protective"],
-            underlyingNeed: "To be heard fairly without accusations",
+            intent: 'Entering private consultation',
+            emotions: ['cautious', 'protective'],
+            underlyingNeed: 'To be heard fairly without accusations',
             readyToInvite: false
           }
         };
@@ -381,43 +692,47 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: "नमस्कार. येथे येऊन मन मोकळं केल्याबद्दल धन्यवाद. Reconcile वर आपले बोलणे पूर्णपणे खाजगी राहील. अलीकडच्या काळात आपल्या बाजूने परिस्थिती कशी वाटत आहे?",
+          reply: 'नमस्कार. येथे येऊन संवाद साधल्याबद्दल धन्यवाद. Reconcile वर आपले बोलणे पूर्णपणे खाजगी राहील. अलीकडच्या काळात आपल्या बाजूने परिस्थिती कशी वाटत आहे?',
           quickReplies: isParentRel
-            ? ["मला सतत मुलांच्या भविष्याची चिंता सतावत असते", "त्यांना चांगले दिवस यावेत म्हणून मी खूप त्याग केला आहे", "त्यांना सतत फोनवर पाहिलं की भीती वाटते", "माझं त्यांच्यावर खूप प्रेम आहे आणि त्यांनी यशस्वी व्हावं हीच इच्छा आहे"]
-            : ["मी या आठवड्यात खूप तणावात होतो", "त्यांना दुखवण्याचा माझा कोणताही हेतू नव्हता", "मला स्वतःसाठी थोडा वेळ हवा होता", "हे नाते माझ्यासाठी अत्यंत महत्त्वाचे आहे"],
+            ? ['मला सतत मुलांच्या भविष्याची काळजी सतावत असते', 'त्यांना चांगले दिवस यावेत म्हणून मी खूप त्याग केला आहे', 'त्यांना निष्काळजी पाहिलं की भीती वाटते', 'माझं त्यांच्यावर खूप प्रेम आहे आणि त्यांनी यशस्वी व्हावं हीच इच्छा आहे']
+            : ['मी या आठवड्यात खूप तणावात होतो', 'त्यांना दुखवण्याचा माझा कोणताही हेतू नव्हता', 'मला स्वतःसाठी थोडा वेळ हवा होता', 'हे नाते माझ्यासाठी अत्यंत महत्त्वाचे आहे'],
           extractedInsight: {
-            intent: "Entering private consultation",
-            emotions: ["cautious", "protective"],
-            underlyingNeed: "To be heard fairly without accusations",
+            intent: 'Entering private consultation',
+            emotions: ['cautious', 'protective'],
+            underlyingNeed: 'To be heard fairly without accusations',
             readyToInvite: false
           }
         };
       }
 
       return {
-        reply: "Hello. Thank you for stepping in and taking a moment to talk with me. Reconcile is here to listen to your perspective with total confidentiality. How have things felt from your side lately?",
+        reply: 'Hello. Thank you for stepping in and taking a moment to talk with me. Reconcile is here to listen to your perspective with total confidentiality. How have things felt from your side lately?',
         quickReplies: isParentRel
-          ? ["I worry about their future constantly", "I gave up a lot so they could have opportunities", "I see them on their phone and panic", "I love them and want them to succeed"]
-          : ["I was completely overwhelmed this week", "I didn't mean to hurt them", "I had exams and personal stress", "I value this relationship deeply"],
+          ? ['I worry about their future constantly', 'I gave up a lot so they could have opportunities', 'I see them stressed or careless and panic', 'I love them and want them to succeed']
+          : ['I was completely overwhelmed this week', 'I did not mean to hurt them', 'I had personal stress and burnout', 'I value this relationship deeply'],
         extractedInsight: {
-          intent: "Entering private consultation",
-          emotions: ["cautious", "protective"],
-          underlyingNeed: "To be heard fairly without accusations",
+          intent: 'Entering private consultation',
+          emotions: ['cautious', 'protective'],
+          underlyingNeed: 'To be heard fairly without accusations',
           readyToInvite: false
         }
       };
     }
 
-    // TURN 2: Validating Person B's Good Intentions
-    if (historyLen === 1) {
+    // Turn 2: Validating Person B based on relationship
+    if (historyLen <= 2) {
       if (lang === 'hi') {
         return {
-          reply: "एक माँ के रूप में आपकी यह भावना बिल्कुल समझ आती है। आपने उनके लिए इतना त्याग किया है और आपकी फिक्र सिर्फ प्यार से आती है। लेकिन जब बच्चे इसे अविश्वास और दबाव समझ लेते हैं, तो यह आपके लिए कितना दुखदायी होता है?",
-          quickReplies: ["मुझे बहुत अकेला और ग़लत समझा गया महसूस होता है", "मैं केवल मदद करना चाहती हूँ, उन्हें दुख नहीं देना चाहती", "काश वे समझ पाते कि मैंने क्या झेला है", "मैं रोज़ की बहस से तंग आ चुकी हूँ"],
+          reply: isParentRel
+            ? 'एक माता-पिता के रूप में आपकी यह चिंता पूरी तरह समझ आती है। आप बच्चों के लिए इतना त्याग करते हैं और आपकी फिक्र सिर्फ प्यार और सुरक्षा से आती है। लेकिन जब बच्चे इसे अविश्वास और दबाव समझ लेते हैं, तो यह आपके लिए कितना दुखदायी होता है?'
+            : 'एक करीबी के नाते आपकी यह बात पूरी तरह समझ आती है। जब ज़िंदगी में बहुत सारा तनाव या काम का बोझ बढ़ जाता है, तो कई बार हम दूसरों को समय नहीं दे पाते। जब आपने दूरी बनाई थी, तो आपके मन में क्या चल रहा था?',
+          quickReplies: isParentRel
+            ? ['मुझे बहुत अकेला और ग़लत समझा गया महसूस होता है', 'मैं केवल मदद करना चाहती हूँ, उन्हें दुख नहीं देना चाहती', 'काश वे समझ पाते कि मैंने क्या झेला है', 'मैं रोज़ की बहस से तंग आ चुकी हूँ']
+            : ['मैं बस चीज़ों को और बिगाड़ना नहीं चाहता था', 'मुझे खुद को संभालने के लिए थोड़ा समय चाहिए था', 'मेरा इरादा उन्हें अनदेखा करने का नहीं था', 'मुझे लगा शांत होकर बात करना बेहतर होगा'],
           extractedInsight: {
-            intent: "Explaining parental anxiety, love, and protection",
-            emotions: ["fear of their regret", "deep protective love", "anxious"],
-            underlyingNeed: "Reassurance of child's safety and long-term security",
+            intent: isParentRel ? 'Explaining parental anxiety, love, and protection' : 'Explaining self-preservation during stress',
+            emotions: ['caring', 'misunderstood', 'anxious'],
+            underlyingNeed: 'Fair understanding and mutual reassurance',
             readyToInvite: false
           }
         };
@@ -425,53 +740,57 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: "एका आईच्या नात्याने तुमची ही काळजी अत्यंत स्वाभाविक आहे. तुम्ही मुलांसाठी इतके कष्ट घेतले आहेत आणि तुमचे प्रश्न हे प्रेमातूनच येतात. पण जेव्हा त्यांना यातून अविश्वास जाणवतो, तेव्हा तुमच्या मनाला किती वेदना होतात?",
-          quickReplies: ["मला खूप वाईट वाटतं की माझा हेतू त्यांना समजला नाही", "मला फक्त त्यांना आधार द्यायचा आहे, त्रास द्यायचा नाही", "मी ज्या कष्टांतून गेले ते त्यांना भोगावे लागू नयेत एवढीच इच्छा", "मला घरात रोजची कटकट अजिबात नकोय"],
+          reply: isParentRel
+            ? 'एका पालकाच्या नात्याने तुमची ही काळजी अत्यंत स्वाभाविक आहे. तुम्ही मुलांसाठी इतके कष्ट घेतले आहेत आणि तुमचे प्रश्न हे प्रेमातूनच येतात. पण जेव्हा त्यांना यातून अविश्वास जाणवतो, तेव्हा तुम्हाला किती वेदना होतात?'
+            : 'नात्याच्या दृष्टीने हे अगदी समजण्यासारखे आहे. कामाचा किंवा वैयक्तिक तणाव वाढल्यावर बऱ्याचदा आपण लगेच व्यक्त होऊ शकत नाही. जेव्हा तुमच्यात संवाद थांबला, तेव्हा तुमच्या मनात नक्की काय सुरू होते?',
+          quickReplies: isParentRel
+            ? ['मला खूप वाईट वाटतं की माझा हेतू समजला नाही', 'मला फक्त त्यांना आधार द्यायचा आहे, त्रास द्यायचा नाही', 'मी ज्या कष्टांतून गेले ते त्यांना भोगावे लागू नयेत', 'मला घरात रोजची कटकट नकोय']
+            : ['मला वाद वाढवायचा नव्हता', 'मला स्वतःला सावरण्यासाठी थोडा वेळ हवा होता', 'त्यांना टाळण्याचा माझा हेतू नव्हता', 'शांत झाल्यावर बोलणं योग्य वाटलं'],
           extractedInsight: {
-            intent: "Explaining parental anxiety, love, and protection",
-            emotions: ["fear of their regret", "deep protective love", "anxious"],
-            underlyingNeed: "Reassurance of child's safety and long-term security",
+            intent: isParentRel ? 'Explaining parental anxiety, love, and protection' : 'Explaining self-preservation during stress',
+            emotions: ['caring', 'misunderstood', 'anxious'],
+            underlyingNeed: 'Fair understanding and mutual reassurance',
             readyToInvite: false
           }
         };
       }
 
-      if (isParentRel) {
-        return {
-          reply: "I hear the deep love in that. You sacrificed so much to give her opportunities you didn't have, so watching her navigate life triggers intense worry that she'll stumble. When you ask about her studies, what is the biggest worry running through your mind?",
-          quickReplies: ["That she'll fall behind and regret it", "That she doesn't realize how tough the world is", "I want her to have a secure career", "I just want her to be independent and happy"],
-          extractedInsight: {
-            intent: "Explaining parental anxiety, love, and protection",
-            emotions: ["fear of their regret", "deep protective love", "anxious"],
-            underlyingNeed: "Reassurance of child's safety and long-term security",
-            readyToInvite: false
-          }
-        };
-      } else {
-        return {
-          reply: "That makes a lot of sense. Life stress and burnout can completely drain your emotional battery, making even a short text feel impossible. When you pulled back, what did you hope would happen?",
-          quickReplies: ["I wanted to clear my head first", "I didn't want to say the wrong thing", "I was barely surviving the week", "I thought we could talk when I'm calm"],
-          extractedInsight: {
-            intent: "Coping with exhaustion while avoiding conflict escalation",
-            emotions: ["overwhelmed", "cautious"],
-            underlyingNeed: "Time to recover without guilt or confrontation",
-            readyToInvite: false
-          }
-        };
-      }
+      return {
+        reply: isParentRel
+          ? 'I hear the deep love in that. You sacrificed so much to give them opportunities, so watching them navigate life triggers intense worry. When you ask about their life, what is the biggest fear running through your mind?'
+          : 'That makes a lot of sense. Life stress and burnout can completely drain your emotional battery, making even a short text feel heavy. When you pulled back, what did you hope would happen?',
+        quickReplies: isParentRel
+          ? ['That they will fall behind and regret it', 'That they do not realize how tough the world is', 'I want them to have a secure, happy life', 'I just want to protect them']
+          : ['I wanted to clear my head first', 'I did not want to say the wrong thing in anger', 'I was barely surviving the week', 'I thought we could talk when calm'],
+        extractedInsight: {
+          intent: isParentRel ? 'Explaining parental anxiety, love, and protection' : 'Coping with exhaustion while avoiding conflict',
+          emotions: ['protective', 'cautious'],
+          underlyingNeed: 'Reassurance of security and relationship safety',
+          readyToInvite: false
+        }
+      };
     }
 
-    // TURN 3: The Lightbulb Realization (Intention vs Impact)
-    if (historyLen === 2) {
+    // Turn 3: Intention vs Impact Flip
+    if (historyLen === 3) {
       if (lang === 'hi') {
         return {
-          reply: "यही बात सबसे महत्वपूर्ण है — आप दोनों के बीच प्यार है, लेकिन बात करने के तरीके में ग़लतफ़हमी आ गई है। अगर रोज़-रोज़ पूछने के बजाय हफ़्ते में एक तय समय पर सुकून से बात करने का नियम बन जाए, तो क्या आप इसके लिए तैयार होंगी?",
-          quickReplies: ["हाँ, अगर वे अपनी प्रगति ईमानदारी से साझा करें तो मुझे मंज़ूर है", "हाँ, मैं घर में शांति चाहती हूँ", "मैं उन्हें अपनी क्षमता दिखाने का मौक़ा देने को तैयार हूँ", "हाँ, यह हम दोनों के लिए बेहतर होगा"],
+          reply: isParentRel
+            ? 'यही बात सबसे महत्वपूर्ण है — आपकी मंशा शुद्ध सुरक्षा और प्रेम की है। लेकिन जब रोज़-रोज़ सवाल पूछे जाते हैं, तो सामने वाले को "मुझे प्यार करते हैं" के बजाय "मुझ पर ज़रा भी भरोसा नहीं है" सुनाई देता है। क्या यह देखकर स्थिति को समझने का नज़रिया बदलता है?'
+            : 'यही बात सबसे महत्वपूर्ण है — आपकी मंशा परिस्थिति को शांत रखने और खुद को संभालने की थी, लेकिन सामने वाले को लगा कि वे आपके लिए महत्वपूर्ण ही नहीं रहे। दोनों तरफ से कोई बुरी भावना नहीं थी। क्या यह देखकर तनाव थोड़ा कम महसूस होता है?',
+          quickReplies: [
+            'हाँ, मैं समझ सकता हूँ कि उन्हें ऐसा क्यों लगा',
+            'मैंने कभी नहीं सोचा था कि वे इसे अविश्वास समझेंगे',
+            'हम दोनों बिना लड़े बात कैसे शुरू कर सकते हैं?',
+            'हाँ, यह नज़रिया देखने से राहत मिली'
+          ],
           extractedInsight: {
-            intent: "Recognizing the gap between loving intent and perceived surveillance",
-            emotions: ["reflective", "softened", "loving"],
-            underlyingNeed: "Connection without alienation",
-            intentionVsImpact: "Intent: Protection & deep love. Impact: Felt as micromanagement and lack of trust.",
+            intent: 'Recognizing the gap between innocent intent and painful impact',
+            emotions: ['reflective', 'softened', 'empathetic'],
+            underlyingNeed: 'Connection without alienation',
+            intentionVsImpact: isParentRel
+              ? 'Intent: Maternal protection & care. Impact: Felt as micromanagement and lack of trust.'
+              : 'Intent: Self-preservation during stress. Impact: Felt as emotional disregard.',
             readyToInvite: false
           }
         };
@@ -479,55 +798,61 @@ export async function generateMediatorReply(params: {
 
       if (lang === 'mr') {
         return {
-          reply: "हे समजून घेणं खूप गरजेचं आहे — तुमच्या दोघांमध्ये प्रेम आहे, पण संवादात अंतर पडलं आहे. रोज सकाळी विचारण्याऐवजी, जर आठवड्यातून एकदा रविवारी शांतपणे प्रगतीबद्दल बोलण्याचं ठरवलं, तर तुम्हाला चालेल का?",
-          quickReplies: ["हो, त्यांनी प्रामाणिकपणे प्रगती सांगितली तर मला नक्कीच चालेल", "हो, मला घरात शांतता हवी आहे", "मी त्यांना स्वतःची क्षमता सिद्ध करण्यासाठी मोकळीक द्यायला तयार आहे", "हो, हा आम्हा दोघांसाठी उत्तम मार्ग आहे"],
+          reply: isParentRel
+            ? 'हे समजून घेणं खूप गरजेचं आहे — तुमचा हेतू शुद्ध काळजी आणि प्रेमाचा आहे. पण वारंवार विचारण्याने समोरच्याला "काळजी" ऐवजी "अविश्वास" जाणवतो. हे लक्षात आल्यावर तणाव कमी वाटतो का?'
+            : 'हे समजून घेणं अत्यंत महत्त्वाचं आहे — तुमचा हेतू वाद टाळण्याचा होता, पण समोरच्या व्यक्तीला दुरावा आणि दुर्लक्ष जाणवले. दोघांचाही हेतू वाईट नव्हता. हे पाहून मन थोडं शांत वाटतं का?',
+          quickReplies: [
+            'हो, मला समजलं की त्यांना तसं का वाटलं',
+            'त्यांना अविश्वास वाटेल असा मी विचारच केला नव्हता',
+            'आम्ही वाद न घालता संवाद कसा सुरू करू शकतो?',
+            'हो, हे पाहून मन हलकं झालं'
+          ],
           extractedInsight: {
-            intent: "Recognizing the gap between loving intent and perceived surveillance",
-            emotions: ["reflective", "softened", "loving"],
-            underlyingNeed: "Connection without alienation",
-            intentionVsImpact: "Intent: Protection & deep love. Impact: Felt as micromanagement and lack of trust.",
+            intent: 'Recognizing the gap between innocent intent and painful impact',
+            emotions: ['reflective', 'softened', 'empathetic'],
+            underlyingNeed: 'Connection without alienation',
+            intentionVsImpact: isParentRel
+              ? 'Intent: Maternal protection & care. Impact: Felt as micromanagement and lack of trust.'
+              : 'Intent: Self-preservation during stress. Impact: Felt as emotional disregard.',
             readyToInvite: false
           }
         };
       }
 
-      if (isParentRel) {
-        return {
-          reply: "That is such a profound insight. Your intention is pure guidance and love. But let me ask you gently: when you ask her about grades every single morning, do you think she hears 'I love you', or does she hear 'I don't trust you to manage your life'?",
-          quickReplies: ["I never thought she heard it as distrust", "I guess it does sound like nagging", "How else can I know she's on track?", "I just want what's best for her"],
-          extractedInsight: {
-            intent: "Recognizing the gap between loving intent and perceived surveillance",
-            emotions: ["reflective", "softened", "loving"],
-            underlyingNeed: "Connection without alienation",
-            intentionVsImpact: "Intent: Protection & deep love. Impact: Felt as micromanagement and lack of trust.",
-            readyToInvite: false
-          }
-        };
-      } else {
-        return {
-          reply: "Exactly. Your intention was to avoid making things worse while overwhelmed. But for them, the silence felt like abandonment. Neither of you was acting out of malice — one person withdrew to cope, and the other felt neglected. Does seeing that help soften the tension?",
-          quickReplies: ["Yes, I understand why they felt hurt", "I want to apologize for the silence", "I want them to understand I was drowning", "How do we fix this?"],
-          extractedInsight: {
-            intent: "Recognizing that silence was received as rejection despite innocent intent",
-            emotions: ["empathetic", "relieved", "caring"],
-            underlyingNeed: "Mutual understanding and forgiveness",
-            intentionVsImpact: "Intent: De-escalation & personal recovery. Impact: Felt as cold disregard.",
-            readyToInvite: false
-          }
-        };
-      }
+      return {
+        reply: isParentRel
+          ? 'That is such a profound insight. Your intention is pure guidance and love. But when questions happen constantly, they hear "I do not trust you to manage your life" instead of "I love you". Does seeing that help soften the tension?'
+          : 'Exactly. Your intention was to avoid making things worse while overwhelmed. But for them, the silence felt like abandonment. Neither of you was acting out of malice. Does seeing that help clear the air?',
+        quickReplies: [
+          'Yes, I understand why they felt hurt',
+          'I never intended for it to feel like distrust',
+          'How do we start a better conversation?',
+          'Yes, this brings a lot of relief'
+        ],
+        extractedInsight: {
+          intent: 'Recognizing the gap between innocent intent and painful impact',
+          emotions: ['reflective', 'softened', 'empathetic'],
+          underlyingNeed: 'Connection without alienation',
+          intentionVsImpact: isParentRel
+            ? 'Intent: Maternal protection & care. Impact: Felt as micromanagement and lack of trust.'
+            : 'Intent: Self-preservation during stress. Impact: Felt as emotional disregard.',
+          readyToInvite: false
+        }
+      };
     }
 
-    // TURN 4+: Ready for Shared Resolution
+    // Turn 4+: Ready for Shared Resolution
     if (lang === 'hi') {
       return {
-        reply: "आप दोनों एक-दूसरे की बहुत परवाह करते हैं, लेकिन तरीके में ग़लतफ़हमी आने से तनाव बढ़ गया था। आप दोनों घर में शांति, सम्मान और विश्वास चाहते हैं। क्या आप साझा मध्यस्थता सेतु (Mediation Bridge) देखने के लिए तैयार हैं?",
-        quickReplies: ["मध्यस्थता सेतु दिखाइए", "हम आपस में यह बात कैसे शुरू करें?"],
+        reply: 'आप दोनों एक-दूसरे की बहुत परवाह करते हैं, लेकिन बात करने के तरीके में ग़लतफ़हमी आने से तनाव बढ़ गया था। आप दोनों शांति, सम्मान और स्पष्टता चाहते हैं। क्या आप साझा मध्यस्थता सेतु (Mediation Bridge) देखने के लिए तैयार हैं?',
+        quickReplies: ['मध्यस्थता सेतु दिखाइए', 'हम आपस में यह बात कैसे शुरू करें?'],
         extractedInsight: {
-          intent: "Ready to review mutual common ground and de-escalate the relationship",
-          emotions: ["open", "constructive", "relieved"],
-          underlyingNeed: "A calm path forward without circular arguing",
-          intentionVsImpact: "Intent: Maternal protection & care. Impact: Suffocating pressure & doubt.",
+          intent: 'Ready to review mutual common ground and de-escalate the relationship',
+          emotions: ['open', 'constructive', 'relieved'],
+          underlyingNeed: 'A calm path forward without circular arguing',
+          intentionVsImpact: isParentRel
+            ? 'Intent: Parental protection & care. Impact: Suffocating pressure & doubt.'
+            : 'Intent: Self-preservation during burnout. Impact: Emotional disregard.',
           readyToInvite: true
         }
       };
@@ -535,28 +860,30 @@ export async function generateMediatorReply(params: {
 
     if (lang === 'mr') {
       return {
-        reply: "तुम्ही दोघेही एकमेकांची खूप काळजी करता, पण पद्धतीमध्ये गैरसमज झाल्यामुळे तणाव वाढला होता. तुम्हा दोघांनाही घरात शांतता, आदर आणि विश्वास हवा आहे. आपण तयार केलेला संयुक्त मध्यस्थता सेतू (Mediation Bridge) पाहायला तयार आहात का?",
-        quickReplies: ["मध्यस्थता सेतू दाखवा", "आपण प्रत्यक्ष संवाद कसा सुरू करावा?"],
+        reply: 'तुम्ही दोघेही एकमेकांची खूप काळजी करता, पण पद्धतीमध्ये गैरसमज झाल्यामुळे तणाव वाढला होता. तुम्हा दोघांनाही घरात शांतता, आदर आणि विश्वास हवा आहे. आपण तयार केलेला संयुक्त मध्यस्थता सेतू (Mediation Bridge) पाहायला तयार आहात का?',
+        quickReplies: ['मध्यस्थता सेतू दाखवा', 'आपण प्रत्यक्ष संवाद कसा सुरू करावा?'],
         extractedInsight: {
-          intent: "Ready to review mutual common ground and de-escalate the relationship",
-          emotions: ["open", "constructive", "relieved"],
-          underlyingNeed: "A calm path forward without circular arguing",
-          intentionVsImpact: "Intent: Maternal protection & care. Impact: Suffocating pressure & doubt.",
+          intent: 'Ready to review mutual common ground and de-escalate the relationship',
+          emotions: ['open', 'constructive', 'relieved'],
+          underlyingNeed: 'A calm path forward without circular arguing',
+          intentionVsImpact: isParentRel
+            ? 'Intent: Parental protection & care. Impact: Suffocating pressure & doubt.'
+            : 'Intent: Self-preservation during burnout. Impact: Emotional disregard.',
           readyToInvite: true
         }
       };
     }
 
     return {
-      reply: "Both of you genuinely care about each other, but the way things landed created tension. You both want respect, peace of mind, and connection. Ready to see the joint Mediation Bridge and review a starter message to clear the air together?",
-      quickReplies: ["Show me the Mediation Bridge", "How should we talk about this?"],
+      reply: 'Both of you genuinely care about each other, but the way things landed created tension. You both want respect, peace of mind, and connection. Ready to see the joint Mediation Bridge and review a starter message to clear the air together?',
+      quickReplies: ['Show me the Mediation Bridge', 'How should we talk about this?'],
       extractedInsight: {
-        intent: "Ready to review mutual common ground and de-escalate the relationship",
-        emotions: ["open", "constructive", "relieved"],
-        underlyingNeed: "A calm path forward without circular arguing",
+        intent: 'Ready to review mutual common ground and de-escalate the relationship',
+        emotions: ['open', 'constructive', 'relieved'],
+        underlyingNeed: 'A calm path forward without circular arguing',
         intentionVsImpact: isParentRel
-          ? "Intent: Maternal protection & care. Impact: Suffocating pressure & doubt."
-          : "Intent: Self-preservation during burnout. Impact: Emotional neglect.",
+          ? 'Intent: Parental protection & care. Impact: Suffocating pressure & doubt.'
+          : 'Intent: Self-preservation during burnout. Impact: Emotional neglect.',
         readyToInvite: true
       }
     };
@@ -571,8 +898,51 @@ export async function generateMediationBridge(params: {
   language?: SupportedLanguage;
 }): Promise<MediationBridge> {
   const geminiKey = process.env.GEMINI_API_KEY;
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
   const lang = params.language || 'en';
+
+  if (anthropicKey) {
+    try {
+      const userPrompt = buildBridgePrompt(params);
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': anthropicKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-haiku-20241022',
+          max_tokens: 1500,
+          system: MEDIATOR_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: userPrompt + '\n\nIMPORTANT: Output strict JSON only matching: {"disconnectAnalysis":{"intentVsImpact":"","perceivedGap":"","theRootNeed":""},"commonGround":["..."],"proposedNextStep":"","suggestedSharedMessage":{"starterA":"","starterB":""}}' }]
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.content?.[0]?.text;
+        if (text) {
+          const cleanText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsed = JSON.parse(cleanText);
+          if (parsed.disconnectAnalysis && parsed.suggestedSharedMessage) {
+            return {
+              status: 'ready' as const,
+              personASideNeutral: parsed.personASideNeutral || '',
+              personBSideNeutral: parsed.personBSideNeutral || '',
+              disconnectAnalysis: parsed.disconnectAnalysis,
+              commonGround: parsed.commonGround || [],
+              proposedNextStep: parsed.proposedNextStep || parsed.sharedAgreementStep || '',
+              suggestedSharedMessage: parsed.suggestedSharedMessage
+            };
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Anthropic bridge error, trying Gemini/OpenAI:', err);
+    }
+  }
 
   if (geminiKey) {
     try {

@@ -72,25 +72,6 @@ export function ConversationHub({
             <ArrowLeft className="w-4 h-4" />
             <span>{view === 'main' ? (language === 'hi' ? 'मुख्य पृष्ठ' : language === 'mr' ? 'मुख्य पान' : 'Home') : (language === 'hi' ? 'वापस' : language === 'mr' ? 'मागे' : 'Back')}</span>
           </button>
-
-          {/* Language Selector */}
-          <div className="inline-flex items-center p-0.5 rounded-xl bg-stone-200/60 border border-stone-200/80">
-            {SUPPORTED_LANGUAGES.map((l) => (
-              <button
-                key={l.code}
-                type="button"
-                onClick={() => onLanguageChange(l.code)}
-                className={cn(
-                  "text-xs px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium select-none",
-                  language === l.code
-                    ? "bg-white text-stone-900 shadow-2xs font-semibold"
-                    : "text-stone-600 hover:text-stone-900"
-                )}
-              >
-                {l.native}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* VIEW 1: Main Dashboard ("What would help right now?") */}

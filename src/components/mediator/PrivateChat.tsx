@@ -102,32 +102,8 @@ export function PrivateChat({
           </div>
         </div>
 
-        {/* Right side: Language Switcher & Action */}
+        {/* Right side: Action Button */}
         <div className="flex items-center gap-2.5 ml-auto sm:ml-0">
-          {/* Language Switcher Pills */}
-          <div className="inline-flex items-center p-0.5 rounded-xl bg-stone-200/60 border border-stone-200/80">
-            {SUPPORTED_LANGUAGES.map((l) => {
-              const isSelected = activeLang === l.code;
-              return (
-                <button
-                  key={l.code}
-                  type="button"
-                  onClick={() => handleLanguageSelect(l.code)}
-                  className={cn(
-                    "text-xs px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium select-none",
-                    isSelected
-                      ? "bg-white text-stone-900 shadow-2xs font-semibold"
-                      : "text-stone-600 hover:text-stone-900"
-                  )}
-                  title={`Talk in ${l.label}`}
-                >
-                  {l.native}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Action button */}
           {isRoleA ? (
             <Button
               size="sm"
