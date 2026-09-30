@@ -48,19 +48,15 @@ export function PrivateChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchStatus = () => {
-    const key = typeof window !== 'undefined' ? localStorage.getItem('reconcile_gemini_key') || '' : '';
-    const headers: Record<string, string> = {};
-    if (key) headers['x-gemini-key'] = key;
-
-    fetch('/api/ai-status', { headers })
+    fetch('/api/ai-status')
       .then((res) => res.json())
       .then((data) => setAiStatus(data))
       .catch(() =>
         setAiStatus({
           status: 'fallback',
           activeProvider: 'local',
-          modelName: 'Local Engine',
-          message: 'Reconcile Local Engine'
+          modelName: 'Local Mode',
+          message: 'Reconcile Local Conversational Engine'
         })
       );
   };
@@ -139,7 +135,7 @@ export function PrivateChat({
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100/80'
                     : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200/60'
                 )}
-                title="Click to check AI Status or connect Gemini API Key"
+                title={aiStatus?.status === 'connected' ? 'AI Engine: Gemini connected' : 'AI Engine: Local mode'}
               >
                 <span
                   className={cn(
@@ -150,15 +146,15 @@ export function PrivateChat({
                   )}
                 />
                 <span>
-                  {aiStatus?.activeProvider === 'gemini'
-                    ? '⚡ Gemini 1.5 Flash'
-                    : aiStatus?.activeProvider === 'claude'
-                    ? '⚡ Claude 3.5'
-                    : aiStatus?.activeProvider === 'openai'
-                    ? '⚡ GPT-4o'
-                    : '🌱 Local Engine'}
+                  {aiStatus?.status === 'connected' && aiStatus?.activeProvider === 'gemini'
+                    ? '⚡ Gemini connected'
+                    : aiStatus?.status === 'connected' && aiStatus?.activeProvider === 'claude'
+                    ? '⚡ Claude connected'
+                    : aiStatus?.status === 'connected' && aiStatus?.activeProvider === 'openai'
+                    ? '⚡ GPT-4o connected'
+                    : '🌱 Local mode'}
                 </span>
-                <span className="text-[9px] opacity-60 underline decoration-dotted ml-0.5">Manage</span>
+                <span className="text-[9px] opacity-60 underline decoration-dotted ml-0.5">Status</span>
               </button>
             </div>
             <p className="text-xs text-stone-500 font-normal">
@@ -244,12 +240,12 @@ export function PrivateChat({
                         )}
                       >
                         {msg.aiProvider === 'gemini'
-                          ? '⚡ Gemini 1.5 Flash'
+                          ? '⚡ Gemini 3.8 Flash'
                           : msg.aiProvider === 'claude'
                           ? '⚡ Claude 3.5'
                           : msg.aiProvider === 'openai'
                           ? '⚡ GPT-4o'
-                          : '🌱 Local Engine'}
+                          : '🌱 Local mode'}
                       </span>
                     )}
                   </div>

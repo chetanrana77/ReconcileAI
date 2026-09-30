@@ -161,21 +161,14 @@ export function AppShell() {
     }
 
     try {
-      const storedKey = typeof window !== 'undefined' ? localStorage.getItem('reconcile_gemini_key') || '' : '';
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (storedKey) {
-        headers['x-gemini-key'] = storedKey;
-      }
-
       const res = await fetch(`/api/session/${session.id}/message`, {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text,
           role: currentRole,
           language: activeLanguage,
-          relationship: session.relationship,
-          apiKey: storedKey || undefined
+          relationship: session.relationship
         })
       });
 

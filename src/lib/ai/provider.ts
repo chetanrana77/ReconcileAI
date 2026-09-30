@@ -24,6 +24,111 @@ export interface MediatorTurnResult {
   aiProvider?: 'gemini' | 'claude' | 'openai' | 'local';
 }
 
+interface GeminiCallResult {
+  ok: boolean;
+  data?: any;
+  modelUsed?: string;
+  error?: string;
+  reason?: 'missing_key' | 'invalid_key' | 'not_found' | 'rate_limited' | 'empty_response' | 'network_error';
+}
+
+/**
+ * Server-side helper to call Google Gemini API with gemini-3.8-flash
+ * Strictly reads process.env.GEMINI_API_KEY. Never exposes key to client.
+ */
+async function callGemini(
+  systemInstruction: string,
+  userPrompt: string,
+  config?: { temperature?: number; maxOutputTokens?: number }
+): Promise<GeminiCallResult> {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    return { ok: false, reason: 'missing_key', error: 'GEMINI_API_KEY is not configured in server environment' };
+  }
+
+  // Primary model: gemini-3.8-flash (with fallback cascade if Google API version returns 404)
+  const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'];
+
+  for (const model of candidateModels) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 18000);
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
+          body: JSON.stringify({
+            system_instruction: {
+              parts: [{ text: systemInstruction }]
+            },
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: userPrompt }]
+              }
+            ],
+            generationConfig: {
+              response_mime_type: 'application/json',
+              temperature: config?.temperature ?? 0.7,
+              maxOutputTokens: config?.maxOutputTokens ?? 1000
+            }
+          }),
+          signal: controller.signal
+        }
+      );
+
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const json = await res.json().catch(() => null);
+        const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawText || typeof rawText !== 'string' || rawText.trim().length === 0) {
+          return { ok: false, reason: 'empty_response', error: 'Empty candidate content returned from Gemini' };
+        }
+        const clean = rawText.replace(/```json\n?/gi, '').replace(/```\n?/g, '').trim();
+        const parsed = JSON.parse(clean);
+        return { ok: true, data: parsed, modelUsed: model };
+      }
+
+      // Handle non-200 responses
+      const errJson = await res.json().catch(() => ({}));
+      const errMsg = errJson?.error?.message || `HTTP ${res.status}`;
+
+      if (res.status === 404) {
+        console.warn(`[Gemini API] Model "${model}" not found (404). Trying next candidate...`);
+        continue;
+      }
+
+      if (res.status === 400 || res.status === 403) {
+        console.warn(`[Gemini API] Auth or request error (${res.status}): ${errMsg}`);
+        return { ok: false, reason: 'invalid_key', error: errMsg };
+      }
+
+      if (res.status === 429) {
+        console.warn(`[Gemini API] Rate limit reached (429): ${errMsg}`);
+        return { ok: false, reason: 'rate_limited', error: errMsg };
+      }
+
+      console.warn(`[Gemini API] Error status (${res.status}): ${errMsg}`);
+      return { ok: false, reason: 'network_error', error: errMsg };
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.warn(`[Gemini API] Request timeout calling model "${model}"`);
+        return { ok: false, reason: 'network_error', error: 'Request timeout' };
+      }
+      console.warn(`[Gemini API] Network exception calling model "${model}":`, err?.message || err);
+      continue;
+    }
+  }
+
+  return { ok: false, reason: 'not_found', error: 'No compatible Gemini model answered' };
+}
+
 export async function generateMediatorReply(params: {
   relationship: RelationshipType;
   topic?: string;
@@ -32,61 +137,31 @@ export async function generateMediatorReply(params: {
   history: ChatMessage[];
   counterpartInsight?: ExtractedInsight;
   language?: SupportedLanguage;
-  apiKey?: string;
 }): Promise<MediatorTurnResult> {
-  const geminiKey = params.apiKey || process.env.GEMINI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
   const userMsgCount = params.history.filter((m) => m.sender === 'user').length;
 
-  // 1. Prioritize Google Gemini API (Primary Provider)
-  if (geminiKey) {
-    try {
-      const userPrompt = buildConversationPrompt(params);
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: MEDIATOR_SYSTEM_PROMPT }]
-            },
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: {
-              response_mime_type: 'application/json',
-              temperature: 0.7,
-              maxOutputTokens: 1000
-            }
-          })
-        }
-      );
+  // 1. Prioritize Google Gemini API (gemini-3.8-flash) server-side
+  const userPrompt = buildConversationPrompt(params);
+  const geminiResult = await callGemini(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
+    temperature: 0.7,
+    maxOutputTokens: 1000
+  });
 
-      if (res.ok) {
-        const data = await res.json();
-        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawText) {
-          const cleanText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-          const parsed = JSON.parse(cleanText);
-          if (parsed.reply && parsed.extractedInsight) {
-            // Enforce minimum 3 turns before invitation is suggested
-            if (userMsgCount < 3) {
-              parsed.extractedInsight.readyToInvite = false;
-            }
-            return {
-              reply: parsed.reply,
-              quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
-              extractedInsight: parsed.extractedInsight,
-              aiProvider: 'gemini'
-            };
-          }
-        }
-      } else {
-        const errBody = await res.text().catch(() => '');
-        console.warn('Gemini API call returned error status:', res.status, errBody);
+  if (geminiResult.ok && geminiResult.data) {
+    const parsed = geminiResult.data;
+    if (parsed.reply && parsed.extractedInsight) {
+      // Enforce minimum 3 turns before invitation is suggested
+      if (userMsgCount < 3) {
+        parsed.extractedInsight.readyToInvite = false;
       }
-    } catch (err) {
-      console.warn('Gemini live call error, trying fallback:', err);
+      return {
+        reply: parsed.reply,
+        quickReplies: Array.isArray(parsed.quickReplies) ? parsed.quickReplies : [],
+        extractedInsight: parsed.extractedInsight,
+        aiProvider: 'gemini'
+      };
     }
   }
 
@@ -1122,14 +1197,36 @@ export async function generateMediationBridge(params: {
   personBInsight: ExtractedInsight;
   language?: SupportedLanguage;
 }): Promise<MediationBridge> {
-  const geminiKey = process.env.GEMINI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openAiKey = process.env.OPENAI_API_KEY;
   const lang = params.language || 'en';
 
+  const userPrompt = buildBridgePrompt(params);
+
+  // 1. Google Gemini API (gemini-3.8-flash) server-side
+  const geminiResult = await callGemini(MEDIATOR_SYSTEM_PROMPT, userPrompt, {
+    temperature: 0.6,
+    maxOutputTokens: 1400
+  });
+
+  if (geminiResult.ok && geminiResult.data) {
+    const parsed = geminiResult.data;
+    if (parsed.disconnectAnalysis && parsed.suggestedSharedMessage) {
+      return {
+        status: 'ready' as const,
+        personASideNeutral: parsed.personASideNeutral || '',
+        personBSideNeutral: parsed.personBSideNeutral || '',
+        disconnectAnalysis: parsed.disconnectAnalysis,
+        commonGround: parsed.commonGround || [],
+        proposedNextStep: parsed.proposedNextStep || parsed.sharedAgreementStep || '',
+        suggestedSharedMessage: parsed.suggestedSharedMessage
+      };
+    }
+  }
+
+  // 2. Anthropic Claude API if configured
   if (anthropicKey) {
     try {
-      const userPrompt = buildBridgePrompt(params);
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -1165,52 +1262,7 @@ export async function generateMediationBridge(params: {
         }
       }
     } catch (err) {
-      console.warn('Anthropic bridge error, trying Gemini/OpenAI:', err);
-    }
-  }
-
-  if (geminiKey) {
-    try {
-      const userPrompt = buildBridgePrompt(params);
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            system_instruction: {
-              parts: [{ text: MEDIATOR_SYSTEM_PROMPT }]
-            },
-            contents: [{ parts: [{ text: userPrompt }] }],
-            generationConfig: {
-              response_mime_type: 'application/json',
-              temperature: 0.6,
-              maxOutputTokens: 1200
-            }
-          })
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          const parsed = JSON.parse(text);
-          if (parsed.disconnectAnalysis && parsed.suggestedSharedMessage) {
-            return {
-              status: 'ready' as const,
-              personASideNeutral: parsed.personASideNeutral || '',
-              personBSideNeutral: parsed.personBSideNeutral || '',
-              disconnectAnalysis: parsed.disconnectAnalysis,
-              commonGround: parsed.commonGround || [],
-              proposedNextStep: parsed.proposedNextStep || parsed.sharedAgreementStep || '',
-              suggestedSharedMessage: parsed.suggestedSharedMessage
-            };
-          }
-        }
-      }
-    } catch (err) {
-      console.warn('Gemini bridge error, using fallback:', err);
+      console.warn('Anthropic bridge error, trying OpenAI/local:', err);
     }
   }
 

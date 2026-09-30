@@ -12,15 +12,12 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { text, role = 'a', language: requestedLang, apiKey: bodyApiKey, relationship: reqRelationship } = body as {
+    const { text, role = 'a', language: requestedLang, relationship: reqRelationship } = body as {
       text: string;
       role: ParticipantRole;
       language?: SupportedLanguage;
-      apiKey?: string;
       relationship?: RelationshipType;
     };
-    const headerApiKey = req.headers.get('x-gemini-key') || undefined;
-    const apiKey = (bodyApiKey && bodyApiKey.trim()) || (headerApiKey && headerApiKey.trim()) || undefined;
 
     if (!text || typeof text !== 'string' || text.trim().length === 0) {
       return NextResponse.json({ error: 'Message text is required' }, { status: 400 });
@@ -83,8 +80,7 @@ export async function POST(
       participantLabel: participant.label,
       history: participant.messages,
       counterpartInsight: isRoleA ? session.personB?.insight : session.personA.insight,
-      language: activeLang,
-      apiKey
+      language: activeLang
     });
 
     const reassuranceNote =
