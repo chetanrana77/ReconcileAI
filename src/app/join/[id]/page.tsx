@@ -5,7 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { Shield, ArrowRight, Lock, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { SafeSessionView } from '@/lib/types';
+import { SafeSessionView, SupportedLanguage } from '@/lib/types';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n/translations';
+import { cn } from '@/lib/utils';
 import { Navbar } from '@/components/landing/Navbar';
 
 export default function JoinSessionPage() {
@@ -14,6 +16,7 @@ export default function JoinSessionPage() {
   const id = params?.id as string;
 
   const [session, setSession] = useState<SafeSessionView | null>(null);
+  const [language, setLanguage] = useState<SupportedLanguage>('en');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,6 +30,7 @@ export default function JoinSessionPage() {
       })
       .then((data) => {
         setSession(data);
+        if (data.language) setLanguage(data.language);
         setLoading(false);
       })
       .catch((err) => {
@@ -45,11 +49,11 @@ export default function JoinSessionPage() {
         body: JSON.stringify({ action: 'join' }),
       });
 
-      // Redirect to main session view with role=b parameter
-      router.push(`/?session=${id}&role=b`);
+      // Redirect to main session view with role=b and selected language
+      router.push(`/?session=${id}&role=b&lang=${language}`);
     } catch (err) {
       console.error(err);
-      router.push(`/?session=${id}&role=b`);
+      router.push(`/?session=${id}&role=b&lang=${language}`);
     }
   };
 
@@ -83,7 +87,12 @@ export default function JoinSessionPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF9F6] flex flex-col font-sans">
-      <Navbar onStartClick={() => router.push('/')} onHomeClick={() => router.push('/')} />
+      <Navbar
+        onStartClick={() => router.push('/')}
+        onHomeClick={() => router.push('/')}
+        language={language}
+        onLanguageChange={setLanguage}
+      />
 
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="max-w-lg w-full space-y-6 text-center animate-fade-in-up">
@@ -103,6 +112,28 @@ export default function JoinSessionPage() {
           </div>
 
           <Card className="p-6 sm:p-8 bg-white border border-stone-200 shadow-2xs text-left space-y-5">
+            {/* Preferred Language Choice */}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-stone-50 border border-stone-200/80">
+              <span className="text-xs text-stone-600 font-medium">Choose language / भाषा:</span>
+              <div className="inline-flex items-center p-0.5 rounded-lg bg-stone-200/60 border border-stone-200/80">
+                {SUPPORTED_LANGUAGES.map((l) => (
+                  <button
+                    key={l.code}
+                    type="button"
+                    onClick={() => setLanguage(l.code)}
+                    className={cn(
+                      "text-xs px-2.5 py-1 rounded-md transition-all font-medium cursor-pointer",
+                      language === l.code
+                        ? "bg-white text-stone-900 font-semibold shadow-2xs"
+                        : "text-stone-600 hover:text-stone-900"
+                    )}
+                  >
+                    {l.native}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-3">
               <span className="text-xs font-semibold text-stone-400 uppercase tracking-wider block">
                 What to Expect

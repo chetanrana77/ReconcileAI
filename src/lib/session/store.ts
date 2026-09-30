@@ -6,9 +6,11 @@ import {
   NeutralInvitation,
   MediationBridge,
   RelationshipType,
-  ExtractedInsight
+  ExtractedInsight,
+  SupportedLanguage
 } from '@/lib/types';
 import { DEMO_SESSIONS } from '@/lib/demo/scenarios';
+import { getGreetingForLanguage } from '@/lib/i18n/translations';
 
 // In-memory store for alpha sessions
 const sessionsMap = new Map<string, MediationSession>();
@@ -23,32 +25,33 @@ export function initializeDemoSessions() {
 // Auto-init
 initializeDemoSessions();
 
-export function createSession(relationship: RelationshipType = 'parent', topic?: string): MediationSession {
+export function createSession(
+  relationship: RelationshipType = 'parent',
+  topic?: string,
+  language: SupportedLanguage = 'en'
+): MediationSession {
   const id = `session-${Math.random().toString(36).substring(2, 9)}`;
   const now = Date.now();
+  const greeting = getGreetingForLanguage(language, relationship);
 
   const session: MediationSession = {
     id,
     relationship,
+    language,
     topic: topic || (relationship === 'parent' ? 'Studies and Trust' : 'Communication Misunderstanding'),
     status: 'intake_a',
     personA: {
-      label: relationship === 'parent' ? 'You' : 'You',
+      label: 'You',
       messages: [
         {
           id: `msg-${Math.random().toString(36).substring(2, 7)}`,
           sender: 'reconcile',
           role: 'a',
-          text: "Hey, I'm here. What's going on?",
+          text: greeting.text,
           timestamp: now,
           privacy: 'PRIVATE_A',
-          quickReplies: [
-            relationship === 'parent' ? "My parents keep asking about my studies" : "My friend hasn't replied for two days",
-            "We had a huge argument yesterday",
-            "It feels like they don't trust me",
-            "I don't know how to bring this up directly"
-          ],
-          reassuranceNote: "Your words stay private with Reconcile. Nothing is forwarded without your consent."
+          quickReplies: greeting.quickReplies,
+          reassuranceNote: greeting.reassuranceNote
         }
       ]
     },
@@ -81,6 +84,7 @@ export function getSafeSession(id: string, role: ParticipantRole): SafeSessionVi
     id: session.id,
     relationship: session.relationship,
     topic: session.topic,
+    language: session.language || 'en',
     status: session.status,
     currentRole: role,
     myMessages,

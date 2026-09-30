@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Lock, Send, UserPlus, Users, ArrowRight } from 'lucide-react';
-import { ChatMessage, ExtractedInsight, ParticipantRole } from '@/lib/types';
+import { Lock, Send, UserPlus, Users, ArrowRight, Globe } from 'lucide-react';
+import { ChatMessage, ExtractedInsight, ParticipantRole, SupportedLanguage } from '@/lib/types';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { SUPPORTED_LANGUAGES, I18N_STRINGS } from '@/lib/i18n/translations';
 
 interface PrivateChatProps {
   role: ParticipantRole;
@@ -13,7 +14,9 @@ interface PrivateChatProps {
   messages: ChatMessage[];
   insight?: ExtractedInsight;
   isSending: boolean;
-  onSendMessage: (text: string) => void;
+  language?: SupportedLanguage;
+  onLanguageChange?: (lang: SupportedLanguage) => void;
+  onSendMessage: (text: string, language?: SupportedLanguage) => void;
   onOpenInvite: () => void;
   onOpenMediation: () => void;
 }
@@ -25,34 +28,51 @@ export function PrivateChat({
   messages,
   insight,
   isSending,
+  language = 'en',
+  onLanguageChange,
   onSendMessage,
   onOpenInvite,
   onOpenMediation,
 }: PrivateChatProps) {
   const [inputText, setInputText] = useState('');
+  const [activeLang, setActiveLang] = useState<SupportedLanguage>(language);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (language && language !== activeLang) {
+      setActiveLang(language);
+    }
+  }, [language]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isSending]);
 
+  const handleLanguageSelect = (lang: SupportedLanguage) => {
+    setActiveLang(lang);
+    onLanguageChange?.(lang);
+  };
+
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!inputText.trim() || isSending) return;
-    onSendMessage(inputText.trim());
+    onSendMessage(inputText.trim(), activeLang);
     setInputText('');
   };
 
   const isRoleA = role === 'a';
+  const t = I18N_STRINGS[activeLang] || I18N_STRINGS.en;
   const lastMsg = messages[messages.length - 1];
-  const quickReplies = lastMsg?.quickReplies || [];
+  const quickReplies = lastMsg?.quickReplies && lastMsg.quickReplies.length > 0
+    ? lastMsg.quickReplies
+    : t.defaultQuickReplies;
 
   return (
     <div className="w-full max-w-3xl mx-auto flex flex-col h-[calc(100vh-140px)] min-h-[580px] bg-white rounded-3xl border border-stone-200 shadow-xs overflow-hidden animate-fade-in-up">
       {/* Confidentiality & Channel Header */}
-      <div className="bg-[#FAF9F6] border-b border-stone-200/80 px-5 sm:px-7 py-4 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-[#FAF9F6] border-b border-stone-200/80 px-4 sm:px-7 py-3.5 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center shrink-0">
             <svg
               className="w-4 h-4 text-stone-100"
               viewBox="0 0 24 24"
@@ -69,11 +89,11 @@ export function PrivateChat({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-stone-900 tracking-tight">
-                {isRoleA ? 'Private Space' : 'Confidential Consultation'}
+                {isRoleA ? t.titleA : t.titleB}
               </h2>
               <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-stone-200/60 text-stone-700">
                 <Lock className="w-3 h-3 text-stone-400" />
-                Confidential
+                {t.confidential}
               </span>
             </div>
             <p className="text-xs text-stone-500 font-normal">
@@ -82,25 +102,49 @@ export function PrivateChat({
           </div>
         </div>
 
-        {/* Quick invite action in header */}
-        <div>
+        {/* Right side: Language Switcher & Action */}
+        <div className="flex items-center gap-2.5 ml-auto sm:ml-0">
+          {/* Language Switcher Pills */}
+          <div className="inline-flex items-center p-0.5 rounded-xl bg-stone-200/60 border border-stone-200/80">
+            {SUPPORTED_LANGUAGES.map((l) => {
+              const isSelected = activeLang === l.code;
+              return (
+                <button
+                  key={l.code}
+                  type="button"
+                  onClick={() => handleLanguageSelect(l.code)}
+                  className={cn(
+                    "text-xs px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium select-none",
+                    isSelected
+                      ? "bg-white text-stone-900 shadow-2xs font-semibold"
+                      : "text-stone-600 hover:text-stone-900"
+                  )}
+                  title={`Talk in ${l.label}`}
+                >
+                  {l.native}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Action button */}
           {isRoleA ? (
             <Button
               size="sm"
               onClick={onOpenInvite}
-              className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer"
+              className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <UserPlus className="w-3.5 h-3.5" />
-              <span>Invite Them to Talk</span>
+              <span>{t.inviteButton}</span>
             </Button>
           ) : (
             <Button
               size="sm"
               onClick={onOpenMediation}
-              className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer"
+              className="rounded-xl text-xs px-3.5 py-1.5 font-medium shadow-2xs flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <Users className="w-3.5 h-3.5" />
-              <span>View Mediation Bridge</span>
+              <span>{t.viewBridge}</span>
             </Button>
           )}
         </div>
@@ -111,7 +155,7 @@ export function PrivateChat({
         {/* Understated Privacy Reassurance Banner */}
         <div className="max-w-md mx-auto text-center py-2 px-3.5 rounded-xl bg-stone-100/70 border border-stone-200/60 text-[11px] text-stone-600 leading-relaxed font-normal">
           <Lock className="w-3 h-3 inline mr-1 text-stone-400" />
-          <span>Your words stay private. Reconcile never forwards your raw messages.</span>
+          <span>{t.banner}</span>
         </div>
 
         {messages.map((msg) => {
@@ -146,7 +190,7 @@ export function PrivateChat({
         {isSending && (
           <div className="flex items-center gap-2 mr-auto bg-white border border-stone-200 rounded-2xl px-4 py-3 shadow-2xs text-xs text-stone-500 animate-fade-in">
             <span className="w-2 h-2 bg-stone-700 rounded-full animate-pulse" />
-            <span>Reconcile is reflecting on what you said...</span>
+            <span>{t.thinking}</span>
           </div>
         )}
 
@@ -154,9 +198,7 @@ export function PrivateChat({
         {insight?.readyToInvite && (
           <div className="p-4 rounded-2xl bg-white border border-stone-300 shadow-2xs text-xs sm:text-sm text-stone-800 animate-fade-in space-y-3">
             <p className="font-medium text-stone-900">
-              {isRoleA
-                ? 'I think I understand your perspective. Ready to invite them to share their side without any conflict?'
-                : 'Both sides have shared their thoughts. Ready to see where things crossed and how to move forward?'}
+              {isRoleA ? t.readyToInviteA : t.readyToBridgeB}
             </p>
             {isRoleA ? (
               <Button
@@ -164,7 +206,7 @@ export function PrivateChat({
                 onClick={onOpenInvite}
                 className="w-full sm:w-auto text-xs font-medium flex items-center justify-center gap-1.5"
               >
-                <span>Create Neutral Invitation</span>
+                <span>{t.createInvitation}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             ) : (
@@ -173,7 +215,7 @@ export function PrivateChat({
                 onClick={onOpenMediation}
                 className="w-full sm:w-auto text-xs font-medium flex items-center justify-center gap-1.5"
               >
-                <span>View Joint Mediation Bridge</span>
+                <span>{t.viewBridge}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             )}
@@ -186,12 +228,12 @@ export function PrivateChat({
       {/* Suggested Quick Replies */}
       {quickReplies.length > 0 && !isSending && (
         <div className="px-4 py-2.5 bg-stone-50 border-t border-stone-100 flex items-center gap-2 overflow-x-auto">
-          <span className="text-[11px] text-stone-400 font-medium whitespace-nowrap">Suggested:</span>
+          <span className="text-[11px] text-stone-400 font-medium whitespace-nowrap">{t.suggested}</span>
           {quickReplies.map((reply, i) => (
             <button
               type="button"
               key={i}
-              onClick={() => onSendMessage(reply)}
+              onClick={() => onSendMessage(reply, activeLang)}
               className="text-xs bg-white hover:bg-stone-100 text-stone-800 border border-stone-200 rounded-full px-3.5 py-1 whitespace-nowrap transition-colors cursor-pointer shadow-2xs font-normal"
             >
               {reply}
@@ -209,7 +251,7 @@ export function PrivateChat({
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder={isRoleA ? 'Tell me what happened...' : 'Share your perspective...'}
+          placeholder={isRoleA ? t.placeholderA : t.placeholderB}
           disabled={isSending}
           className="flex-1 bg-stone-50 hover:bg-stone-100/70 focus:bg-white text-stone-900 placeholder:text-stone-400 text-sm sm:text-base px-4 py-3 rounded-2xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-900/20 focus:border-stone-900 transition-all font-normal"
         />
@@ -219,7 +261,7 @@ export function PrivateChat({
           className="rounded-2xl px-5 h-12 disabled:opacity-40 cursor-pointer shadow-xs shrink-0"
         >
           <Send className="w-4 h-4 mr-1 sm:mr-1.5" />
-          <span className="hidden sm:inline">Send</span>
+          <span className="hidden sm:inline">{t.send}</span>
         </Button>
       </form>
     </div>

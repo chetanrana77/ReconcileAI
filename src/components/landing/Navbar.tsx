@@ -3,14 +3,19 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Globe } from 'lucide-react';
+import { SupportedLanguage } from '@/lib/types';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n/translations';
+import { cn } from '@/lib/utils';
 
 interface NavbarProps {
   onStartClick: () => void;
   onHomeClick?: () => void;
+  language?: SupportedLanguage;
+  onLanguageChange?: (lang: SupportedLanguage) => void;
 }
 
-export function Navbar({ onStartClick, onHomeClick }: NavbarProps) {
+export function Navbar({ onStartClick, onHomeClick, language = 'en', onLanguageChange }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -77,8 +82,30 @@ export function Navbar({ onStartClick, onHomeClick }: NavbarProps) {
           ))}
         </nav>
 
-        {/* Primary CTA */}
+        {/* Primary CTA & Language Toggle */}
         <div className="hidden sm:flex items-center gap-3">
+          <div className="inline-flex items-center p-0.5 rounded-xl bg-stone-200/60 border border-stone-200/80">
+            {SUPPORTED_LANGUAGES.map((l) => {
+              const isSelected = language === l.code;
+              return (
+                <button
+                  key={l.code}
+                  type="button"
+                  onClick={() => onLanguageChange?.(l.code)}
+                  className={cn(
+                    "text-xs px-2.5 py-1 rounded-lg transition-all cursor-pointer font-medium select-none",
+                    isSelected
+                      ? "bg-white text-stone-900 shadow-2xs font-semibold"
+                      : "text-stone-600 hover:text-stone-900"
+                  )}
+                  title={`Talk in ${l.label}`}
+                >
+                  {l.native}
+                </button>
+              );
+            })}
+          </div>
+
           <Button
             size="sm"
             onClick={onStartClick}
@@ -90,10 +117,28 @@ export function Navbar({ onStartClick, onHomeClick }: NavbarProps) {
 
         {/* Mobile Menu Button */}
         <div className="flex sm:hidden items-center gap-2">
+          <div className="inline-flex items-center p-0.5 rounded-lg bg-stone-200/60 border border-stone-200/80">
+            {SUPPORTED_LANGUAGES.map((l) => (
+              <button
+                key={l.code}
+                type="button"
+                onClick={() => onLanguageChange?.(l.code)}
+                className={cn(
+                  "text-[11px] px-1.5 py-0.5 rounded transition-all font-medium",
+                  language === l.code
+                    ? "bg-white text-stone-900 font-semibold"
+                    : "text-stone-600"
+                )}
+              >
+                {l.native}
+              </button>
+            ))}
+          </div>
+
           <Button
             size="sm"
             onClick={onStartClick}
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold"
+            className="rounded-lg px-2.5 py-1 text-xs font-semibold"
           >
             Start
           </Button>

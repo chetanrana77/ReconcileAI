@@ -6,6 +6,8 @@ export type RelationshipType =
   | 'classmate'
   | 'other';
 
+export type SupportedLanguage = 'en' | 'hi' | 'mr';
+
 export type EmotionType =
   | 'hurt'
   | 'angry'
@@ -73,6 +75,7 @@ export interface MediationSession {
   id: string;
   relationship: RelationshipType;
   topic?: string;
+  language?: SupportedLanguage;
   status: 'intake_a' | 'invite_created' | 'intake_b' | 'mediation_ready' | 'completed';
   personA: {
     label: string;
@@ -95,6 +98,7 @@ export interface SafeSessionView {
   id: string;
   relationship: RelationshipType;
   topic?: string;
+  language?: SupportedLanguage;
   status: MediationSession['status'];
   currentRole: ParticipantRole;
   myMessages: ChatMessage[];

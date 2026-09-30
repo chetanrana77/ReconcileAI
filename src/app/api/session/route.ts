@@ -51,8 +51,9 @@ export async function POST(req: Request) {
 
     const relationship = (body.relationship as RelationshipType) || 'parent';
     const topic = (body.topic as string) || undefined;
+    const language = (body.language as any) || 'en';
 
-    const newSession = createSession(relationship, topic);
+    const newSession = createSession(relationship, topic, language);
     const safe = getSafeSession(newSession.id, 'a');
 
     return NextResponse.json(safe, { status: 201 });

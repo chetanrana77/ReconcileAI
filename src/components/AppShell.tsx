@@ -6,7 +6,8 @@ import {
   ParticipantRole,
   SafeSessionView,
   RelationshipType,
-  MediationBridge
+  MediationBridge,
+  SupportedLanguage
 } from '@/lib/types';
 
 // Landing Components
@@ -34,17 +35,23 @@ export function AppShell() {
   const [currentStep, setCurrentStep] = useState<AppStep>('landing');
   const [currentRole, setCurrentRole] = useState<ParticipantRole>('a');
   const [session, setSession] = useState<SafeSessionView | null>(null);
+  const [language, setLanguage] = useState<SupportedLanguage>('en');
   const [isSending, setIsSending] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isSafetyFlag, setIsSafetyFlag] = useState<boolean>(false);
   const [safetyMessage, setSafetyMessage] = useState<string>('');
 
-  // Check URL query on mount for direct join links (?session=...&role=b)
+  // Check URL query on mount for direct join links (?session=...&role=b&lang=...)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const searchParams = new URLSearchParams(window.location.search);
       const urlSessionId = searchParams.get('session');
       const urlRole = (searchParams.get('role') as ParticipantRole) || 'a';
+      const urlLang = searchParams.get('lang') as SupportedLanguage;
+
+      if (urlLang) {
+        setLanguage(urlLang);
+      }
 
       if (urlSessionId) {
         fetchSession(urlSessionId, urlRole);
@@ -58,6 +65,7 @@ export function AppShell() {
       if (!res.ok) throw new Error('Session not found');
       const data: SafeSessionView = await res.json();
       setSession(data);
+      if (data.language) setLanguage(data.language);
       setCurrentRole(role);
       setCurrentStep(role === 'a' ? 'chat_a' : 'chat_b');
     } catch (err) {
@@ -74,11 +82,12 @@ export function AppShell() {
       const res = await fetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relationship, topic })
+        body: JSON.stringify({ relationship, topic, language })
       });
       if (!res.ok) throw new Error('Failed to create session');
       const data: SafeSessionView = await res.json();
       setSession(data);
+      if (data.language) setLanguage(data.language);
       setCurrentRole('a');
       setCurrentStep('chat_a');
     } catch (err) {
@@ -95,7 +104,7 @@ export function AppShell() {
       const res = await fetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ demoKey, role: 'a' })
+        body: JSON.stringify({ demoKey, role: 'a', language })
       });
       if (!res.ok) throw new Error('Failed to load demo session');
       const data: SafeSessionView = await res.json();
@@ -109,17 +118,22 @@ export function AppShell() {
   };
 
   // Send message in current participant's private chat
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, msgLang?: SupportedLanguage) => {
     if (!session || isSending) return;
     setIsSending(true);
     setError(null);
     setIsSafetyFlag(false);
 
+    const activeLanguage = msgLang || language;
+    if (msgLang && msgLang !== language) {
+      setLanguage(msgLang);
+    }
+
     try {
       const res = await fetch(`/api/session/${session.id}/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, role: currentRole })
+        body: JSON.stringify({ text, role: currentRole, language: activeLanguage })
       });
 
       const data = await res.json();
@@ -234,7 +248,12 @@ export function AppShell() {
 
   return (
     <>
-      <Navbar onStartClick={() => handleStartTalk('parent')} onHomeClick={resetToLanding} />
+      <Navbar
+        onStartClick={() => handleStartTalk('parent')}
+        onHomeClick={resetToLanding}
+        language={language}
+        onLanguageChange={setLanguage}
+      />
 
       {currentStep === 'landing' ? (
         <div key="landing" className="w-full flex flex-col">
@@ -283,6 +302,8 @@ export function AppShell() {
                   messages={session.myMessages}
                   insight={session.myInsight}
                   isSending={isSending}
+                  language={language}
+                  onLanguageChange={setLanguage}
                   onSendMessage={handleSendMessage}
                   onOpenInvite={handleOpenInvite}
                   onOpenMediation={handleOpenMediation}
@@ -308,6 +329,8 @@ export function AppShell() {
                   messages={session.myMessages}
                   insight={session.myInsight}
                   isSending={isSending}
+                  language={language}
+                  onLanguageChange={setLanguage}
                   onSendMessage={handleSendMessage}
                   onOpenInvite={handleOpenInvite}
                   onOpenMediation={handleOpenMediation}

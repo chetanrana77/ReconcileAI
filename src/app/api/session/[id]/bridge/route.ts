@@ -37,7 +37,8 @@ export async function POST(
         relationship: session.relationship,
         topic: session.topic,
         personAInsight: pAInsight,
-        personBInsight: pBInsight
+        personBInsight: pBInsight,
+        language: session.language || 'en'
       });
 
       session.bridge = bridge;
