@@ -61,6 +61,34 @@ export async function GET(req: Request) {
   const openAiKey = process.env.OPENAI_API_KEY?.trim();
 
   const url = new URL(req.url);
+  if (url.searchParams.get('debug') === '1' && geminiKey) {
+    const results: any[] = [];
+    const testModels = ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
+    for (const m of testModels) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': geminiKey
+            },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: 'say hi' }] }],
+              generationConfig: { maxOutputTokens: 5 }
+            })
+          }
+        );
+        const body = await res.json().catch(() => ({}));
+        results.push({ model: m, status: res.status, ok: res.ok, body });
+      } catch (e: any) {
+        results.push({ model: m, error: e.message });
+      }
+    }
+    return NextResponse.json({ results });
+  }
+
   if (url.searchParams.get('list') === '1' && geminiKey) {
     try {
       const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
