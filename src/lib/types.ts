@@ -141,6 +141,7 @@ export interface ReconcileResponse {
 
 export type AppStep =
   | 'landing'
+  | 'hub'
   | 'chat_a'
   | 'invite'
   | 'chat_b'

@@ -26,6 +26,7 @@ import { Navbar } from '@/components/landing/Navbar';
 import { PrivateChat } from '@/components/mediator/PrivateChat';
 import { InvitationCard } from '@/components/mediator/InvitationCard';
 import { MediationBridgeView } from '@/components/mediator/MediationBridgeView';
+import { ConversationHub } from '@/components/hub/ConversationHub';
 
 // UI Feedback Components
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -71,6 +72,36 @@ export function AppShell() {
     } catch (err) {
       console.error(err);
       setError("We couldn't load this conversation session.");
+    }
+  };
+
+  // Open Hub ("What would help right now?")
+  const handleOpenHub = () => {
+    setError(null);
+    setIsSafetyFlag(false);
+    setCurrentStep('hub');
+  };
+
+  // Join existing session with invite code or link
+  const handleJoinWithCode = async (codeOrUrl: string) => {
+    let cleanId = codeOrUrl.trim();
+    if (cleanId.includes('/join/')) {
+      cleanId = cleanId.split('/join/')[1].split('?')[0].split('#')[0];
+    } else if (cleanId.includes('session=')) {
+      const match = cleanId.match(/session=([^&]+)/);
+      if (match) cleanId = match[1];
+    }
+
+    try {
+      await fetch(`/api/session/${cleanId}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'join' }),
+      });
+      fetchSession(cleanId, 'b');
+    } catch (err) {
+      console.error(err);
+      fetchSession(cleanId, 'b');
     }
   };
 
@@ -249,7 +280,7 @@ export function AppShell() {
   return (
     <>
       <Navbar
-        onStartClick={() => handleStartTalk('parent')}
+        onStartClick={handleOpenHub}
         onHomeClick={resetToLanding}
         language={language}
         onLanguageChange={setLanguage}
@@ -258,7 +289,7 @@ export function AppShell() {
       {currentStep === 'landing' ? (
         <div key="landing" className="w-full flex flex-col">
           <Hero
-            onStart={() => handleStartTalk('parent')}
+            onStart={handleOpenHub}
             onSelectDemo={handleLoadDemoSession}
           />
           <ProblemStory />
@@ -268,7 +299,7 @@ export function AppShell() {
           <PrivacySection />
           <FAQSection />
           <ClosingCTA
-            onStart={() => handleStartTalk('parent')}
+            onStart={handleOpenHub}
             onExploreDemo={() => {
               const el = document.getElementById('demonstration');
               el?.scrollIntoView({ behavior: 'smooth' });
@@ -276,6 +307,15 @@ export function AppShell() {
           />
           <Footer />
         </div>
+      ) : currentStep === 'hub' ? (
+        <ConversationHub
+          language={language}
+          onLanguageChange={setLanguage}
+          onStartSolo={() => handleStartTalk('other', 'Solo Reflection & Clarity')}
+          onStartRelationship={(rel, topic) => handleStartTalk(rel, topic)}
+          onJoinWithCode={handleJoinWithCode}
+          onBackToLanding={resetToLanding}
+        />
       ) : (
         <div className="flex-grow flex flex-col w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Safety Interception Notice */}
