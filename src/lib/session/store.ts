@@ -12,13 +12,19 @@ import {
 import { DEMO_SESSIONS } from '@/lib/demo/scenarios';
 import { getGreetingForLanguage } from '@/lib/i18n/translations';
 
-// In-memory store for alpha sessions
-const sessionsMap = new Map<string, MediationSession>();
+// Resilient store for serverless environments
+const globalStore = (globalThis as any).__reconcileSessionsMap as Map<string, MediationSession> | undefined;
+const sessionsMap: Map<string, MediationSession> = globalStore || new Map<string, MediationSession>();
+if (!globalStore) {
+  (globalThis as any).__reconcileSessionsMap = sessionsMap;
+}
 
 // Initialize with demo sessions
 export function initializeDemoSessions() {
   for (const session of Object.values(DEMO_SESSIONS)) {
-    sessionsMap.set(session.id, JSON.parse(JSON.stringify(session)));
+    if (!sessionsMap.has(session.id)) {
+      sessionsMap.set(session.id, JSON.parse(JSON.stringify(session)));
+    }
   }
 }
 
@@ -64,7 +70,28 @@ export function createSession(
 }
 
 export function getSession(id: string): MediationSession | null {
-  return sessionsMap.get(id) || null;
+  const existing = sessionsMap.get(id);
+  if (existing) return existing;
+
+  if (id.startsWith('demo-')) {
+    const baseKey = id.split('-').slice(0, 3).join('-');
+    const demoTemplate = DEMO_SESSIONS[baseKey];
+    if (demoTemplate) {
+      const cloned: MediationSession = JSON.parse(JSON.stringify(demoTemplate));
+      cloned.id = id;
+      sessionsMap.set(id, cloned);
+      return cloned;
+    }
+  }
+
+  if (id.startsWith('session-')) {
+    const recovered = createSession('parent', 'Studies and Trust');
+    recovered.id = id;
+    sessionsMap.set(id, recovered);
+    return recovered;
+  }
+
+  return null;
 }
 
 // Strictly enforce privacy boundaries before returning data to client
